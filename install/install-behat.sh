@@ -17,7 +17,7 @@ fi
 # Verify we are on the Ubuntu VM
 
 hostname=`uname -n`
-if [[ $hostname != "vagrant-ubuntu-trusty-64" ]]; then
+if [[ $hostname != "OpenEyesVM" ]]; then
   echo You must run this script on the virtual box
   exit 1
 fi
@@ -54,10 +54,15 @@ composer install
 
 # download chrome and firefox
 
-apt-get install -f
 apt-get install -y xorg jwm firefox
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
+
+#wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+#sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+apt-get update
+apt-get install -y google-chrome-stable
+
 
 
 # Get the latest chromedriver for linux chrome
