@@ -16,6 +16,7 @@ HOW TO INSTALL OPENEYES (This instructions assume you are using OS X 10.6 or lat
 3. Change to your repo directory and run: vagrant up
 4. Once built, run vagrant ssh
 5. From within the vagrant box, run the following commands:
+
 sudo /vagrant/install/install-system.sh
 sudo /vagrant/install/install-oe.sh
 
@@ -26,4 +27,15 @@ sudo /vagrant/install/install-behat.sh
 
 If you require dev tools (eg compiling sass changes, running phpunit), you need to run:
 sudo /vagrant/install/install-devtools.sh
+
+
+RUNNING BEHAT BROWSER TESTS
+If you wish to perform browser tests, then follow these steps:
+1. log on to the main VM window as vagrant/vagrant
+2. From that terminal, run startx
+3. From another terminal window (eg from vagrant ssh), run /var/www/behat/start-selenium-server.sh
+4. From a third terminal window (eg from vagrant ssh), cd to /var/www/behat and run bin/behat --profile=n
+
+where n is either chrome or firefox
+
 
