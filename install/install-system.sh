@@ -42,6 +42,7 @@ dpkg -i --force-depends wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 a2enmod rewrite
 cp /vagrant/install/bashrc /home/vagrant/.bashrc
 hostname OpenEyesVM
+exec bash
 
 
 echo --------------------------------------------------

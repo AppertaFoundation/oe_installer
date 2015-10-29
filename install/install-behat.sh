@@ -83,3 +83,13 @@ cp /vagrant/install/start-selenium-server.sh /var/www/behat
 # Link JWM window manager to X
 echo "exec /usr/bin/jwm" > /home/vagrant/.xsession
 
+
+# Clean out some irrelevant files
+rm LICENSE *.md
+chmod +x start-selenium-server.sh 
+
+
+echo --------------------------------------------------
+echo BEHAT INSTALLED
+echo Please check previous messages for any errors
+echo --------------------------------------------------
