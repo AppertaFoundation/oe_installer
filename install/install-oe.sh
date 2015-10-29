@@ -12,18 +12,16 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 
-# STILL TO DO:
-# set environment variable to dev or live
-
-
 echo Downloading OpenEyes code base
 cd /var/www
 # TODO: if openeyes dir exists, delete it
+
 
 git clone -b feature/install https://github.com/openeyes/OpenEyes.git openeyes 
 cd openeyes/protected
 unzip yii.zip
 unzip vendors.zip
+
 
 echo Installing OpenEyes modules
 branch=master
@@ -106,6 +104,9 @@ apache2ctl restart
 
 # copy our commands to /usr/bin
 cp /vagrant/install/oe-* /usr/bin
+
+cp /vagrant/install/bashrc /home/vagrant/.bashrc
+hostname OpenEyesVM
 
 
 echo --------------------------------------------------

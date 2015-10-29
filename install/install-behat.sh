@@ -55,10 +55,9 @@ composer install
 # download chrome and firefox
 
 apt-get install -f
-apt-get install -y xorg jwm
+apt-get install -y xorg jwm firefox
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
-apt-get install -y firefox
 
 
 # Get the latest chromedriver for linux chrome

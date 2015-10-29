@@ -9,12 +9,18 @@ default:
             goutte: ~
             selenium2:
                 browser: chrome
-                wd_host: "http://127.0.0.1:4444/wd/hub"
 
         Behat\YiiExtension\Extension:
             framework_script: vendor/yiisoft/yii/framework/yii.php
             config_script:    protected/config/main.php
+
 chrome:
+    extensions:
+        Behat\MinkExtension\Extension:
+            base_url:           http://localhost:8888
+            selenium2:
+                browser: chrome
+                wd_host: "http://127.0.0.1:4444/wd/hub"
 
 chrome-remote:
     extensions:

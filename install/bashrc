@@ -1,0 +1,9 @@
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+HISTSIZE=1000
+HISTFILESIZE=2000
+shopt -s checkwinsize
+
+PS1="\e[0m\n\e[44m\e[97m \u@\h \e[41m \$(git rev-parse --abbrev-ref HEAD 2> /dev/null) \e[0m\n\w>"
+
