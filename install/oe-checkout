@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [[ -z "$1" ]] ; then
+  echo "usage: $0 <branch>"
+  exit 1
+fi
+
+dir=$PWD
+
+cd /var/www/openeyes
+git pull
+git checkout $1
+
+for m in eyedraw OphCiExamination OphCiPhasing OphCoTherapyapplication OphDrPrescription OphInBiometry OphInVisualfields OphOuAnaestheticsatisfactionaudit OphTrConsent OphTrIntravitrealinjection OphTrLaser OphTrOperationbooking OphTrOperationnote PatientTicketing; do
+  echo ""
+  echo MODULE $m:
+  cd $m
+  git pull
+  git checkout $1
+  cd ..
+done
+echo Done.
+echo If you need to run the migrations, run oe-migrate
+echo ""
+cd $dir 

@@ -31,11 +31,12 @@ apt-get -y update
 echo Installing required system packages
 debconf-set-selections <<< 'mysql-server mysql-server/root_password password password'
 debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password password'
-apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mysql-server mysql-client debconf-utils unzip xfonts-75dpi
+apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mysql-server mysql-client debconf-utils unzip xfonts-75dpi default-jre
 
 # wkhtmltox is now bundled in the repository. Original download location is:
 # wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
-dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+cd /vagrant/install
+dpkg -i --force-depends wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 
 
 a2enmod rewrite

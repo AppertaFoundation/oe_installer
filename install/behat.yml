@@ -1,0 +1,43 @@
+default:
+    extensions:
+        features/bootstrap/extension.php: ~
+        SensioLabs\Behat\PageObjectExtension\Extension: ~
+        Behat\MinkExtension\Extension:
+            base_url:           http://localhost:8888
+            default_session:    selenium2
+            javascript_session: selenium2
+            goutte: ~
+            selenium2:
+                browser: chrome
+                wd_host: "http://127.0.0.1:4444/wd/hub"
+
+        Behat\YiiExtension\Extension:
+            framework_script: vendor/yiisoft/yii/framework/yii.php
+            config_script:    protected/config/main.php
+chrome:
+
+chrome-remote:
+    extensions:
+        Behat\MinkExtension\Extension:
+            base_url:           http://192.168.0.100
+            selenium2:
+                browser: chrome
+                wd_host: "http://192.168.0.100:4444/wd/hub" 
+
+firefox:
+    extensions:
+        Behat\MinkExtension\Extension:
+            base_url:           http://localhost:8888
+            selenium2:
+                browser: firefox
+                wd_host: "http://127.0.0.1:4444/wd/hub"
+
+firefox-remote:
+    extensions:
+        Behat\MinkExtension\Extension:
+            base_url:           http://192.168.0.100
+            selenium2:
+                browser: firefox
+                wd_host: "http://192.168.0.100:4444/wd/hub"
+
+

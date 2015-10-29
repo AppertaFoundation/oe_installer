@@ -23,33 +23,28 @@ if [[ $hostname != "vagrant-ubuntu-trusty-64" ]]; then
 fi
 
 
-# Get behat and its dependencies
+# Get behat
 
 cd /vagrant/install
 rm -rf /var/www/behat
 git clone git://github.com/Behat/Behat.git /var/www/behat 
 cd /var/www/behat
 
-echo "
-{
-    "require-dev": {
-        "behat/behat": "~2",
-        "behat/mink": "~1",
-        "behat/yii-extension": "~1",
-        "behat/mink-extension": "~1",
-        "fabpot/goutte": "1.*@stable",
-        "behat/mink-goutte-driver": "~1",
-        "behat/mink-selenium2-driver": "~1",
-        "sensiolabs/behat-page-object-extension": "1.0.1"
-    },
-    "config": {
-        "bin-dir": "bin/"
-    },
-    "autoload": {
-        "classmap": ["features/bootstrap/Pages/OpenEyesPage.php"]
-  }
-}
-" > /tmp/openeyes-mysql-create.sql
+cp /vagrant/install/composer.json /var/www/behat/
+cp /vagrant/install/behat.yml /var/www/behat/
+
+
+# symlink directories
+
+cd /var/www/behat
+rm -rf features
+mkdir -p vendor/yiisoft
+ln -s /var/www/openeyes/features features
+ln -s /var/www/openeyes/protected/yii vendor/yiisoft/yii
+ln -s /var/www/openeyes/protected protected
+
+
+# run composer to get behat dependencies
 
 curl https://getcomposer.org/composer.phar -o composer.phar
 chmod +x composer.phar
@@ -57,28 +52,30 @@ mv composer.phar /usr/bin/composer
 composer install
 
 
-# symlink directories
-
-cd /var/www/behat
-rm -rf features
-#rm -rf reports
-ln -s /var/www/openeyes/features features
-#ln -s /var/www/openeyes/reports reports
-ln -s /var/www/openeyes/protected/yii vendor/yiisoft/yii
-
-
 # download chrome and firefox
 
+apt-get install -f
+apt-get install -y xorg jwm
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
-apt-get install firefox
+apt-get install -y firefox
 
 
 # Get the latest chromedriver for linux chrome
 
+cd /var/www/behat
 LATEST=$(wget -q -O - http://chromedriver.storage.googleapis.com/LATEST_RELEASE)
 wget http://chromedriver.storage.googleapis.com/$LATEST/chromedriver_linux64.zip
 unzip chromedriver_linux64.zip && rm chromedriver_linux64.zip
 cp chromedriver /usr/bin/
 
+
+# Download selenium standalone server 2.48.2
+
+wget http://selenium-release.storage.googleapis.com/2.48/selenium-server-standalone-2.48.2.jar
+cp /vagrant/install/start-selenium-server.sh /var/www/behat
+
+
+# Link JWM window manager to X
+echo "exec /usr/bin/jwm" > /home/vagrant/.xsession
 

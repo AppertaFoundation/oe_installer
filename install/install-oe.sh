@@ -104,6 +104,10 @@ CustomLog /var/log/apache2/access.log combined
 apache2ctl restart
 
 
+# copy our commands to /usr/bin
+cp /vagrant/install/oe-* /usr/bin
+
+
 echo --------------------------------------------------
 echo OPENEYES SOFTWARE INSTALLED
 echo Please check previous messages for any errors
