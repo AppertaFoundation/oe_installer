@@ -4,6 +4,7 @@ dir=$PWD
 cd /var/www/openeyes
 b="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
 echo "$b -- openeyes"
+cd protected/modules
 for module in eyedraw OphCiExamination OphCiPhasing OphCoTherapyapplication OphDrPrescription OphInBiometry OphInVisualfields OphOuAnaestheticsatisfactionaudit OphTrConsent OphTrIntravitrealinjection OphTrLaser OphTrOperationbooking OphTrOperationnote PatientTicketing; do
   cd $module
   b="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
