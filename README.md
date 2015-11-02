@@ -25,11 +25,9 @@ At this point you should have a fully working OpenEyes instance, reachable at lo
 If you require behat, then from the VM run the following command:
 sudo /vagrant/install/install-behat.sh
 
-If you require dev tools (eg compiling sass changes, running phpunit), you need to run:
-sudo /vagrant/install/install-devtools.sh
-
 
 RUNNING BEHAT BROWSER TESTS
+
 If you wish to perform browser tests, then follow these steps:
 1. log on to the main VM window as vagrant/vagrant
 2. From that terminal, run startx
@@ -37,5 +35,4 @@ If you wish to perform browser tests, then follow these steps:
 4. From a third terminal window (eg from vagrant ssh), cd to /var/www/behat and run bin/behat --profile=n
 
 where n is either chrome or firefox
-
 
