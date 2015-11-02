@@ -3,7 +3,7 @@ default:
         features/bootstrap/extension.php: ~
         SensioLabs\Behat\PageObjectExtension\Extension: ~
         Behat\MinkExtension\Extension:
-            base_url:           http://localhost:8888
+            base_url:           http://localhost
             default_session:    selenium2
             javascript_session: selenium2
             goutte: ~
@@ -17,7 +17,7 @@ default:
 chrome:
     extensions:
         Behat\MinkExtension\Extension:
-            base_url:           http://localhost:8888
+            base_url:           http://localhost
             selenium2:
                 browser: chrome
                 wd_host: "http://127.0.0.1:4444/wd/hub"
@@ -33,7 +33,7 @@ chrome-remote:
 firefox:
     extensions:
         Behat\MinkExtension\Extension:
-            base_url:           http://localhost:8888
+            base_url:           http://localhost
             selenium2:
                 browser: firefox
                 wd_host: "http://127.0.0.1:4444/wd/hub"

@@ -1,6 +1,6 @@
 {
     "require-dev": {
-        "behat/behat": "2.4.*",
+        "behat/behat": "2.5.5",
         "behat/mink": "~1",
         "behat/yii-extension": "~1",
         "behat/mink-extension": "~1",
