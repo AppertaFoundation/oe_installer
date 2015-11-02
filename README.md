@@ -36,3 +36,12 @@ If you wish to perform browser tests, then follow these steps:
 
 where n is either chrome or firefox
 
+
+
+INSTALLING OPENEYES ON A WINDOWS PLATFORM
+
+Please use version 4.3.* of VirtualBox. Version 5 is known to have problems with shared folders.
+
+These install scripts should also run on a windows platform.
+If you receive an error about 'file cannot be created' (operation not permitted) on a very long filename, then chances are your installation directory along with the long filename has exceeded the 260 character limit imposed by certain parts of the Windows OS. Try changing your installion directory to something less than 30 charcters, eg C:\openeys
+ 
