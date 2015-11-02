@@ -64,7 +64,6 @@ apt-get update
 apt-get install -y google-chrome-stable
 
 
-
 # Get the latest chromedriver for linux chrome
 
 cd /var/www/behat

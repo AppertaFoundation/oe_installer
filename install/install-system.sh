@@ -49,5 +49,3 @@ echo --------------------------------------------------
 echo SYSTEM SOFTWARE INSTALLED
 echo Please check previous messages for any errors
 echo --------------------------------------------------
-
-
