@@ -42,7 +42,7 @@ dpkg -i --force-depends wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 a2enmod rewrite
 cp /vagrant/install/bashrc /home/vagrant/.bashrc
 hostname OpenEyesVM
-exec bash
+export PS1="\e[0m\n\e[44m\e[97m \u@\h \e[41m \$(git rev-parse --abbrev-ref HEAD 2> /dev/null) \e[0m\n\w>"
 
 
 echo --------------------------------------------------
