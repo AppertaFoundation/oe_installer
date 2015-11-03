@@ -48,16 +48,19 @@ ln -s /var/www/openeyes/protected protected
 
 curl https://getcomposer.org/composer.phar -o composer.phar
 chmod +x composer.phar
-mv composer.phar /usr/bin/composer
-composer install
+chown vagrant composer.phar
+cp composer.phar /usr/bin/composer
+mv composer.phar composer
+sudo -u vagrant -s composer install
+sudo -u vagrant -s composer update
 
 
 # download chrome and firefox
 
 apt-get install -y xorg jwm firefox
 
-#wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-#sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
+# wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+# sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
 sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
 apt-get update
