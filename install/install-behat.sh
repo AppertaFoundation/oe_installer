@@ -47,8 +47,7 @@ ln -s /var/www/openeyes/protected protected
 # run composer to get behat dependencies
 
 curl https://getcomposer.org/composer.phar -o composer.phar
-chmod +x composer.phar
-chown vagrant composer.phar
+chmod 777 composer.phar
 cp composer.phar /usr/bin/composer
 mv composer.phar composer
 sudo -u vagrant -s composer install
