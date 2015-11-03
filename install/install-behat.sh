@@ -44,7 +44,7 @@ ln -s /var/www/openeyes/protected/yii vendor/yiisoft/yii
 ln -s /var/www/openeyes/protected protected
 
 
-# run composer to get behat dependencies
+# download and run composer to get behat dependencies
 
 curl https://getcomposer.org/composer.phar -o composer.phar
 chmod 777 composer.phar
@@ -52,7 +52,8 @@ cp composer.phar /usr/bin/composer
 mv composer.phar composer
 sudo -u vagrant -s composer update
 
-# composer does not generate the correct behat binary - replace it with our own
+# composer does not generate the correct behat executable  - replace it with our own
+mv /var/www/behat/bin/behat /var/www/behat/bin/behat-old
 cp /vagrant/install/behat /var/www/behat/bin/
 
 

@@ -10,6 +10,7 @@
  */
 
 define('BEHAT_BIN_PATH',     __FILE__);
+define('BEHAT_VERSION', 2.5);
 
 function includeIfExists($file)
 {
