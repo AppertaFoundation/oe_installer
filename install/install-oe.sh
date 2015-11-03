@@ -30,6 +30,7 @@ git clone https://github.com/openeyes/EyeDraw.git eyedraw -b $branch
 git clone https://github.com/openeyes/OphCiExamination.git OphCiExamination -b $branch
 git clone https://github.com/openeyes/OphCiPhasing.git OphCiPhasing -b $branch
 git clone https://github.com/openeyes/OphCoTherapyapplication.git OphCoTherapyapplication -b $branch
+git clone https://github.com/openeyes/OphCoCorrespondence.git OphCoCorrespondence -b $branch
 git clone https://github.com/openeyes/OphDrPrescription.git OphDrPrescription -b $branch
 git clone https://github.com/openeyes/OphInBiometry.git OphInBiometry -b $branch
 git clone https://github.com/openeyes/OphInVisualfields.git OphInVisualfields -b $branch
