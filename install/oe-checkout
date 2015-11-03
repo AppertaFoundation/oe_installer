@@ -11,7 +11,7 @@ cd /var/www/openeyes
 git pull
 git checkout $1
 cd protected/modules
-for m in eyedraw OphCiExamination OphCiPhasing OphCoTherapyapplication OphDrPrescription OphInBiometry OphInVisualfields OphOuAnaestheticsatisfactionaudit OphTrConsent OphTrIntravitrealinjection OphTrLaser OphTrOperationbooking OphTrOperationnote PatientTicketing; do
+for m in eyedraw OphCiExamination OphCiPhasing OphCoCorrespondence OphCoTherapyapplication OphDrPrescription OphInBiometry OphInVisualfields OphOuAnaestheticsatisfactionaudit OphTrConsent OphTrIntravitrealinjection OphTrLaser OphTrOperationbooking OphTrOperationnote PatientTicketing; do
   echo ""
   echo MODULE $m:
   cd $m
