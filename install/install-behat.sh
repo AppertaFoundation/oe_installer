@@ -59,7 +59,7 @@ cp /vagrant/install/behat /var/www/behat/bin/
 
 # download chrome and firefox
 
-apt-get install -y --force=yes xorg jwm firefox
+apt-get install -y --force-yes xorg jwm firefox
 
 # wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 # sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
