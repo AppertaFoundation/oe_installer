@@ -39,9 +39,11 @@ cp /vagrant/install/behat.yml /var/www/behat/
 cd /var/www/behat
 rm -rf features
 mkdir -p vendor/yiisoft
-ln -s /var/www/openeyes/features features
-ln -s /var/www/openeyes/protected/yii vendor/yiisoft/yii
-ln -s /var/www/openeyes/protected protected
+ln -s ../openeyes/features features
+ln -s ../openeyes/protected protected
+cd vendor/yiisoft
+ln -s ../../../openeyes/protected/yii/ yii
+cd /var/www/behat
 
 
 # download and run composer to get behat dependencies
