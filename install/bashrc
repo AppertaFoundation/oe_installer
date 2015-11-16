@@ -5,5 +5,15 @@ HISTSIZE=1000
 HISTFILESIZE=2000
 shopt -s checkwinsize
 
-PS1="\e[0m\n\e[44m\e[97m \u@\h \e[41m \$(git rev-parse --abbrev-ref HEAD 2> /dev/null) \e[0m\n\w>"
+function gitbranch {
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ !$? = 0 ]; then
+    branch="";
+  else
+    if [ "$branch" = "HEAD" ]; then branch=$(git describe --all 2>/dev/null); fi
+    if [ ! "$branch" = "" ]; then echo " $branch "; fi
+  fi
+}
+
+export PS1="\e[0m\n\e[44m\e[97m \u@\h \e[41m\$(gitbranch)\e[0m\n\w>"
 

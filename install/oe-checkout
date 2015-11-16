@@ -5,21 +5,45 @@ if [[ -z "$1" ]] ; then
   exit 1
 fi
 
+source /etc/openeyes
 dir=$PWD
 
-cd /var/www/openeyes
-git pull
-git checkout $1
-cd protected/modules
-for m in eyedraw OphCiExamination OphCiPhasing OphCoCorrespondence OphCoTherapyapplication OphDrPrescription OphInBiometry OphInVisualfields OphOuAnaestheticsatisfactionaudit OphTrConsent OphTrIntravitrealinjection OphTrLaser OphTrOperationbooking OphTrOperationnote PatientTicketing; do
-  echo ""
-  echo MODULE $m:
-  cd $m
-  git pull
-  git checkout $1
-  cd ..
+#  If -f was not specified on the command line, then check each module
+#  to see if any changes are unstaged.
+
+if [ ! "$2" = "-f" ]; then
+  changes=0
+  modulelist=""
+  cd /var/www/openeyes/protected/modules
+  for module in ${modules[@]}; do
+    if [ ! "$module" = "openeyes" ]; then cd $module; fi
+    git diff --quiet
+    if [ ! $? = 0 ]; then
+      changes=1
+      modulelist="$modulelist $module"
+    fi
+    if [ ! "$module" = "openeyes" ]; then cd ..; fi
+  done
+
+  if [ "$changes" = "1" ]; then
+    echo "There are uncommitted changes in the following modules: $modulelist"
+    echo "To ignore these changes, run: $0 $1 -f"
+    echo "Alternatively, git reset --hard to ignore, or git stash to keep, etc"
+    exit 1
+  fi
+fi
+
+cd /var/www/openeyes/protected/modules
+for module in ${modules[@]}; do
+  if [ ! "$module" = "openeyes" ]; then cd $module; fi
+  git reset --hard
+  git checkout tags/$1 2>/dev/null
+  if [ ! $? = 0 ]; then
+    git checkout $1 2>/dev/null
+  fi
+  if [ ! "$module" = "openeyes" ]; then cd ..; fi
 done
-echo Done.
+cd $dir
+oe-which
 echo If you need to run the migrations, run oe-migrate
 echo ""
-cd $dir 

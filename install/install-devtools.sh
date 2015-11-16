@@ -40,6 +40,7 @@ sudo npm install grunt --save-dev
 sudo npm install -g grunt-cli
 sudo npm install
 sudo npm install grunt-contrib-uglify --save-dev
+sudo npm install grunt-contrib-concat --save-dev
 sudo gem install compass --no-ri --no-rdoc
 
 
