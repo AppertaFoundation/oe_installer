@@ -44,6 +44,10 @@ sudo npm install grunt-contrib-concat --save-dev
 sudo gem install compass --no-ri --no-rdoc
 
 
+# install ant
+apt-get -y ant
+
+
 echo --------------------------------------------------
 echo DEVTOOLS INSTALLED
 echo Please check previous messages for any errors
