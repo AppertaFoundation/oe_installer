@@ -31,7 +31,8 @@ apt-get -y update
 echo Installing required system packages
 debconf-set-selections <<< 'mysql-server mysql-server/root_password password password'
 debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password password'
-apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mysql-server mysql-client debconf-utils unzip xfonts-75dpi default-jre
+apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mysql-server mysql-client debconf-utils unzip xfonts-75dpi default-jre npm
+
 
 # wkhtmltox is now bundled in the repository. Original download location is:
 # wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
@@ -39,10 +40,14 @@ cd /vagrant/install
 dpkg -i --force-depends wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 
 
+npm install -g grunt-cli
+ln -s /usr/bin/nodejs /usr/bin/node
+
+
 a2enmod rewrite
 cp /vagrant/install/bashrc /home/vagrant/.bashrc
 hostname OpenEyesVM
-exec bash
+source /vagrant/install/bashrc
 
 
 echo --------------------------------------------------

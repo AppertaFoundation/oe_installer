@@ -1,15 +1,28 @@
 #!/bin/bash
 
+function gitbranch {
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ !$? = 0 ]; then
+    branch="";
+  else
+    if [ "$branch" = "HEAD" ]; then branch=$(git describe --all 2>/dev/null); fi
+    if [ ! "$branch" = "" ]; then echo $branch;
+    fi
+  fi
+}
+
+source /etc/openeyes
+
 dir=$PWD
-cd /var/www/openeyes
-b="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
-echo "$b -- openeyes"
-cd protected/modules
-for module in eyedraw OphCiExamination OphCiPhasing OphCoTherapyapplication OphDrPrescription OphInBiometry OphInVisualfields OphOuAnaestheticsatisfactionaudit OphTrConsent OphTrIntravitrealinjection OphTrLaser OphTrOperationbooking OphTrOperationnote PatientTicketing; do
-  cd $module
-  b="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
-  cd ..
-  echo "$b -- $module"
+cd /var/www/openeyes/protected/modules
+for module in ${modules[@]}; do
+  if [ ! "$module" = "openeyes" ]; then cd $module; fi
+
+  b="$(gitbranch)"
+  if [ ! "$module" = "openeyes" ]; then cd ..; fi
+  printf "\e[31m%-20s\e[39m-- $module\n" $b
 done
-echo Done
+printf "Done\n\n"
 cd $dir
+
+

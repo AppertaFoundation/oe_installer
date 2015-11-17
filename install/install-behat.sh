@@ -39,27 +39,34 @@ cp /vagrant/install/behat.yml /var/www/behat/
 cd /var/www/behat
 rm -rf features
 mkdir -p vendor/yiisoft
-ln -s /var/www/openeyes/features features
-ln -s /var/www/openeyes/protected/yii vendor/yiisoft/yii
-ln -s /var/www/openeyes/protected protected
+ln -s ../openeyes/features features
+ln -s ../openeyes/protected protected
+cd vendor/yiisoft
+ln -s ../../../openeyes/protected/yii/ yii
+cd /var/www/behat
 
 
-# run composer to get behat dependencies
+# download and run composer to get behat dependencies
 
 curl https://getcomposer.org/composer.phar -o composer.phar
-chmod +x composer.phar
-mv composer.phar /usr/bin/composer
-composer install
+chmod 777 composer.phar
+cp composer.phar /usr/bin/composer
+mv composer.phar composer
+sudo -u vagrant -s composer update
+
+# composer does not generate the correct behat executable  - replace it with our own
+mv /var/www/behat/bin/behat /var/www/behat/bin/behat-old
+cp /vagrant/install/behat /var/www/behat/bin/
 
 
 # download chrome and firefox
 
-apt-get install -y xorg jwm firefox
+apt-get install -y --force-yes xorg jwm firefox
 
-#wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-#sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
-wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+# wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+# sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
 apt-get update
 apt-get install -y google-chrome-stable
 
