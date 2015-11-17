@@ -6,8 +6,6 @@ set -e
 
 # Verify we are running as root
 
-FILE="/tmp/out.$$"
-GREP="/bin/grep"
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
@@ -32,9 +30,8 @@ cd /var/www/grunt
 cp /vagrant/install/package.json .
 cp /vagrant/install/Gruntfile.js .
 
-
+cd /var/www/grunt
 apt-get -y install nodejs npm ruby-dev ruby-compass
-ln -s /usr/bin/nodejs /usr/bin/node
 sudo npm update -g npm
 sudo npm install grunt --save-dev
 sudo npm install -g grunt-cli
@@ -45,7 +42,7 @@ sudo gem install compass --no-ri --no-rdoc
 
 
 # install ant
-apt-get -y ant
+apt-get install -y ant
 
 
 echo --------------------------------------------------
