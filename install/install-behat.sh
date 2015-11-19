@@ -14,12 +14,15 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 
-# Verify we are on the Ubuntu VM
+# Verify we are on the Ubuntu VM or AWS
 
-hostname=`uname -n`
-if [[ $hostname != "OpenEyesVM" ]]; then
-  echo You must run this script on the virtual box
-  exit 1
+user="vagrant"
+if [ `grep -c '^vagrant:' /etc/passwd` = 0 ]; then
+  user="ubuntu"
+  if [ `grep -c '^ubuntu:' /etc/passwd` = 0 ]; then
+    echo You must run this script on the Virtual Machine or AWS instance
+    exit 1
+  fi
 fi
 
 
@@ -52,7 +55,7 @@ curl https://getcomposer.org/composer.phar -o composer.phar
 chmod 777 composer.phar
 cp composer.phar /usr/bin/composer
 mv composer.phar composer
-sudo -u vagrant -s composer update
+sudo -u $user -s composer update
 
 # composer does not generate the correct behat executable  - replace it with our own
 mv /var/www/behat/bin/behat /var/www/behat/bin/behat-old
@@ -87,7 +90,7 @@ cp /vagrant/install/start-selenium-server.sh /var/www/behat
 
 
 # Link JWM window manager to X
-echo "exec /usr/bin/jwm" > /home/vagrant/.xsession
+echo "exec /usr/bin/jwm" > /home/$user/.xsession
 
 
 # Clean out some irrelevant files

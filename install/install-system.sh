@@ -31,7 +31,7 @@ apt-get -y update
 echo Installing required system packages
 debconf-set-selections <<< 'mysql-server mysql-server/root_password password password'
 debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password password'
-apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mysql-server mysql-client debconf-utils unzip xfonts-75dpi default-jre npm fam openjdk-7-jdk 
+apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mysql-server mysql-client debconf-utils unzip xfonts-75dpi default-jre npm fam openjdk-7-jdk xfonts-base ruby
 
 
 # wkhtmltox is now bundled in the repository. Original download location is:
@@ -52,8 +52,7 @@ cp /vagrant/install/fam.so /usr/lib/php5/20121212/
 
 
 a2enmod rewrite
-cp /vagrant/install/bashrc /home/vagrant/.bashrc
-hostname OpenEyesVM
+cp /vagrant/install/bashrc /etc/bash.bashrc
 source /vagrant/install/bashrc
 
 
