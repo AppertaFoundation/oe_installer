@@ -11,7 +11,7 @@ function gitbranch {
   fi
 }
 
-source /etc/openeyes
+source /etc/openeyes/modules.conf
 
 dir=$PWD
 cd /var/www/openeyes/protected/modules
@@ -20,9 +20,22 @@ for module in ${modules[@]}; do
 
   b="$(gitbranch)"
   if [ ! "$module" = "openeyes" ]; then cd ..; fi
-  printf "\e[31m%-20s\e[39m-- $module\n" $b
+  printf "\e[32m%-20s\e[39m-- $module\n" $b
 done
+
+echo Java modules:
+cd  /var/www/openeyes/protected/javamodules/
+for module in ${javamodules[@]}; do
+  if [ ! -d "$module" ]; then
+    printf "\e[31mModule $module not found\e[0m\n"
+  else
+    cd $module
+    b="$(gitbranch)"
+    cd ..
+    printf "\e[32m%-20s\e[39m-- $module\n" $b
+  fi
+done
+
 printf "Done\n\n"
 cd $dir
-
 

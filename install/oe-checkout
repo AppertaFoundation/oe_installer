@@ -1,11 +1,12 @@
 #!/bin/bash
 
 if [[ -z "$1" ]] ; then
-  echo "usage: $0 <branch>"
+  echo "usage: $0 <branch> [-f]"
+  echo "-f forces the checkout, even if local changes are uncommitted"
   exit 1
 fi
 
-source /etc/openeyes
+source /etc/openeyes/modules.conf
 dir=$PWD
 
 #  If -f was not specified on the command line, then check each module
@@ -25,25 +26,108 @@ if [ ! "$2" = "-f" ]; then
     if [ ! "$module" = "openeyes" ]; then cd ..; fi
   done
 
+  cd  /var/www/openeyes/protected/javamodules/
+  for module in ${javamodules[@]}; do
+    cd $module;
+    git diff --quiet
+    if [ ! $? = 0 ]; then
+      changes=1
+      modulelist="$modulelist $module"
+    fi
+    cd ..
+  done
+
+  #  If we have unstaged changes, then abort and  warn which modules are affected
   if [ "$changes" = "1" ]; then
+    printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n"
     echo "There are uncommitted changes in the following modules: $modulelist"
-    echo "To ignore these changes, run: $0 $1 -f"
-    echo "Alternatively, git reset --hard to ignore, or git stash to keep, etc"
+    printf "To ignore these changes, run: \e[1m $0 $1 -f \e[0m \n"
+    echo "Alternatively, manually git reset --hard to ignore, or git stash to keep, etc"
+    printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n";
+    echo ""
     exit 1
   fi
 fi
 
+
+# Check out the PHP modules
+
 cd /var/www/openeyes/protected/modules
 for module in ${modules[@]}; do
-  if [ ! "$module" = "openeyes" ]; then cd $module; fi
-  git reset --hard
-  git checkout tags/$1 2>/dev/null
-  if [ ! $? = 0 ]; then
-    git checkout $1 2>/dev/null
+  if [ ! "$module" = "openeyes" ] && [ ! -d "$module" ]; then
+    printf "\e[31mModule $module not found\e[0m\n"
+  else
+    if [ ! "$module" = "openeyes" ]; then cd $module; fi
+    printf "\e[32m$module: \e[0m"
+    git reset --hard
+    git fetch --all
+    git checkout tags/$1 2>/dev/null
+    if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
+    if [ ! "$module" = "openeyes" ]; then cd ..; fi
   fi
-  if [ ! "$module" = "openeyes" ]; then cd ..; fi
 done
+
+# Check out the Java modules
+
+cd /var/www/openeyes/protected/javamodules
+for module in ${javamodules[@]}; do
+  if [ ! -d "$module" ]; then
+    printf "\e[31mModule $module not found\e[0m\n"
+  else 
+    cd $module
+    git reset --hard
+    git fetch --all
+    git checkout tags/$1 2>/dev/null
+    if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
+    cd ..
+  fi
+done
+
+
+
+# Now reset various config files
+cd /var/www/openeyes
+if [ -f ".htaccess.sample" ]; then
+echo Renaming .htaccess file
+mv .htaccess.sample .htaccess
+chown -R www-data:www-data .htaccess
+fi
+
+if [ -f "index.example.php" ]; then
+echo Renaming index.php file
+mv index.example.php index.php
+chown -R www-data:www-data index.php
+fi
+
+if [ ! -d "protected/config/local" ]; then
+echo "Using new db config files"
+mkdir -p protected/config/local
+cp /etc/openeyes/common.php protected/config/local/
+cp /etc/openeyes/console.php protected/config/local/
+chown -R www-data:www-data protected/config/local
+chmod -R 775 protected/config/local
+fi;
+
+# Make sure yii framework found/linked
+if [ ! -d "/var/www/openeyes/vendor/yiisoft/yii" ]; then
+  if [ ! -h "/var/www/openeyes/vendor/yiisoft/yii" ]; then
+    echo Linking Yii framework
+    mkdir -p /var/www/openeyes/vendor/yiisoft
+    chown -R www-data:www-data /var/www/openeyes/vendor
+    ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
+  fi
+fi
+
+# Make sure vendor directory found/linked
+if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
+echo Linking vendor framework
+ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
+chown -R www-data:www-data /var/www/openeyes/protected/vendors
+fi
+
 cd $dir
+printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
 oe-which
-echo If you need to run the migrations, run oe-migrate
+echo If you need to run the database migrations, run oe-migrate
 echo ""
+
