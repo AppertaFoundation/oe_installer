@@ -20,6 +20,11 @@ cd openeyes/protected
 unzip yii.zip
 unzip vendors.zip
 
+# keep a copy of these zips around in case we checkout an older branch that does not include them
+mkdir -p /usr/lib/openeyes
+cp yii.zip /usr/lib/openeyes
+cp vendors.zip /usr/lib/openeyes
+
 
 echo Installing OpenEyes modules
 branch=master
@@ -39,6 +44,12 @@ git clone https://github.com/openeyes/OphTrLaser.git OphTrLaser -b $branch
 git clone https://github.com/openeyes/OphTrOperationbooking.git OphTrOperationbooking -b $branch
 git clone https://github.com/openeyes/OphTrOperationnote.git OphTrOperationnote -b $branch
 git clone https://github.com/openeyes/PatientTicketing.git PatientTicketing -b $branch
+
+if [ ! -d "/var/www/openeyes/protected/javamodules" ]; then
+  mkdir -p /var/www/openeyes/protected/javamodules
+fi
+cd /var/www/openeyes/protected/javamodules
+git clone https://github.com/openeyes/IOLMasterImport.git IOLMasterImport -b $branch
 
 
 mkdir /var/www/openeyes/protected/runtime
@@ -103,11 +114,20 @@ apache2ctl restart
 
 # copy our commands to /usr/bin
 cp /vagrant/install/oe-* /usr/bin
-cp /vagrant/install/etc-openeyes /etc/openeyes
 
+# copy our new configs to /etc/openeyes
+mkdir /etc/openeyes
+cp /vagrant/install/etc/openeyes/* /etc/openeyes/
 cp /vagrant/install/bashrc /etc/bash.bashrc
-hostname OpenEyesVM
 
+# The default environment type is assumed to be DEV/AWS.
+# If we are on a vagrant box, set it to DEV/VAGRANT
+# For live systems, /etc/openeyes/env.conf will have to be edited manually
+
+if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
+  hostname OpenEyesVM
+  sed -i "s/envtype=AWS/envtype=VAGRANT" /etc/openeyes/env.conf
+fi
 
 echo --------------------------------------------------
 echo OPENEYES SOFTWARE INSTALLED
