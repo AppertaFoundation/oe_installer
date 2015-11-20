@@ -55,7 +55,7 @@ curl https://getcomposer.org/composer.phar -o composer.phar
 chmod 777 composer.phar
 cp composer.phar /usr/bin/composer
 mv composer.phar composer
-sudo -u $user -s composer update
+sudo composer update
 
 # composer does not generate the correct behat executable  - replace it with our own
 mv /var/www/behat/bin/behat /var/www/behat/bin/behat-old
@@ -96,6 +96,12 @@ echo "exec /usr/bin/jwm" > /home/$user/.xsession
 # Clean out some irrelevant files
 rm LICENSE *.md
 chmod +x start-selenium-server.sh 
+
+
+# Reset file permissions and ownership in behat directory
+cd /var/www/behat
+chmod -R 755 *
+chown -R $user *
 
 
 echo --------------------------------------------------
