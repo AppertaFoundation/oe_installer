@@ -109,6 +109,7 @@ $config = array(
 		'OphTrLaser',
 		'PatientTicketing' => array( 'class' => '\OEModule\PatientTicketing\PatientTicketingModule', ),
 		'OphInVisualfields',
+		'OphInBiometry',
 	),
 
 	'params'=>array(
