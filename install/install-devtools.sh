@@ -5,19 +5,9 @@ set -e
 
 
 # Verify we are running as root
-
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
-fi
-
-
-# Verify we are on the Ubuntu VM
-
-hostname=`uname -n`
-if [[ $hostname != "OpenEyesVM" ]]; then
-  echo You must run this script on the virtual box
-  exit 1
 fi
 
 
