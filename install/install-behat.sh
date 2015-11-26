@@ -61,8 +61,6 @@ cp /vagrant/install/behat /var/www/behat/bin/
 
 apt-get install -y --force-yes xorg jwm firefox
 
-# wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-# sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
 apt-get update
@@ -96,7 +94,10 @@ chmod +x start-selenium-server.sh
 # Reset file permissions and ownership in behat directory
 cd /var/www/behat
 chmod -R 755 *
-chown -R $user *
+if [ ! "$user" = "vagrant"]; then
+  cd /var/www/behat
+  chown -R www-data:www-data *
+fi
 
 
 echo --------------------------------------------------

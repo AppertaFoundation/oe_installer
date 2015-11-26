@@ -15,7 +15,7 @@ cd /var/www
 # TODO: if openeyes dir exists, delete it
 
 
-git clone -b feature/install https://github.com/openeyes/OpenEyes.git openeyes 
+git clone -b develop https://github.com/openeyes/OpenEyes.git openeyes 
 cd openeyes/protected
 unzip yii.zip
 unzip vendors.zip
@@ -24,6 +24,9 @@ unzip vendors.zip
 mkdir -p /usr/lib/openeyes
 cp yii.zip /usr/lib/openeyes
 cp vendors.zip /usr/lib/openeyes
+cd /usr/lib/openeyes
+unzip yii.zip
+unzip vendors.zip
 
 
 echo Installing OpenEyes modules
@@ -126,8 +129,21 @@ cp /vagrant/install/bashrc /etc/bash.bashrc
 
 if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   hostname OpenEyesVM
-  sed -i "s/envtype=AWS/envtype=VAGRANT" /etc/openeyes/env.conf
+  sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
+  cp /vagrant/install/bashrc /home/vagrant/.bashrc
 fi
+
+
+# Copy DICOM related files in place as required
+cp /vagrant/install/dicom-file-watcher.conf /etc/init
+cp /vagrant/install/dicom /etc/cron.d/
+
+useradd iolmaster -s /bin/false -m
+mkdir /home/iolmaster/test
+mkdir /home/iolmaster/incoming
+chown iolmaster:www-data *
+chmod 775 /home/iolmaster/*
+
 
 echo --------------------------------------------------
 echo OPENEYES SOFTWARE INSTALLED
