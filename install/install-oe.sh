@@ -134,6 +134,17 @@ if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
 fi
 
 
+# Copy DICOM related files in place as required
+cp /vagrant/install/dicom-file-watcher.conf /etc/init
+cp /vagrant/install/dicom /etc/cron.d/
+
+useradd iolmaster -s /bin/false -m
+mkdir /home/iolmaster/test
+mkdir /home/iolmaster/incoming
+chown iolmaster:www-data *
+chmod 775 /home/iolmaster/*
+
+
 echo --------------------------------------------------
 echo OPENEYES SOFTWARE INSTALLED
 echo Please check previous messages for any errors
