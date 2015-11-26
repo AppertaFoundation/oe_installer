@@ -1,13 +1,10 @@
 #!/bin/bash
 
-# Terminate on nay failed commands
+# Terminate on any failed commands
 set -e
 
 
 # Verify we are running as root
-
-FILE="/tmp/out.$$"
-GREP="/bin/grep"
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
@@ -15,7 +12,6 @@ fi
 
 
 # Verify we are on the Ubuntu VM or AWS
-
 user="vagrant"
 if [ `grep -c '^vagrant:' /etc/passwd` = 0 ]; then
   user="ubuntu"
@@ -27,7 +23,6 @@ fi
 
 
 # Get behat
-
 cd /vagrant/install
 rm -rf /var/www/behat
 git clone git://github.com/Behat/Behat.git /var/www/behat 
