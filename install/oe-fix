@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Reset various config files
+
+source /etc/openeyes/env.conf
+
+cd /var/www/openeyes
+if [ -f ".htaccess.sample" ]; then
+echo Renaming .htaccess file
+mv .htaccess.sample .htaccess
+if [ ! "$env" = "VAGRANT" ]; then chown -R www-data:www-data .htaccess; fi
+fi
+
+if [ -f "index.example.php" ]; then
+echo Renaming index.php file
+mv index.example.php index.php
+if [ ! "$env" = "VAGRANT" ]; then chown -R www-data:www-data index.php; fi
+fi
+
+if [ ! -d "protected/config/local" ]; then
+echo "Using new db config files"
+mkdir -p protected/config/local
+cp /etc/openeyes/common.php protected/config/local/
+cp /etc/openeyes/console.php protected/config/local/
+if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data protected/config/local; fi
+chmod -R 775 protected/config/local
+fi;
+
+# Make sure yii framework found/linked
+if [ ! -d "/var/www/openeyes/vendor/yiisoft/yii" ]; then
+  if [ ! -h "/var/www/openeyes/vendor/yiisoft/yii" ]; then
+    echo Linking Yii framework
+    mkdir -p /var/www/openeyes/vendor/yiisoft
+    if [ ! "$envtype" = "VAGRANT" ]; chown -R www-data:www-data /var/www/openeyes/vendor; fi
+    ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
+  fi
+fi
+
+# Make sure vendor directory found/linked
+if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
+echo Linking vendor framework
+ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
+chown -R www-data:www-data /var/www/openeyes/protected/vendors
+fi
+
+echo oe-fix completed.
