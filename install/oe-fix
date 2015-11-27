@@ -31,7 +31,7 @@ if [ ! -d "/var/www/openeyes/vendor/yiisoft/yii" ]; then
   if [ ! -h "/var/www/openeyes/vendor/yiisoft/yii" ]; then
     echo Linking Yii framework
     mkdir -p /var/www/openeyes/vendor/yiisoft
-    if [ ! "$envtype" = "VAGRANT" ]; chown -R www-data:www-data /var/www/openeyes/vendor; fi
+    if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data /var/www/openeyes/vendor; fi
     ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
   fi
 fi
@@ -43,4 +43,3 @@ ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
 chown -R www-data:www-data /var/www/openeyes/protected/vendors
 fi
 
-echo oe-fix completed.
