@@ -143,7 +143,7 @@ chmod +x /var/www/openeyes/protected/cli_commands/file_watcher/run.sh
 useradd iolmaster -s /bin/false -m
 mkdir /home/iolmaster/test
 mkdir /home/iolmaster/incoming
-chown iolmaster:www-data *
+chown iolmaster:www-data /home/iolmaster/*
 chmod 775 /home/iolmaster/*
 
 
