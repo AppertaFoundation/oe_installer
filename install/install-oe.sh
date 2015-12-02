@@ -15,7 +15,7 @@ cd /var/www
 # TODO: if openeyes dir exists, delete it
 
 
-git clone -b iolmaster https://github.com/openeyes/OpenEyes.git openeyes 
+git clone -b feature/IOLMaster https://github.com/openeyes/OpenEyes.git openeyes 
 cd openeyes/protected
 unzip yii.zip
 unzip vendors.zip

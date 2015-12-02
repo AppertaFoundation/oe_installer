@@ -29,9 +29,10 @@ apt-get -y update
 
 
 echo Installing required system packages
-debconf-set-selections <<< 'mysql-server mysql-server/root_password password password'
-debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password password'
-apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mysql-server mysql-client debconf-utils unzip xfonts-75dpi default-jre npm fam libfam-dev openjdk-7-jdk xfonts-base ruby
+export DEBIAN_FRONTEND=noninteractive
+debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password password password'
+debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again password password'
+apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre npm fam libfam-dev openjdk-7-jdk xfonts-base ruby
 
 
 # wkhtmltox is now bundled in the repository. Original download location is:
