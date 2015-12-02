@@ -15,6 +15,7 @@ for module in ${modules[@]}; do
   else
     if [ ! "$module" = "openeyes" ]; then cd $module; fi
     printf "\e[32m$module: \e[0m"
+    if [ "$1" = "-f" ]; then git reset --hard; fi
     git pull
     if [ ! "$module" = "openeyes" ]; then cd ..; fi
   fi
