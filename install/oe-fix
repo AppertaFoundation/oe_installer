@@ -42,4 +42,3 @@ echo Linking vendor framework
 ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
 chown -R www-data:www-data /var/www/openeyes/protected/vendors
 fi
-
