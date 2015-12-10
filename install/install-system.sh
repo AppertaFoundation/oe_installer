@@ -52,16 +52,18 @@ sed -i "s/^local_only = true/local_only = false/" /etc/fam.conf
 cp /vagrant/install/fam.so /usr/lib/php5/20121212/
 
 
-# Enable display_errors and error logging for php
+# Enable display_errors and error logging for PHP, plus configure timezone
 mkdir /var/log/php
 chown www-data /var/log/php
 sed -i "s/^display_errors = Off/display_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/^display_startup_errors = Off/display_startup_errors = On/" /etc/php5/apache2/php.ini
+sed -i "s/^;date.timezone =/date.timezone = "Europe\/London" /etc/php5/apache2/php.ini
+
 sed -i "s/;error_log = php_errors.log/error_log = \/var\/log\/php_errors.log/" /etc/php5/apache2/php.ini
 sed -i "s/^display_errors = Off/display_errors = On/" /etc/php5/cli/php.ini
 sed -i "s/^display_startup_errors = Off/display_startup_errors = On/" /etc/php5/cli/php.ini
 sed -i "s/;error_log = php_errors.log/error_log = \/var\/log\/php_errors.log/" /etc/php5/cli/php.ini
-
+sed -i "s/^;date.timezone =/date.timezone = "Europe\/London" /etc/php5/cli/php.ini
 
 a2enmod rewrite
 cp /vagrant/install/bashrc /etc/bash.bashrc
