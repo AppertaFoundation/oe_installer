@@ -94,7 +94,7 @@ chmod +x start-selenium-server.sh
 # Reset file permissions and ownership in behat directory
 cd /var/www/behat
 chmod -R 755 *
-if [ ! "$user" = "vagrant"]; then
+if [ ! "$user" = "vagrant" ]; then
   cd /var/www/behat
   chown -R www-data:www-data *
 fi
