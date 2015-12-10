@@ -32,7 +32,7 @@ echo Installing required system packages
 export DEBIAN_FRONTEND=noninteractive
 debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password password password'
 debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again password password'
-apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre npm fam libfam-dev openjdk-7-jdk xfonts-base ruby
+apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre npm libgamin0 gamin openjdk-7-jdk xfonts-base ruby
 
 
 # wkhtmltox is now bundled in the repository. Original download location is:
@@ -48,7 +48,6 @@ ln -s /usr/bin/nodejs /usr/bin/node
 #  Install pre-compiled FAM module and configure PHP to use it
 sed -i "s/;   extension=msql.so/extension=fam.so/" /etc/php5/apache2/php.ini
 sed -i "s/;   extension=msql.so/extension=fam.so/" /etc/php5/cli/php.ini
-sed -i "s/^local_only = true/local_only = false/" /etc/fam.conf
 cp /vagrant/install/fam.so /usr/lib/php5/20121212/
 
 
