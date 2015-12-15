@@ -18,10 +18,9 @@ if [ ! "$env" = "VAGRANT" ]; then chown -R www-data:www-data index.php; fi
 fi
 
 if [ ! -d "protected/config/local" ]; then
-echo "Using new db config files"
-mkdir -p protected/config/local
-cp /etc/openeyes/common.php protected/config/local/
-cp /etc/openeyes/console.php protected/config/local/
+echo "WARNING: this code branch uses db settings from common.php, not /etc/openeyes"
+mv protected/config/local.sample protected/config/local
+mv protected/config/local/common.sample.php protected/config/local/common.php
 if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data protected/config/local; fi
 chmod -R 775 protected/config/local
 fi;
