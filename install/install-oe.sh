@@ -55,11 +55,12 @@ cd /var/www/openeyes/protected/javamodules
 git clone https://github.com/openeyes/IOLMasterImport.git IOLMasterImport -b $branch
 
 
-mkdir /var/www/openeyes/protected/runtime
-mkdir /var/www/openeyes/cache
-mkdir /var/www/openeyes/protected/cache
-chmod 777 /var/www/openeyes/assets
+mkdir -p /var/www/openeyes/cache
+mkdir -p /var/www/openeyes/assets
+mkdir -p /var/www/openeyes/protected/cache
+mkdir -p /var/www/openeyes/protected/runtime
 chmod 777 /var/www/openeyes/cache
+chmod 777 /var/www/openeyes/assets
 chmod 777 /var/www/openeyes/protected/cache
 chmod 777 /var/www/openeyes/protected/runtime
 
