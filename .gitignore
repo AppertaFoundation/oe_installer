@@ -1,5 +1,4 @@
-.gitignore
 .DS_Store
-www
 .vagrant
-
+npm-debug.log
+www
