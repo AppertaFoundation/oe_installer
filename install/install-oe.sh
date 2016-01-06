@@ -136,10 +136,10 @@ fi
 
 
 # Copy DICOM related files in place as required
-cp /vagrant/install/dicom-file-watcher.conf /etc/init
+cp /vagrant/install/dicom-file-watcher.conf /etc/init/
 cp /vagrant/install/dicom /etc/cron.d/
-
-chmod +x /var/www/openeyes/protected/cli_commands/file_watcher/run.sh
+cp /vagrant/install/run-dicom-service.sh /usr/local/bin
+chmod +x /usr/local/bin/run-dicom-service.sh
 
 useradd iolmaster -s /bin/false -m
 mkdir /home/iolmaster/test
