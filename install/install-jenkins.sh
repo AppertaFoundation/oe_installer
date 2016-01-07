@@ -29,6 +29,13 @@ apt-get update
 apt-get install -y jenkins
 
 
+# Add the jenkins user to sudoers and make jenkins/www-data the owner/group for web files
+
+adduser jenkins sudo
+chown -R jenkins:www-data /var/www/openeyes/*
+ 
+
+
 echo --------------------------------------------------
 echo JENKINS INSTALLED
 echo Please check previous messages for any errors

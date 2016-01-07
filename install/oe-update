@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git config core.fileMode false
+
 source /etc/openeyes/modules.conf
 dir=$PWD
 
@@ -39,7 +41,7 @@ done
 oe-fix
 
 
-cd $dir
+cd "$dir"
 printf "\e[42m\e[97m  UPDATE COMPLETE  \e[0m \n"
 oe-which
 echo ""

@@ -3,4 +3,4 @@ dir=$PWD
 cd /var/www/openeyes/protected
 ./yiic migrate --interactive=0
 ./yiic migratemodules --interactive=0
-cd $dir 
+cd "$dir" 

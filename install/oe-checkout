@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git config core.fileMode false
+
 if [[ -z "$1" ]] ; then
   echo "usage: $0 <branch> [-f]"
   echo "-f forces the checkout, even if local changes are uncommitted"
@@ -88,7 +90,7 @@ done
 oe-fix
 
 
-cd $dir
+cd "$dir"
 printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
 oe-which
 echo If you need to run the database migrations, run oe-migrate
