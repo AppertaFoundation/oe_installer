@@ -83,9 +83,9 @@ rm /tmp/openeyes-mysql-create.sql
 
 echo Downloading database
 cd /var/www/openeyes/protected/modules
-git clone -b release/v1.11 https://github.com/openeyes/Sample.git sample
+git clone -b release/v1.11.2 https://github.com/openeyes/Sample.git sample
 cd sample/sql
-mysql -uopeneyes "-popeneyes" -D openeyes < openeyes_testdata.sql
+mysql -uopeneyes "-popeneyes" -D openeyes < openeyes_sample_data.sql
 
 
 echo Performing database migrations
