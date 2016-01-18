@@ -3,6 +3,7 @@
 # Terminate if any command fails
 set -e
 
+
 # Verify we are running as root
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
@@ -67,6 +68,8 @@ if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   chown -R www-data:www-data /var/www/*
 fi
 
+
+if [ ! "$1" == "--live" ]; then
 echo Creating blank database
 cd $installdir
 
@@ -86,6 +89,7 @@ cd /var/www/openeyes/protected/modules
 git clone -b release/v1.11.2 https://github.com/openeyes/Sample.git sample
 cd sample/sql
 mysql -uopeneyes "-popeneyes" -D openeyes < openeyes_sample_data.sql
+fi
 
 
 echo Performing database migrations
@@ -95,6 +99,7 @@ cd /var/www/openeyes/protected
 ./yiic migratemodules --interactive=0
 
 
+if [ ! "$1" == "--live" ]; then
 echo Configuring Apache
 
 echo "
@@ -116,6 +121,7 @@ CustomLog /var/log/apache2/access.log combined
 " > /etc/apache2/sites-available/000-default.conf
 
 apache2ctl restart
+fi
 
 
 # copy our commands to /usr/bin
@@ -134,6 +140,15 @@ if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   hostname OpenEyesVM
   sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
   cp /vagrant/install/bashrc /home/vagrant/.bashrc
+fi
+
+if [ "$1" == "--live" ]; then
+echo "# env can be one of DEV or LIVE
+# envtype can be one of LIVE, AWS or VAGRANT
+
+env=LIVE
+envtype=LIVE
+" >/etc/openeyes/env.conf
 fi
 
 
