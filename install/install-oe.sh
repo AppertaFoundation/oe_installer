@@ -64,7 +64,7 @@ chmod 777 /var/www/openeyes/cache
 chmod 777 /var/www/openeyes/assets
 chmod 777 /var/www/openeyes/protected/cache
 chmod 777 /var/www/openeyes/protected/runtime
-if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
+if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   chown -R www-data:www-data /var/www/*
 fi
 
