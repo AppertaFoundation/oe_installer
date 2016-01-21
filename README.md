@@ -3,12 +3,13 @@
 This repository should be the only one checked out when building a new OpenEyes machine instance.
 
 **Index:**
-1. [Installing for Development - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox
-  * [Installing for Mac OS X 10.6 or later](#installing-for-mac-os-x-106-or-later)
-  * [Installing for Windows 7 or later](#installing-for-windows-7-or-later)
-  * [Default development tools](#default-development-tools)
-  * [Additional development tools](#additional-development-tools)
-2. [Installing for Live/Production use](#installing-for-live-use)
+
+  1. [Installing for Development - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox
+    * [Installing for Mac OS X 10.6 or later](#installing-for-mac-os-x-106-or-later)
+    * [Installing for Windows 7 or later](#installing-for-windows-7-or-later)
+    * [Default development tools](#default-development-tools)
+    * [Additional development tools](#additional-development-tools)
+  2. [Installing for Live/Production use](#installing-for-live-use)
 
 ## Installing for Development (using Vagrant and VirtualBox)
 
