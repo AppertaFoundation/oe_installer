@@ -2,6 +2,14 @@
 
 This repository should be the only one checked out when building a new OpenEyes machine instance.
 
+**Index:**
+1. [#installing-for-development-using-vagrant-and-virtualbox](Installing for Development - using Vagrant and Virtual Box)
+  * [#installing-for-mac-os-x-106-or-later](Installing for Mac OS X 10.6 or later)
+  * [#installing-for-windows-7-or-later](Installing for Windows 7 or later)
+  * [#default-development-tools](Default development tools)
+  * [#additional-development-tools](Additional development tools)
+2. [#installing-for-live-use](Installing for Live/Production use)
+
 ## Installing for Development (using Vagrant and VirtualBox)
 
 The default development setup uses a Mac OSX (preferred) or Windows host, and runs a virtual server provided by VirtualBox and 
@@ -40,7 +48,7 @@ sudo /vagrant/install/install-oe.sh
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100
-You can follow the sections below on Default development tools and Additional development tools should you need them.
+You can follow the sections below on [#default-development-tools](Default development tools) and [#additional-development-tools](Additional development tools) should you need them.
 
 #### Installing for Windows 7 or later
 
@@ -70,7 +78,7 @@ sudo /vagrant/install/install-oe.sh
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
-You can follow the sections below on Default development tools and Additional development tools should you need them.
+You can follow the sections below on [#default-development-toolsDefault](development tools) and [#additional-development-tools](Additional development tools) should you need them.
 
 
 ##### Additional concerns for Windows users
