@@ -76,7 +76,7 @@ cd $installdir
 echo "
 drop database if exists openeyes;
 create database openeyes;
-grant all privileges on openeyes.* to openeyes@localhost identified by 'openeyes';
+grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
 flush privileges;
 " > /tmp/openeyes-mysql-create.sql
 
