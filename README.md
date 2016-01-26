@@ -2,6 +2,15 @@
 
 This repository should be the only one checked out when building a new OpenEyes machine instance.
 
+**Index:**
+
+  1. [Installing for Development - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox)
+    * [Installing for Mac OS X 10.6 or later](#installing-for-mac-os-x-106-or-later)
+    * [Installing for Windows 7 or later](#installing-for-windows-7-or-later)
+    * [Default development tools](#default-development-tools)
+    * [Additional development tools](#additional-development-tools)
+  2. [Installing for Live/Production use](#installing-for-live-use)
+
 ## Installing for Development (using Vagrant and VirtualBox)
 
 The default development setup uses a Mac OSX (preferred) or Windows host, and runs a virtual server provided by VirtualBox and 
@@ -14,7 +23,7 @@ managed/setup by Vagrant. Vagrant is not essential (see live use setup below) bu
 + Forwards port 3333 on the host to port 3306 on the VM (for host access to the VM's MySQL database)
 
 
-### Installing for Mac OS X 10.6 or later
+#### Installing for Mac OS X 10.6 or later
 
 <b>NOTE:</b> These instructions assume you are installing in to a directory called ~/openeyes on the host. You may change this path as you see fit.
 
@@ -40,6 +49,50 @@ sudo /vagrant/install/install-oe.sh
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100
+You can follow the sections below on [Default development tools](#default-development-tools) and [Additional development tools](#additional-development-tools) should you need them.
+
+#### Installing for Windows 7 or later
+
+<b>NOTE:</b> These instructions assume you are installing in to a directory called C:\openeyes on the host. You may change this 
+path as you see fit. However, please note that Windows struggles with filenames longer than 275 characters on file shares, so
+keep this path below 30 characters. You can map a longer pathname to a drive letter using the subst command.
+
+Software required:
+
+1. Vagrant: https://www.vagrantup.com/downloads.html
+2. VirtualBox: https://www.virtualbox.org/wiki/Downloads
+3. Git: https://git-scm.com/downloads
+
+
+<pre>
+1. Install Vagrant, VirtualBox and Git as listed above.
+2. From a terminal window, change to your home directory. Run: cd c:\
+3. Clone OpenEyes/oe_installer to a directory of your choice. Run: git clone https://github.com/openeyes/oe_installer.git c:\openeyes
+4. Create the virtual server from your project directory. Run: vagrant up
+4. Once built (approx. 5 minutes), run: vagrant ssh
+5. From within the vagrant box, run the following commands:
+
+sudo /vagrant/install/install-system.sh
+
+sudo /vagrant/install/install-oe.sh
+
+</pre>
+
+At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
+You can follow the sections below on [Default development tools](#default-development-tools) and [Additional development tools](#additional-development-tools) should you need them.
+
+
+##### Additional concerns for Windows users
+
+File shares under VirtualBox are pretty slow in version 5. You can try swapping to Version 4.3.x (any version between these two does not seem to work).
+If you find the command prompt very slow on the virtual machine, you can remove the coloured command prompt (which displays the current branch if you
+are in a git repository directory). To remove this, edit the /etc/bash.bashrc file and add the second PS1 line (shown below) at the end:
+<pre>
+PS1="\e[0m\n\e[44m\e[97m \u@\h \e[41m\$(gitbranch)\e[0m\n\w>"
+PS1="u@\h\n\w>"
+</pre>
+
+Note that changes only take effect on subsequent logins.
 
 ### Default development tools
 
@@ -72,50 +125,6 @@ VM run the following command:
 <pre>
   sudo /vagrant/install/install-jenkins.sh
 </pre>
-
-
-### Installing for Windows 7 or later
-
-<b>NOTE:</b> These instructions assume you are installing in to a directory called C:\openeyes on the host. You may change this 
-path as you see fit. However, please note that Windows struggles with filenames longer than 275 characters on file shares, so
-keep this path below 30 characters. You can map a longer pathname to a drive letter using the subst command.
-
-Software required:
-
-1. Vagrant: https://www.vagrantup.com/downloads.html
-2. VirtualBox: https://www.virtualbox.org/wiki/Downloads
-3. Git: https://git-scm.com/downloads
-
-
-<pre>
-1. Install Vagrant, VirtualBox and Git as listed above.
-2. From a terminal window, change to your home directory. Run: cd c:\
-3. Clone OpenEyes/oe_installer to a directory of your choice. Run: git clone https://github.com/openeyes/oe_installer.git c:\openeyes
-4. Create the virtual server from your project directory. Run: vagrant up
-4. Once built (approx. 5 minutes), run: vagrant ssh
-5. From within the vagrant box, run the following commands:
-
-sudo /vagrant/install/install-system.sh
-
-sudo /vagrant/install/install-oe.sh
-
-</pre>
-
-At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
-You can follow the sections above on Default development tools and Additional development tools.
-
-
-### Additional concerns for Windows users
-
-File shares under VirtualBox are pretty slow in version 5. You can try swapping to Version 4.3.x (any version between these two does not seem to work).
-If you find the command prompt very slow on the virtual machine, you can remove the coloured command prompt (which displays the current branch if you
-are in a git repository directory). To remove this, edit the /etc/bash.bashrc file and add the second PS1 line (shown below) at the end:
-<pre>
-PS1="\e[0m\n\e[44m\e[97m \u@\h \e[41m\$(gitbranch)\e[0m\n\w>"
-PS1="u@\h\n\w>"
-</pre>
-
-Note that changes only take effect on subsequent logins.
 
 
 ## Installing for live use
