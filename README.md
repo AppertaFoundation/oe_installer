@@ -43,7 +43,7 @@ Software required:
 5. From within the vagrant box, run the following commands:
   i. sudo /vagrant/install/install-system.sh
   ii. sudo /vagrant/install/install-oe.sh
-6. Update the database using oe-migrate: see [Default development tools](#default-development-tools)
+6. Update the database using oe-migrate (see Default development tools for details)
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100
@@ -70,7 +70,7 @@ Software required:
 5. From within the vagrant box, run the following commands:
   i. sudo /vagrant/install/install-system.sh
   ii. sudo /vagrant/install/install-oe.sh
-6. Update the database using oe-migrate: see [Default development tools](#default-development-tools)
+6. Update the database using oe-migrate (see Default development tools for details)
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
