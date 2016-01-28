@@ -81,6 +81,8 @@ sudo /vagrant/install/install-oe.sh
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
 You can follow the sections below on [Default development tools](#default-development-tools) and [Additional development tools](#additional-development-tools) should you need them.
 
+Note: you will need to run oe-migrate to bring the databse up to date following the installation.
+
 
 ##### Additional concerns for Windows users
 
@@ -101,10 +103,11 @@ Several additional dev commands have been created for you in /usr/bin, to aid de
 + oe-which: tells you the current branch name for each of your code modules
 + oe-checkout: will go through each code module and try to checkout the requested branch
 + oe-update: will go through each code module and update (i.e. pull the latest) code for each
-+ oe-reset: will drop the current database and re-install it
++ oe-reset: will drop the current database and re-install it (also runs oe-migrate to bring the newly installed databas eup to date)
 + oe-migrate: performs database migrations (normally used after a change to a newer code branch)
 + oe-fix: fixes some links to yii framework and vendor libraries when switching between pre- and post-1.12 releases
 
+For example, to get the latest build and all database changes, you will need to run oe-update, followed by oe-migrate (or oe-reset). 
 
 ### Additional development tools
 
