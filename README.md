@@ -41,11 +41,9 @@ Software required:
 4. Create the virtual server from your project directory. Run: cd ~/openeyes && vagrant up
 4. Once built (approx. 5 minutes), run: vagrant ssh
 5. From within the vagrant box, run the following commands:
-
-sudo /vagrant/install/install-system.sh
-
-sudo /vagrant/install/install-oe.sh
-
+  i. sudo /vagrant/install/install-system.sh
+  ii. sudo /vagrant/install/install-oe.sh
+6. Update the database using oe-migrate: see [Default development tools](#default-development-tools)
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100
@@ -63,7 +61,6 @@ Software required:
 2. VirtualBox: https://www.virtualbox.org/wiki/Downloads
 3. Git: https://git-scm.com/downloads
 
-
 <pre>
 1. Install Vagrant, VirtualBox and Git as listed above.
 2. From a terminal window, change to your home directory. Run: cd c:\
@@ -71,18 +68,13 @@ Software required:
 4. Create the virtual server from your project directory. Run: vagrant up
 4. Once built (approx. 5 minutes), run: vagrant ssh
 5. From within the vagrant box, run the following commands:
-
-sudo /vagrant/install/install-system.sh
-
-sudo /vagrant/install/install-oe.sh
-
+  i. sudo /vagrant/install/install-system.sh
+  ii. sudo /vagrant/install/install-oe.sh
+6. Update the database using oe-migrate: see [Default development tools](#default-development-tools)
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
 You can follow the sections below on [Default development tools](#default-development-tools) and [Additional development tools](#additional-development-tools) should you need them.
-
-Note: you will need to run oe-migrate to bring the databse up to date following the installation.
-
 
 ##### Additional concerns for Windows users
 
@@ -107,7 +99,7 @@ Several additional dev commands have been created for you in /usr/bin, to aid de
 + oe-migrate: performs database migrations (normally used after a change to a newer code branch)
 + oe-fix: fixes some links to yii framework and vendor libraries when switching between pre- and post-1.12 releases
 
-For example, to get the latest build and all database changes, you will need to run oe-update, followed by oe-migrate (or oe-reset). 
+For example, to get the latest build and all database changes, you will need to run oe-update, followed by oe-migrate (or oe-reset); you will also need to remove the contents of the /var/www/openeyes/assets folder to ensure you get the latest .js files and other assets.
 
 ### Additional development tools
 
