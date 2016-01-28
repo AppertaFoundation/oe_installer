@@ -17,10 +17,12 @@ dir=$PWD
 cd /var/www/openeyes/protected/modules
 for module in ${modules[@]}; do
   if [ ! "$module" = "openeyes" ]; then cd $module; fi
-
-  b="$(gitbranch)"
-  if [ ! "$module" = "openeyes" ]; then cd ..; fi
-  printf "\e[32m%-20s\e[39m-- $module\n" $b
+	# Check if this is a git repo
+	if [ -g ".git" ]; then
+	  b="$(gitbranch)"
+	  printf "\e[32m%-20s\e[39m-- $module\n" $b
+	  if [ ! "$module" = "openeyes" ]; then cd ..; fi
+	fi
 done
 
 echo Java modules:
