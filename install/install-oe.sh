@@ -34,20 +34,20 @@ echo Installing OpenEyes modules
 branch=master
 cd /var/www/openeyes/protected/modules
 git clone https://github.com/openeyes/EyeDraw.git eyedraw -b $branch
-git clone https://github.com/openeyes/OphCiExamination.git OphCiExamination -b $branch
-git clone https://github.com/openeyes/OphCiPhasing.git OphCiPhasing -b $branch
-git clone https://github.com/openeyes/OphCoTherapyapplication.git OphCoTherapyapplication -b $branch
-git clone https://github.com/openeyes/OphCoCorrespondence.git OphCoCorrespondence -b $branch
-git clone https://github.com/openeyes/OphDrPrescription.git OphDrPrescription -b $branch
-git clone https://github.com/openeyes/OphInBiometry.git OphInBiometry -b $branch
-git clone https://github.com/openeyes/OphInVisualfields.git OphInVisualfields -b $branch
-git clone https://github.com/openeyes/OphOuAnaestheticsatisfactionaudit.git OphOuAnaestheticsatisfactionaudit -b $branch
-git clone https://github.com/openeyes/OphTrConsent.git OphTrConsent -b $branch
-git clone https://github.com/openeyes/OphTrIntravitrealinjection.git OphTrIntravitrealinjection -b $branch
-git clone https://github.com/openeyes/OphTrLaser.git OphTrLaser -b $branch
-git clone https://github.com/openeyes/OphTrOperationbooking.git OphTrOperationbooking -b $branch
-git clone https://github.com/openeyes/OphTrOperationnote.git OphTrOperationnote -b $branch
-git clone https://github.com/openeyes/PatientTicketing.git PatientTicketing -b $branch
+# git clone https://github.com/openeyes/OphCiExamination.git OphCiExamination -b $branch
+# git clone https://github.com/openeyes/OphCiPhasing.git OphCiPhasing -b $branch
+# git clone https://github.com/openeyes/OphCoTherapyapplication.git OphCoTherapyapplication -b $branch
+# git clone https://github.com/openeyes/OphCoCorrespondence.git OphCoCorrespondence -b $branch
+# git clone https://github.com/openeyes/OphDrPrescription.git OphDrPrescription -b $branch
+# git clone https://github.com/openeyes/OphInBiometry.git OphInBiometry -b $branch
+# git clone https://github.com/openeyes/OphInVisualfields.git OphInVisualfields -b $branch
+# git clone https://github.com/openeyes/OphOuAnaestheticsatisfactionaudit.git OphOuAnaestheticsatisfactionaudit -b $branch
+# git clone https://github.com/openeyes/OphTrConsent.git OphTrConsent -b $branch
+# git clone https://github.com/openeyes/OphTrIntravitrealinjection.git OphTrIntravitrealinjection -b $branch
+# git clone https://github.com/openeyes/OphTrLaser.git OphTrLaser -b $branch
+# git clone https://github.com/openeyes/OphTrOperationbooking.git OphTrOperationbooking -b $branch
+# git clone https://github.com/openeyes/OphTrOperationnote.git OphTrOperationnote -b $branch
+# git clone https://github.com/openeyes/PatientTicketing.git PatientTicketing -b $branch
 
 if [ ! -d "/var/www/openeyes/protected/javamodules" ]; then
   mkdir -p /var/www/openeyes/protected/javamodules
