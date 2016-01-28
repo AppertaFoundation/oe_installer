@@ -17,19 +17,31 @@ dir=$PWD
 if [ ! "$2" = "-f" ]; then
   changes=0
   modulelist=""
+ 
+  # Check openeyes core
+  cd /var/www/openeyes
+  git diff --quiet
+  if [ ! $? = 0 ]; then
+	  changes=1
+	  modulelist="$modulelist openeyes"
+  fi
+  
   cd /var/www/openeyes/protected/modules
   for module in ${modules[@]}; do
-    if [ ! "$module" = "openeyes" ]; then cd $module; fi
+    if [ ! -d "$module" ]; then 
+		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
+	else
+		if [ ! "$module" = "openeyes" ]; then cd $module; fi
 	
-	# check if this is a git repo
-	if [ -d ".git" ]; then		
-			git diff --quiet
-			if [ ! $? = 0 ]; then
-			  changes=1
-			  modulelist="$modulelist $module"
-			fi
+		# check if this is a git repo
+		if [ -d ".git" ]; then		
+				git diff --quiet
+				if [ ! $? = 0 ]; then
+				  changes=1
+				  modulelist="$modulelist $module"
+				fi
+		fi
 	fi
-	
 	
     if [ ! "$module" = "openeyes" ]; then cd ..; fi
   done
@@ -57,15 +69,22 @@ if [ ! "$2" = "-f" ]; then
   fi
 fi
 
+# check out openeyes core
+cd /var/www/openeyes
+printf "\e[32mopeneyes: \e[0m"
+git reset --hard
+git fetch --all
+git checkout tags/$1 2>/dev/null
+if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
 
 # Check out the PHP modules
-
 cd /var/www/openeyes/protected/modules
 for module in ${modules[@]}; do
-  if [ ! "$module" = "openeyes" ] && [ ! -d "$module" ]; then
-    printf "\e[31mModule $module not found\e[0m\n"
+  if [ ! -d "$module" ]; then 
+		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
   else
-    if [ ! "$module" = "openeyes" ]; then cd $module; fi
+    cd $module
+	
 	# Check if this is a git repo
     if [ -d ".git" ]; then
 		printf "\e[32m$module: \e[0m"
@@ -74,7 +93,7 @@ for module in ${modules[@]}; do
 		git checkout tags/$1 2>/dev/null
 		if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
 	fi
-    if [ ! "$module" = "openeyes" ]; then cd ..; fi
+    cd ..
   fi
 done
 
