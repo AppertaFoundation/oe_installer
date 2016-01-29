@@ -13,11 +13,41 @@ source /etc/openeyes/modules.conf
 dir=$PWD
 gitroot="openeyes"
 
+branch=$1
+defaultbranch=master
+
+migrate=1
+
+echo "Checking out $branch..."
+
 #  If -f was not specified on the command line, then check each module
 #  to see if any changes are unstaged.
+force=0
+killmodules=0
+case "$2" in
+	-f) force=1 ;;
+	-ff) force=1; killmodules=1 ;;
+	--develop) defaultbranch=develop ;;
+	--nomigrate) migrate=0 ;;
+esac
 
-if [ ! "$2" = "-f" ]; then
-	if [ ! "$3" = "-f" ]; then
+case "$3" in
+	-f) force=1 ;;
+	-ff) force=1; killmodules=1 ;;
+	--develop) defaultbranch=develop ;;
+	--nomigrate) migrate=0 ;;
+esac
+
+case "$4" in
+	-f) force=1 ;;
+	-ff) force=1; killmodules=1 ;;
+	--develop) defaultbranch=develop ;;
+	--nomigrate) migrate=0 ;;
+esac
+
+if [ ! "$force" = "1" ]; then
+	echo "checking for uncommited changes"
+	#if [ ! "$3" = "-f" ]; then
 	  changes=0
 	  modulelist=""
 	 
@@ -68,34 +98,52 @@ if [ ! "$2" = "-f" ]; then
 	  if [ "$changes" = "1" ]; then
 		printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n"
 		echo "There are uncommitted changes in the following modules: $modulelist"
-		printf "To ignore these changes, run: \e[1m $0 $1 -f \e[0m \n"
+		printf "To ignore these changes, run: \e[1m $0 $branch -f \e[0m \n"
 		echo "Alternatively, manually git reset --hard to ignore, or git stash to keep, etc"
 		printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n";
 		echo ""
 		exit 1
 	  fi
-	fi
+	#fi
 fi
 
+# If -ff was speified, kill all existing modules and re-clone
+if [ $killmodules = 1 ]; then rm -rf /var/www/openeyes/protected/modules; fi
+
 # check out openeyes core
+mkdir -p /var/www/openeyes
 cd /var/www/openeyes
-printf "\e[32mopeneyes: \e[0m"
-git reset --hard
-git fetch --all
-git checkout tags/$1 2>/dev/null
-if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
+
+if [ ! -d ".git " ]; then 
+	printf "\e[32mopeneyes: Doesn't currently exist - cloning: \e[0m"
+	# checkout branch. If branch doesn't exist then get default instead
+	if ! git clone -b $branch https://github.com/$gitroot/openeyes ./ ; then 
+		echo "$branch doesn't exist. Falling back to $defaultbranch branch for openeyes..."
+		git clone -b $defaultbranch https://github.com/$gitroot/openeyes ./
+	fi
+else
+	printf "\e[32mopeneyes: \e[0m"
+	if [ "$force" = "1" ]; then
+		git reset --hard
+		git fetch --all
+	fi
+	git checkout tags/$branch 2>/dev/null
+	if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
+	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
+fi
 
 # Check out the PHP modules
 cd /var/www/openeyes/protected/modules
+
 for module in ${modules[@]}; do
   if [ ! -d "$module" ]; then 
 		if [ ! "$module" = "openeyes" ]; then 
 			printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
 			
 			# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $1 https://github.com/$gitroot/$module; then 
-				echo "falling back to master branch for $module..."
-				git clone -b master https://github.com/$gitroot/$module 
+			if ! git clone -b $branch https://github.com/$gitroot/$module; then 
+				echo "falling back to $defaultbranch branch for $module..."
+				git clone -b $defaultbranch https://github.com/$gitroot/$module 
 			fi
 		fi
   else
@@ -104,32 +152,36 @@ for module in ${modules[@]}; do
 	# Check if this is a git repo
     if [ -d ".git" ]; then
 		printf "\e[32m$module: \e[0m"
-		git reset --hard
-		git fetch --all
-		git checkout tags/$1 2>/dev/null
-		if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
+		if [ "$force" = "1" ]; then
+			git reset --hard
+			git fetch --all
+		fi
+		git checkout tags/$branch 2>/dev/null
+		if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
+		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
 	fi
     cd ..
   fi
 done
 
 # Check out the Java modules
-
+mkdir -p /var/www/openeyes/protected/javamodules
 cd /var/www/openeyes/protected/javamodules
 for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then
     printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
 	# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $1 https://github.com/$gitroot/$module; then 
-				echo "falling back to master branch for $module..."
-				git clone -b master https://github.com/$gitroot/$module 
+			if ! git clone -b $branch https://github.com/$gitroot/$module; then 
+				echo "falling back to $defaultbranch branch for $module..."
+				git clone -b $defaultbranch https://github.com/$gitroot/$module 
 			fi
   else 
     cd $module
     git reset --hard
     git fetch --all
-    git checkout tags/$1 2>/dev/null
-    if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
+    git checkout tags/$branch 2>/dev/null
+    if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
+	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
     cd ..
   fi
 done
@@ -143,12 +195,8 @@ cd "$dir"
 printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
 
 # Automatically migrate up, unless --nomigrate parameter is given
-migrate=0
-if [ ! "$2" = "--nomigrate" ]; then
-	if [ ! "$3" = "--nomigrate" ]; then
-		oe-migrate
-		migrate=1
-	fi
+if [ "$migrate" = "1" ]; then
+	oe-migrate
 fi
 
 oe-which

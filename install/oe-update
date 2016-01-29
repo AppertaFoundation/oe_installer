@@ -12,6 +12,8 @@ dir=$PWD
 cd /var/www/openeyes
 printf "\e[32mopeneyes: \e[0m"
 if [ "$1" = "-f" ]; then git reset --hard; fi
+# use -ff to kill all modules and reload
+if [ "$1" = "-ff" ]; then rm -rf /var/www/openeyes/protected/modules; git reset --hard; fi
 git pull
 
 # Check out the PHP modules
