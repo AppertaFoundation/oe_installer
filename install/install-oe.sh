@@ -10,50 +10,56 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# copy our commands to /usr/bin
+cp /vagrant/install/oe-* /usr/bin
+
+# Chose branch / tag to clone (default is master)
+branch=master
+if [ ! -z "$1" ]; then
+	if [ "$1" != "--live" ]; then
+		branch="$1"
+	elif [ "$2" != "--live" ]; then
+		branch="$2"
+	fi
+fi
+echo "Installing openeyes $branch" 
 
 echo Downloading OpenEyes code base
 cd /var/www
-# TODO: if openeyes dir exists, delete it
+# If openeyes dir exists, prompt user to delete it
+if [ -d "openeyes" ]; then
+	echo "CAUTION: openeyes folder already exists. This installer will delete it. Do you wish to continue."
+	select yn in "Yes" "No"; do
+		case $yn in
+			Yes ) echo "OK, removing existing openeyes folder"; rm -rf openeyes; break;;
+			No ) echo "OK, exiting..."; exit;;
+		esac
+	done
+
+fi
 
 
-git clone -b feature/testrepomerge https://github.com/openeyes/OpenEyes.git openeyes 
+# git clone -b $branch https://github.com/openeyes/OpenEyes.git openeyes
+if ! git clone -b $branch https://github.com/openeyes/OpenEyes.git openeyes; then
+	echo "Branch/Tag $branch does not exist. Do you want to use master instead? (Selecting NO will exit)"
+	select yn in "Yes" "No"; do
+		case $yn in
+			Yes ) echo "OK, switching branch to master"; branch=master; git clone -b master https://github.com/openeyes/OpenEyes.git openeyes; break;;
+			No ) echo "OK, exiting..."; exit;;
+		esac
+	done
+fi
 cd openeyes/protected
-unzip yii.zip
-unzip vendors.zip
+unzip -o yii.zip
+unzip -o vendors.zip
 
 # keep a copy of these zips around in case we checkout an older branch that does not include them
 mkdir -p /usr/lib/openeyes
 cp yii.zip /usr/lib/openeyes
 cp vendors.zip /usr/lib/openeyes
 cd /usr/lib/openeyes
-unzip yii.zip
-unzip vendors.zip
-
-
-echo Installing OpenEyes modules
-branch=master
-cd /var/www/openeyes/protected/modules
-git clone https://github.com/openeyes/EyeDraw.git eyedraw -b $branch
-# git clone https://github.com/openeyes/OphCiExamination.git OphCiExamination -b $branch
-# git clone https://github.com/openeyes/OphCiPhasing.git OphCiPhasing -b $branch
-# git clone https://github.com/openeyes/OphCoTherapyapplication.git OphCoTherapyapplication -b $branch
-# git clone https://github.com/openeyes/OphCoCorrespondence.git OphCoCorrespondence -b $branch
-# git clone https://github.com/openeyes/OphDrPrescription.git OphDrPrescription -b $branch
-# git clone https://github.com/openeyes/OphInBiometry.git OphInBiometry -b $branch
-# git clone https://github.com/openeyes/OphInVisualfields.git OphInVisualfields -b $branch
-# git clone https://github.com/openeyes/OphOuAnaestheticsatisfactionaudit.git OphOuAnaestheticsatisfactionaudit -b $branch
-# git clone https://github.com/openeyes/OphTrConsent.git OphTrConsent -b $branch
-# git clone https://github.com/openeyes/OphTrIntravitrealinjection.git OphTrIntravitrealinjection -b $branch
-# git clone https://github.com/openeyes/OphTrLaser.git OphTrLaser -b $branch
-# git clone https://github.com/openeyes/OphTrOperationbooking.git OphTrOperationbooking -b $branch
-# git clone https://github.com/openeyes/OphTrOperationnote.git OphTrOperationnote -b $branch
-# git clone https://github.com/openeyes/PatientTicketing.git PatientTicketing -b $branch
-
-if [ ! -d "/var/www/openeyes/protected/javamodules" ]; then
-  mkdir -p /var/www/openeyes/protected/javamodules
-fi
-cd /var/www/openeyes/protected/javamodules
-git clone https://github.com/openeyes/IOLMasterImport.git IOLMasterImport -b $branch
+if [ ! -d "yii" ]; then unzip yii.zip; fi
+if [ ! -d "vendors" ]; then unzip vendors.zip; fi
 
 
 mkdir -p /var/www/openeyes/cache
@@ -65,30 +71,42 @@ chmod 777 /var/www/openeyes/assets
 chmod 777 /var/www/openeyes/protected/cache
 chmod 777 /var/www/openeyes/protected/runtime
 if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-  chown -R www-data:www-data /var/www/*
+	chown -R www-data:www-data /var/www/*
+fi
+
+echo Installing OpenEyes modules
+
+oe-checkout $branch -f --nomigrate
+
+if [ ! -d "/var/www/openeyes/protected/javamodules" ]; then
+	mkdir -p /var/www/openeyes/protected/javamodules
 fi
 
 
-if [ ! "$1" == "--live" ]; then
-echo Creating blank database
-cd $installdir
-
-echo "
-drop database if exists openeyes;
-create database openeyes;
-grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
-flush privileges;
-" > /tmp/openeyes-mysql-create.sql
-
-mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
-rm /tmp/openeyes-mysql-create.sql
 
 
-echo Downloading database
-cd /var/www/openeyes/protected/modules
-git clone -b release/v1.11.2 https://github.com/openeyes/Sample.git sample
-cd sample/sql
-mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
+if ["$1" == "--live" -o "$2" == "--live"]; then
+ echo "Installing for production - no patient data"
+else
+	echo Creating blank database
+	cd $installdir
+
+	echo "
+	drop database if exists openeyes;
+	create database openeyes;
+	grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
+	flush privileges;
+	" > /tmp/openeyes-mysql-create.sql
+	
+	mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
+	rm /tmp/openeyes-mysql-create.sql
+	
+	
+	echo Downloading database
+	cd /var/www/openeyes/protected/modules
+	git clone -b release/v1.11.2 https://github.com/openeyes/Sample.git sample
+	cd sample/sql
+	mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
 fi
 
 
@@ -108,10 +126,10 @@ ServerName hostname
 
 DocumentRoot /var/www/openeyes
 <Directory /var/www/openeyes>
-    Options FollowSymLinks
-    AllowOverride All
-    Order allow,deny
-    Allow from all
+  # Options FollowSymLinks
+  # AllowOverride All
+  # Order allow,deny
+  # Allow from all
 </Directory>
 
 ErrorLog /var/log/apache2/error.log
@@ -124,9 +142,6 @@ apache2ctl restart
 fi
 
 
-# copy our commands to /usr/bin
-cp /vagrant/install/oe-* /usr/bin
-
 # copy our new configs to /etc/openeyes
 mkdir /etc/openeyes
 cp /vagrant/install/etc/openeyes/* /etc/openeyes/
@@ -137,9 +152,9 @@ cp /vagrant/install/bashrc /etc/bash.bashrc
 # For live systems, /etc/openeyes/env.conf will have to be edited manually
 
 if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-  hostname OpenEyesVM
-  sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
-  cp /vagrant/install/bashrc /home/vagrant/.bashrc
+	hostname OpenEyesVM
+	sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
+	cp /vagrant/install/bashrc /home/vagrant/.bashrc
 fi
 
 if [ "$1" == "--live" ]; then

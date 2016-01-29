@@ -3,70 +3,78 @@
 git config core.fileMode false
 
 if [[ -z "$1" ]] ; then
-  echo "usage: $0 <branch> [-f]"
+  echo "usage: $0 <branch> [-f] [--nomigrate]"
   echo "-f forces the checkout, even if local changes are uncommitted"
+  echo "--nomigrate will prevent database migrations running automatically after checkout"
   exit 1
 fi
 
 source /etc/openeyes/modules.conf
 dir=$PWD
+gitroot="openeyes"
 
 #  If -f was not specified on the command line, then check each module
 #  to see if any changes are unstaged.
 
 if [ ! "$2" = "-f" ]; then
-  changes=0
-  modulelist=""
- 
-  # Check openeyes core
-  cd /var/www/openeyes
-  git diff --quiet
-  if [ ! $? = 0 ]; then
-	  changes=1
-	  modulelist="$modulelist openeyes"
-  fi
-  
-  cd /var/www/openeyes/protected/modules
-  for module in ${modules[@]}; do
-    if [ ! -d "$module" ]; then 
-		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
-	else
-		if [ ! "$module" = "openeyes" ]; then cd $module; fi
-	
-		# check if this is a git repo
-		if [ -d ".git" ]; then		
-				git diff --quiet
-				if [ ! $? = 0 ]; then
-				  changes=1
-				  modulelist="$modulelist $module"
-				fi
+	if [ ! "$3" = "-f" ]; then
+	  changes=0
+	  modulelist=""
+	 
+	  # Check openeyes core
+	  cd /var/www/openeyes
+	  git diff --quiet
+	  if [ ! $? = 0 ]; then
+		  changes=1
+		  modulelist="$modulelist openeyes"
+	  fi
+	  
+	  cd /var/www/openeyes/protected/modules
+	  for module in ${modules[@]}; do
+		if [ ! -d "$module" ]; then 
+			if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
+		else
+			if [ ! "$module" = "openeyes" ]; then cd $module; fi
+		
+			# check if this is a git repo
+			if [ -d ".git" ]; then		
+					git diff --quiet
+					if [ ! $? = 0 ]; then
+					  changes=1
+					  modulelist="$modulelist $module"
+					fi
+			fi
 		fi
+		
+		if [ ! "$module" = "openeyes" ]; then cd ..; fi
+	  done
+
+	  cd  /var/www/openeyes/protected/javamodules/
+	  for module in ${javamodules[@]}; do
+		if [ ! -d "$module" ]; then
+			printf "\e[31mModule $module not found\e[0m\n"
+		else
+			cd $module;
+			git diff --quiet
+			if [ ! $? = 0 ]; then
+			  changes=1
+			  modulelist="$modulelist $module"
+			fi
+			cd ..
+		fi
+	  done
+
+	  #  If we have unstaged changes, then abort and  warn which modules are affected
+	  if [ "$changes" = "1" ]; then
+		printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n"
+		echo "There are uncommitted changes in the following modules: $modulelist"
+		printf "To ignore these changes, run: \e[1m $0 $1 -f \e[0m \n"
+		echo "Alternatively, manually git reset --hard to ignore, or git stash to keep, etc"
+		printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n";
+		echo ""
+		exit 1
+	  fi
 	fi
-	
-    if [ ! "$module" = "openeyes" ]; then cd ..; fi
-  done
-
-  cd  /var/www/openeyes/protected/javamodules/
-  for module in ${javamodules[@]}; do
-    cd $module;
-    git diff --quiet
-    if [ ! $? = 0 ]; then
-      changes=1
-      modulelist="$modulelist $module"
-    fi
-    cd ..
-  done
-
-  #  If we have unstaged changes, then abort and  warn which modules are affected
-  if [ "$changes" = "1" ]; then
-    printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n"
-    echo "There are uncommitted changes in the following modules: $modulelist"
-    printf "To ignore these changes, run: \e[1m $0 $1 -f \e[0m \n"
-    echo "Alternatively, manually git reset --hard to ignore, or git stash to keep, etc"
-    printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n";
-    echo ""
-    exit 1
-  fi
 fi
 
 # check out openeyes core
@@ -81,7 +89,15 @@ if [ ! $? = 0 ]; then git checkout $1 2>/dev/null; fi
 cd /var/www/openeyes/protected/modules
 for module in ${modules[@]}; do
   if [ ! -d "$module" ]; then 
-		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
+		if [ ! "$module" = "openeyes" ]; then 
+			printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
+			
+			# checkout branch. If branch doesn't exist then get master instead
+			if ! git clone -b $1 https://github.com/$gitroot/$module; then 
+				echo "falling back to master branch for $module..."
+				git clone -b master https://github.com/$gitroot/$module 
+			fi
+		fi
   else
     cd $module
 	
@@ -102,7 +118,12 @@ done
 cd /var/www/openeyes/protected/javamodules
 for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then
-    printf "\e[31mModule $module not found\e[0m\n"
+    printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
+	# checkout branch. If branch doesn't exist then get master instead
+			if ! git clone -b $1 https://github.com/$gitroot/$module; then 
+				echo "falling back to master branch for $module..."
+				git clone -b master https://github.com/$gitroot/$module 
+			fi
   else 
     cd $module
     git reset --hard
@@ -120,7 +141,18 @@ oe-fix
 
 cd "$dir"
 printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
+
+# Automatically migrate up, unless --nomigrate parameter is given
+migrate=0
+if [ ! "$2" = "--nomigrate" ]; then
+	if [ ! "$3" = "--nomigrate" ]; then
+		oe-migrate
+		migrate=1
+	fi
+fi
+
 oe-which
-echo If you need to run the database migrations, run oe-migrate
+
+if [ "$migrate" == "0" ]; then echo If you need to run the database migrations, run oe-migrate; fi
 echo ""
 
