@@ -13,37 +13,30 @@ source /etc/openeyes/modules.conf
 dir=$PWD
 gitroot="openeyes"
 
-branch=$1
 defaultbranch=master
 
-migrate=1
 
-echo "Checking out $branch..."
-
+# Process commandline parameters
 #  If -f was not specified on the command line, then check each module
 #  to see if any changes are unstaged.
 force=0
 killmodules=0
-case "$2" in
-	-f) force=1 ;;
-	-ff) force=1; killmodules=1 ;;
-	--develop) defaultbranch=develop ;;
-	--nomigrate) migrate=0 ;;
+migrate=1
+branch=$defaultbranch
+for i in "$@"
+do
+case $i in
+	-f|-force) force=1 ;;
+	-ff|killmodules) force=1; killmodules=1 ;;
+	--develop|--d) defaultbranch=develop ;;
+	--nomigrate|--n) migrate=0 ;;
+	*) if [ "$branch" == "master" ]; then branch=$i; else echo "Unknown command line: $1"; fi
+		## Set branch name
+		;;
 esac
+done
 
-case "$3" in
-	-f) force=1 ;;
-	-ff) force=1; killmodules=1 ;;
-	--develop) defaultbranch=develop ;;
-	--nomigrate) migrate=0 ;;
-esac
-
-case "$4" in
-	-f) force=1 ;;
-	-ff) force=1; killmodules=1 ;;
-	--develop) defaultbranch=develop ;;
-	--nomigrate) migrate=0 ;;
-esac
+echo "Checking out $branch..."
 
 if [ ! "$force" = "1" ]; then
 	echo "checking for uncommited changes"

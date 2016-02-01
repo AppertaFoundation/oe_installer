@@ -15,8 +15,8 @@ cp /vagrant/install/oe-* /usr/bin
 
 # copy our new configs to /etc/openeyes
 mkdir -p /etc/openeyes
-cp -n /vagrant/install/etc/openeyes/* /etc/openeyes/
-cp -n /vagrant/install/bashrc /etc/bash.bashrc
+cp -f /vagrant/install/etc/openeyes/* /etc/openeyes/
+cp -f /vagrant/install/bashrc /etc/bash.bashrc
 
 # set command options
 # Chose branch / tag to clone (default is master)
@@ -24,50 +24,39 @@ cp -n /vagrant/install/bashrc /etc/bash.bashrc
 branch=master
 live=0
 develop=0
-case "$1" in
-	--live) live=1 ;;
-	--develop) develop=1 ;;
-	*) if [ ! -z "$1" ]; then branch=$1; fi ;;
-esac
+force=0
 
-case "$2" in
-	--live) live=1 ;;
-	--develop) develop=1 ;;
-	*) if [ ! -z "$2" ]; then branch=$1; fi ;;
+# Process command line inputs
+for i in "$@"
+do
+case $i in
+    --live|--l) live=1 ;;
+	--develop|--d) develop=1 ;;
+	--force|--f) force=1;;
+	*) if [ ! -z "$i" ]; then branch=$1; fi
+            # any other text, assume is a branch name
+    ;;
 esac
+done
 
-case "$3" in
-	--live) live=1 ;;
-	--develop) develop=1 ;;
-	*) if [ ! -z "$3" ]; then branch=$1; fi ;;
-esac
 
-case "$4" in
-	--live) live=1 ;;
-	--develop) develop=1 ;;
-	*) if [ ! -z "$3" ]; then branch=$1; fi ;;
-esac
-
-# if [ ! -z "$1" ]; then
-	# if [ "$1" != "--live" ]; then
-		# branch="$1"
-	# elif [ "$2" != "--live" ]; then
-		# branch="$2"
-	# fi
-# fi
 echo "Installing openeyes $branch" 
 
 echo Downloading OpenEyes code base
 cd /var/www
 # If openeyes dir exists, prompt user to delete it
 if [ -d "openeyes" ]; then
-	echo "CAUTION: openeyes folder already exists. This installer will delete it. Do you wish to continue."
-	select yn in "Yes" "No"; do
-		case $yn in
-			Yes ) echo "OK, removing existing openeyes folder"; rm -rf openeyes; break;;
-			No ) echo "OK, exiting..."; exit;;
-		esac
-	done
+	if [ "$force" = "1" ]; then
+		rm -rf openeyes
+	else
+		echo "CAUTION: openeyes folder already exists. This installer will delete it. Do you wish to continue."
+		select yn in "Yes" "No"; do
+			case $yn in
+				Yes ) echo "OK, removing existing openeyes folder"; rm -rf openeyes; break;;
+				No ) echo "OK, exiting..."; exit;;
+			esac
+		done
+	fi
 
 fi
 
@@ -82,6 +71,8 @@ echo "uzipping yii. Please wait..."
 if unzip -oq yii.zip ; then echo "."; fi
 if unzip -oq vendors.zip ; then echo "."; fi
 
+git submodule init
+git submodule update -f
 
 # keep a copy of these zips around in case we checkout an older branch that does not include them
 mkdir -p /usr/lib/openeyes
@@ -89,7 +80,9 @@ cp yii.zip /usr/lib/openeyes 2>/dev/null || :
 cp vendors.zip /usr/lib/openeyes 2>/dev/null || :
 cd /usr/lib/openeyes
 if [ ! -d "yii" ]; then echo "."; if unzip -oq yii.zip ; then echo "."; fi; fi
-if [ ! -d "vendors" ]; then echo "."; if unzip -oq yii.zip ; then echo "."; fi; fi
+if [ ! -d "vendors" ]; then echo "."; if unzip -oq vendors.zip ; then echo "."; fi; fi
+
+
 
 
 mkdir -p /var/www/openeyes/cache
@@ -104,28 +97,27 @@ if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
 	chown -R www-data:www-data /var/www/*
 fi
 
-if [ "$live" = 1 ]; then
-	echo "Installing for production - no patient data"
-else
-	echo Creating blank database
-	cd $installdir
+							
+if [ ! "$live" = "1" ]; then
+echo Creating blank database
+cd $installdir
 
-	echo "
-	drop database if exists openeyes;
-	create database openeyes;
-	grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
-	flush privileges;
-	" > /tmp/openeyes-mysql-create.sql
-	
-	mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
-	rm /tmp/openeyes-mysql-create.sql
-	
-	
-	echo Downloading database
-	cd /var/www/openeyes/protected/modules
-	git clone -b release/v1.11.2 https://github.com/openeyes/Sample.git sample
-	cd sample/sql
-	mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
+echo "
+drop database if exists openeyes;
+create database openeyes;
+grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
+flush privileges;
+" > /tmp/openeyes-mysql-create.sql
+
+mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
+rm /tmp/openeyes-mysql-create.sql
+
+
+echo Downloading database
+cd /var/www/openeyes/protected/modules
+git clone -b release/v1.11.2 https://github.com/openeyes/Sample.git sample
+cd sample/sql
+mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
 fi
 
 
@@ -136,21 +128,19 @@ cd /var/www/openeyes/protected
 ./yiic migratemodules --interactive=0
 
 
-if [ ! "$1" == "--live" ]; then
+if [ ! "$live" = "1" ]; then
 echo Configuring Apache
 
 echo "
 <VirtualHost *:80>
 ServerName hostname
-
 DocumentRoot /var/www/openeyes
 <Directory /var/www/openeyes>
-  # Options FollowSymLinks
-  # AllowOverride All
-  # Order allow,deny
-  # Allow from all
+    Options FollowSymLinks
+    AllowOverride All
+    Order allow,deny
+    Allow from all
 </Directory>
-
 ErrorLog /var/log/apache2/error.log
 LogLevel warn
 CustomLog /var/log/apache2/access.log combined
@@ -166,15 +156,14 @@ fi
 # For live systems, /etc/openeyes/env.conf will have to be edited manually
 
 if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-	hostname OpenEyesVM
-	sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
-	cp /vagrant/install/bashrc /home/vagrant/.bashrc
+  hostname OpenEyesVM
+  sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
+  cp /vagrant/install/bashrc /home/vagrant/.bashrc
 fi
 
 if [ "$live" = "1" ]; then
 echo "# env can be one of DEV or LIVE
 # envtype can be one of LIVE, AWS or VAGRANT
-
 env=LIVE
 envtype=LIVE
 " >/etc/openeyes/env.conf
@@ -182,9 +171,9 @@ fi
 
 
 # Copy DICOM related files in place as required
-cp /vagrant/install/dicom-file-watcher.conf /etc/init/
-cp /vagrant/install/dicom /etc/cron.d/
-cp /vagrant/install/run-dicom-service.sh /usr/local/bin
+cp -f /vagrant/install/dicom-file-watcher.conf /etc/init/
+cp -f /vagrant/install/dicom /etc/cron.d/
+cp -f /vagrant/install/run-dicom-service.sh /usr/local/bin
 chmod +x /usr/local/bin/run-dicom-service.sh
 
 id -u iolmaster &>/dev/null || useradd iolmaster -s /bin/false -m
