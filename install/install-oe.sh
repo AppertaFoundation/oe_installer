@@ -10,50 +10,79 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# copy our commands to /usr/bin
+cp /vagrant/install/oe-* /usr/bin
+
+# copy our new configs to /etc/openeyes
+mkdir -p /etc/openeyes
+cp -f /vagrant/install/etc/openeyes/* /etc/openeyes/
+cp -f /vagrant/install/bashrc /etc/bash.bashrc
+
+# set command options
+# Chose branch / tag to clone (default is master)
+# set live
+branch=master
+live=0
+develop=0
+force=0
+
+# Process command line inputs
+for i in "$@"
+do
+case $i in
+    --live|--l) live=1 ;;
+	--develop|--d) develop=1 ;;
+	--force|--f) force=1;;
+	*) if [ ! -z "$i" ]; then branch=$1; fi
+            # any other text, assume is a branch name
+    ;;
+esac
+done
+
+
+echo "Installing openeyes $branch" 
 
 echo Downloading OpenEyes code base
 cd /var/www
-# TODO: if openeyes dir exists, delete it
+# If openeyes dir exists, prompt user to delete it
+if [ -d "openeyes" ]; then
+	if [ "$force" = "1" ]; then
+		rm -rf openeyes
+	else
+		echo "CAUTION: openeyes folder already exists. This installer will delete it. Do you wish to continue."
+		select yn in "Yes" "No"; do
+			case $yn in
+				Yes ) echo "OK, removing existing openeyes folder"; rm -rf openeyes; break;;
+				No ) echo "OK, exiting..."; exit;;
+			esac
+		done
+	fi
 
+fi
 
-git clone -b feature/IOLMaster https://github.com/openeyes/OpenEyes.git openeyes 
-cd openeyes/protected
-unzip yii.zip
-unzip vendors.zip
+if [ "$develop" = 1 ]; then
+	oe-checkout $branch -f --nomigrate --develop
+else
+	oe-checkout $branch -f --nomigrate
+fi
+
+cd /var/www/openeyes/protected
+echo "uzipping yii. Please wait..."
+if unzip -oq yii.zip ; then echo "."; fi
+if unzip -oq vendors.zip ; then echo "."; fi
+
+git submodule init
+git submodule update -f
 
 # keep a copy of these zips around in case we checkout an older branch that does not include them
 mkdir -p /usr/lib/openeyes
-cp yii.zip /usr/lib/openeyes
-cp vendors.zip /usr/lib/openeyes
+cp yii.zip /usr/lib/openeyes 2>/dev/null || :
+cp vendors.zip /usr/lib/openeyes 2>/dev/null || :
 cd /usr/lib/openeyes
-unzip yii.zip
-unzip vendors.zip
+if [ ! -d "yii" ]; then echo "."; if unzip -oq yii.zip ; then echo "."; fi; fi
+if [ ! -d "vendors" ]; then echo "."; if unzip -oq vendors.zip ; then echo "."; fi; fi
 
 
-echo Installing OpenEyes modules
-branch=master
-cd /var/www/openeyes/protected/modules
-git clone https://github.com/openeyes/EyeDraw.git eyedraw -b $branch
-git clone https://github.com/openeyes/OphCiExamination.git OphCiExamination -b $branch
-git clone https://github.com/openeyes/OphCiPhasing.git OphCiPhasing -b $branch
-git clone https://github.com/openeyes/OphCoTherapyapplication.git OphCoTherapyapplication -b $branch
-git clone https://github.com/openeyes/OphCoCorrespondence.git OphCoCorrespondence -b $branch
-git clone https://github.com/openeyes/OphDrPrescription.git OphDrPrescription -b $branch
-git clone https://github.com/openeyes/OphInBiometry.git OphInBiometry -b $branch
-git clone https://github.com/openeyes/OphInVisualfields.git OphInVisualfields -b $branch
-git clone https://github.com/openeyes/OphOuAnaestheticsatisfactionaudit.git OphOuAnaestheticsatisfactionaudit -b $branch
-git clone https://github.com/openeyes/OphTrConsent.git OphTrConsent -b $branch
-git clone https://github.com/openeyes/OphTrIntravitrealinjection.git OphTrIntravitrealinjection -b $branch
-git clone https://github.com/openeyes/OphTrLaser.git OphTrLaser -b $branch
-git clone https://github.com/openeyes/OphTrOperationbooking.git OphTrOperationbooking -b $branch
-git clone https://github.com/openeyes/OphTrOperationnote.git OphTrOperationnote -b $branch
-git clone https://github.com/openeyes/PatientTicketing.git PatientTicketing -b $branch
-
-if [ ! -d "/var/www/openeyes/protected/javamodules" ]; then
-  mkdir -p /var/www/openeyes/protected/javamodules
-fi
-cd /var/www/openeyes/protected/javamodules
-git clone https://github.com/openeyes/IOLMasterImport.git IOLMasterImport -b $branch
 
 
 mkdir -p /var/www/openeyes/cache
@@ -65,11 +94,11 @@ chmod 777 /var/www/openeyes/assets
 chmod 777 /var/www/openeyes/protected/cache
 chmod 777 /var/www/openeyes/protected/runtime
 if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-  chown -R www-data:www-data /var/www/*
+	chown -R www-data:www-data /var/www/*
 fi
 
-
-if [ ! "$1" == "--live" ]; then
+							
+if [ ! "$live" = "1" ]; then
 echo Creating blank database
 cd $installdir
 
@@ -99,13 +128,12 @@ cd /var/www/openeyes/protected
 ./yiic migratemodules --interactive=0
 
 
-if [ ! "$1" == "--live" ]; then
+if [ ! "$live" = "1" ]; then
 echo Configuring Apache
 
 echo "
 <VirtualHost *:80>
 ServerName hostname
-
 DocumentRoot /var/www/openeyes
 <Directory /var/www/openeyes>
     Options FollowSymLinks
@@ -113,7 +141,6 @@ DocumentRoot /var/www/openeyes
     Order allow,deny
     Allow from all
 </Directory>
-
 ErrorLog /var/log/apache2/error.log
 LogLevel warn
 CustomLog /var/log/apache2/access.log combined
@@ -123,14 +150,6 @@ CustomLog /var/log/apache2/access.log combined
 apache2ctl restart
 fi
 
-
-# copy our commands to /usr/bin
-cp /vagrant/install/oe-* /usr/bin
-
-# copy our new configs to /etc/openeyes
-mkdir /etc/openeyes
-cp /vagrant/install/etc/openeyes/* /etc/openeyes/
-cp /vagrant/install/bashrc /etc/bash.bashrc
 
 # The default environment type is assumed to be DEV/AWS.
 # If we are on a vagrant box, set it to DEV/VAGRANT
@@ -142,10 +161,9 @@ if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   cp /vagrant/install/bashrc /home/vagrant/.bashrc
 fi
 
-if [ "$1" == "--live" ]; then
+if [ "$live" = "1" ]; then
 echo "# env can be one of DEV or LIVE
 # envtype can be one of LIVE, AWS or VAGRANT
-
 env=LIVE
 envtype=LIVE
 " >/etc/openeyes/env.conf
@@ -153,17 +171,18 @@ fi
 
 
 # Copy DICOM related files in place as required
-cp /vagrant/install/dicom-file-watcher.conf /etc/init/
-cp /vagrant/install/dicom /etc/cron.d/
-cp /vagrant/install/run-dicom-service.sh /usr/local/bin
+cp -f /vagrant/install/dicom-file-watcher.conf /etc/init/
+cp -f /vagrant/install/dicom /etc/cron.d/
+cp -f /vagrant/install/run-dicom-service.sh /usr/local/bin
 chmod +x /usr/local/bin/run-dicom-service.sh
 
-useradd iolmaster -s /bin/false -m
-mkdir /home/iolmaster/test
-mkdir /home/iolmaster/incoming
+id -u iolmaster &>/dev/null || useradd iolmaster -s /bin/false -m
+mkdir -p /home/iolmaster/test
+mkdir -p /home/iolmaster/incoming
 chown iolmaster:www-data /home/iolmaster/*
 chmod 775 /home/iolmaster/*
 
+oe-which
 
 echo --------------------------------------------------
 echo OPENEYES SOFTWARE INSTALLED
