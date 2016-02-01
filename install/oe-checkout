@@ -190,10 +190,11 @@ printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
 # Automatically migrate up, unless --nomigrate parameter is given
 if [ "$migrate" = "1" ]; then
 	oe-migrate
+else
+	echo "Migrations were not run automaically. If you need to run the database migrations, run command oe-migrate"
 fi
 
 oe-which
 
-if [ "$migrate" == "0" ]; then echo If you need to run the database migrations, run oe-migrate; fi
 echo ""
 
