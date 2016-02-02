@@ -2,6 +2,8 @@
 
 This repository should be the only one checked out when building a new OpenEyes machine instance.
 
+**NOTE: Currently this installer does not work for older code versions. The first supported version is the feature/IOLMaster branch of openeyes. This is included in the install instructions below and will be updated once a new release is available**
+
 **Index:**
 
   1. [Installing for Development - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox)
@@ -41,7 +43,7 @@ Software required:
 4. Create the virtual server from your project directory. Run: cd ~/openeyes && vagrant up
 4. Once built (approx. 5 minutes), run: vagrant ssh
 5. From within the vagrant box, run the following commands:
-  i. sudo /vagrant/install/install-system.sh
+  i. sudo /vagrant/install/install-system.sh feature/IOLMaster
   ii. sudo /vagrant/install/install-oe.sh
 6. Checkout the desired branch. Run oe-checkout xxxxx (see Default development tools for details)
 7. Update the database using oe-migrate (see Default development tools for details)
@@ -70,7 +72,7 @@ Software required:
 4. Once built (approx. 5 minutes), run: vagrant ssh
 5. From within the vagrant box, run the following commands:
   i. sudo /vagrant/install/install-system.sh
-  ii. sudo /vagrant/install/install-oe.sh
+  ii. sudo /vagrant/install/install-oe.sh feature/IOLMaster
 6. Checkout the desired branch. Run oe-checkout xxxxx (see Default development tools for details)
 7. Update the database using oe-migrate (see Default development tools for details)
 </pre>
