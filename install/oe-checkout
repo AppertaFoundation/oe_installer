@@ -52,6 +52,8 @@ if [ ! "$force" = "1" ]; then
 		  modulelist="$modulelist openeyes"
 	  fi
 	  
+	  # ensure modules directory exists - prevents code being checked out to wrong place
+	  mkdir -p /var/www/openeyes/protected/modules
 	  cd /var/www/openeyes/protected/modules
 	  for module in ${modules[@]}; do
 		if [ ! -d "$module" ]; then 
@@ -126,6 +128,7 @@ else
 fi
 
 # Check out the PHP modules
+mkdir -p /var/www/openeyes/protected/modules
 cd /var/www/openeyes/protected/modules
 
 for module in ${modules[@]}; do
