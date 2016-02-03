@@ -148,10 +148,8 @@ for module in ${modules[@]}; do
 	# Check if this is a git repo
     if [ -d ".git" ]; then
 		printf "\e[32m$module: \e[0m"
-		if [ "$force" = "1" ]; then
-			git reset --hard
-			git fetch --all
-		fi
+		git reset --hard
+		git fetch --all
 		git checkout tags/$branch 2>/dev/null
 		if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
 		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
