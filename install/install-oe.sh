@@ -49,7 +49,7 @@ if [ -d "openeyes" ]; then
 	if [ "$force" = "1" ]; then
 		rm -rf openeyes
 	else
-		echo "CAUTION: openeyes folder already exists. This installer will delete it. Do you wish to continue."
+		echo "CAUTION: openeyes folder already exists. This installer will delete it. Any uncommitted changes will be lost. Do you wish to continue?"
 		select yn in "Yes" "No"; do
 			case $yn in
 				Yes ) echo "OK, removing existing openeyes folder"; rm -rf openeyes; break;;
