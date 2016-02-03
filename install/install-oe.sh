@@ -30,11 +30,16 @@ force=0
 for i in "$@"
 do
 case $i in
-    --live|--l) live=1 ;;
-	--develop|--d) develop=1 ;;
+    --live|--l) live=1 
+		## live will install for production ready environment
+		;;
+	--develop|--d) develop=1 
+		## develop set default branches to develop if the named branch does not exist for a module
+		;;
 	--force|--f) force=1;;
+		## force will delete the www/openeyes directory without prompting - use with caution - useful to refresh an installation, or when moving between versions <=1.12 and verrsions >= 1.12.1
 	*) if [ ! -z "$i" ]; then branch=$1; fi
-            # any other text, assume is a branch name
+            # any other text, assume is a branch name. The given branch will be checked-out as part of the installer
     ;;
 esac
 done
