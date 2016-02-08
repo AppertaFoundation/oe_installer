@@ -156,10 +156,11 @@ tools sections above. However such use is outside our prescribed method for deve
 V1.12 represents a significant change in some code layout from previous versions. As a result, the safest upgrade path is to completely replace
 all code with a newly checked out site. Each live deployment will have their own minor differences, so only outline directions are provided here.
 <pre>
-+ Back-up the database and /var/www/openeyes directories
-+ Remove /var/www/openeyes
-+ Clone the oe_installer repository to a directory and sym-link that it to /vagrant
-+ Run: sudo /vagrant/install/upgrade-oe.sh 
++ Back-up the database 
++ Back up the /var/www/openeyes directories
++ Clone the oe_installer repository to a directory
++ cd to the cloned oe_installer directory
++ Run: sudo upgrade-oe.sh 
 + Edit the file /etc/openeyes/db.conf with your database credentials
 + Edit the /var/www/openeyes/protected/config/local/common.php file with values from your backed up copy
 </pre>

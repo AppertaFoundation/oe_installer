@@ -22,6 +22,8 @@ defaultbranch=master
 force=0
 killmodules=0
 migrate=1
+customgitroot=0
+nosummary=0
 branch=$defaultbranch
 for i in "$@"
 do
@@ -32,15 +34,30 @@ case $i in
 	-ff|-killmodules) force=1; killmodules=1 
 		## killmodules should only be used when moving backwards from versions 1.12.1 or later to version 1.12 or earlier - removes the /protected/modules folder and re-clones all modules
 		;;	
-	--develop|--d) defaultbranch=develop 
+	--develop|--d|-d) defaultbranch=develop 
 		## develop will use develop baranches when the named branch does not exist for a module (by default it would use master)
 		;;
-	--nomigrate|--n) migrate=0 
+	--nomigrate|--no-migrate|--n|-n) migrate=0 
 		## nomigrate will prevent database migrations from running automatically at the end of checkout
 		;;
-	*) if [ "$branch" == "master" ]; then branch=$i; else echo "Unknown command line: $1"; fi
-		## Set branch name
+	--root|-r|--r|--remote) customgitroot=1
+		## Await custom root for git repo in net parameter
 		;;
+	--no-summary) nosummary=1
+		## don't show summary of checkout at completion
+		;;
+	*)  if [ ! -z "$i" ]; then 
+			if [ "$customgitroot" = "1" ]; then
+				gitroot=$i;
+				customgitroot=0
+				## Set root path to repo
+			elif [ "$branch" == "master" ]; then 
+				branch=$i 
+			else echo "Unknown command line: $i"
+				## Set branch name
+			fi
+		fi
+    ;;
 esac
 done
 
@@ -194,16 +211,22 @@ oe-fix
 
 
 cd "$dir"
-printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
+
 
 # Automatically migrate up, unless --nomigrate parameter is given
 if [ "$migrate" = "1" ]; then
 	oe-migrate
 else
-	echo "Migrations were not run automaically. If you need to run the database migrations, run command oe-migrate"
+	echo "
+Migrations were not run automaically. If you need to run the database migrations, run command oe-migrate
+"
 fi
 
-oe-which
+# Show summary of checkout
+if [ ! "$nosummary" = "1" ]; then 
+	oe-which
+	printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
+fi
 
 echo ""
 

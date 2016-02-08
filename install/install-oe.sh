@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Terminate if any command fails
-set -e
-
 
 # Verify we are running as root
 if [[ $EUID -ne 0 ]]; then
@@ -26,50 +23,118 @@ defaultbranch=master
 live=0
 develop=0
 force=0
+customgitroot=0
 gitroot=openeyes
+cleanconfig=0
 # Process command line inputs
 for i in "$@"
 do
 case $i in
-    --live|-l|--upgrade|-u) live=1 
+    --live|-l|--upgrade|-u|--u) live=1 
 		## live will install for production ready environment
 		;;
 	--develop|-d|--d) develop=1; defaultbranch=develop
 		## develop set default branches to develop if the named branch does not exist for a module
 		;;
-	--force|-f|--f) force=1;;
+	--force|-f|--f) force=1
 		## force will delete the www/openeyes directory without prompting - use with caution - useful to refresh an installation, or when moving between versions <=1.12 and verrsions >= 1.12.1
-	*) if [ ! -z "$i" ]; then branch=$i; fi
-            # any other text, assume is a branch name. The given branch will be checked-out as part of the installer
+		;;
+	--clean|-ff|--ff) force=1; cleanconfig=1
+		## will completely wipe any existing openeyes configuration from /etc/openeyes - use with caution
+		;;
+	--root|-r|--r|--remote) customgitroot=1
+		## Await custom root for git repo in net parameter
+		;;
+	*)  if [ ! -z "$i" ]; then 
+			if [ "$customgitroot" = "1" ]; then
+				gitroot=$i
+				customgitroot=0
+				## Set root path to repo
+			else
+				if [ "$branch" == "master" ]; then branch=$i; else echo "Unknown command line: $i"; fi
+				## Set branch name
+			fi
+		fi
     ;;
 esac
 done
 
+echo "
 
-echo "Installing openeyes $branch" 
+Installing openeyes $branch from http://gitgub.com/$gitroot
 
-echo Downloading OpenEyes code base
+" 
+
+# Find real folder name where this script is located, then try symlinking it to /vagrant
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+# try the symlink - this is expected to fail in a vagrant environment
+# TODO detect if running in a vagrant environment and don't try linking (it isn't necessary)
+ln -s $DIR /vagrant 2>/dev/null
+if [ ! $? = 1 ]; then 
+	echo "
+	$DIR has been symlinked to /vagrant
+	"
+fi
+
+# Terminate if any command fails
+set -e
+
+echo "
+Downloading OpenEyes code base...
+"
+
 cd /var/www
+
 # If openeyes dir exists, prompt user to delete it
 if [ -d "openeyes" ]; then
-	if [ "$force" = "1" ]; then
-		rm -rf openeyes
-	else
-		echo "CAUTION: openeyes folder already exists. This installer will delete it. Any uncommitted changes will be lost. Do you wish to continue?"
+	if [ ! "$force" = "1" ]; then
+		echo "
+CAUTION: openeyes folder already exists. 
+This installer will delete it. Any uncommitted changes will be lost! 
+If you're upgrading this is necessary. 
+Do you wish to continue?
+"
 		select yn in "Yes" "No"; do
 			case $yn in
-				Yes ) echo "OK, removing existing openeyes folder"; rm -rf openeyes; break;;
-				No ) echo "OK, exiting..."; exit;;
+				Yes ) echo "OK."; force="1"; break;;
+				No ) echo "OK, aborting. Nothing has been changed...
+				"; exit;;
 			esac
 		done
+	fi
+	
+	if [ "$force" = "1" ]; then
+		if [ "$cleanconfig" = "1" ]; then
+			echo "cleaning old config from /etc/openeyes"
+			rm -rf /etc/openeyes
+			mkdir /etc/openeyes
+			cp -f /vagrant/install/etc/openeyes/* /etc/openeyes/
+			cp -f /vagrant/install/bashrc /etc/bash.bashrc
+		fi
+		
+		if [ -d "openeyes/protected/config" ]; then
+			echo "backing up previous configuration to /etc/openeyes/backup"
+			mkdir -p /etc/openeyes/backup/config
+			cp -f -r openeyes/protected/config/* /etc/openeyes/backup/config/
+		fi
+		
+		echo "Removing existing openeyes folder"
+		rm -rf openeyes
 	fi
 
 fi
 
 if [ "$develop" = 1 ]; then
-	oe-checkout $branch -f --nomigrate --develop
+	oe-checkout $branch -f --no-migrate --no-summary --develop
 else
-	oe-checkout $branch -f --nomigrate
+	oe-checkout $branch -f --no-migrate --no-summary
 fi
 
 cd /var/www/openeyes/protected
@@ -178,7 +243,7 @@ fi
 if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   hostname OpenEyesVM
   sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
-  cp /vagrant/install/bashrc /home/vagrant/.bashrc
+  cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
 fi
 
 if [ "$live" = "1" ]; then
