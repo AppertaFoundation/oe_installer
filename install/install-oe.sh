@@ -132,9 +132,9 @@ Do you wish to continue?
 fi
 
 if [ "$develop" = 1 ]; then
-	oe-checkout $branch -f --no-migrate --no-summary --develop
+	oe-checkout $branch -f --no-migrate --no-summary --no-fix --develop
 else
-	oe-checkout $branch -f --no-migrate --no-summary
+	oe-checkout $branch -f --no-migrate --no-summary --no-fix 
 fi
 
 cd /var/www/openeyes/protected
@@ -168,6 +168,8 @@ if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
 	chown -R www-data:www-data /var/www/*
 fi
 
+# call oe-fix
+oe-fix
 							
 if [ ! "$live" = "1" ]; then
 	echo Creating blank database
