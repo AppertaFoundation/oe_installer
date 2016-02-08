@@ -13,32 +13,33 @@ fi
 # copy our commands to /usr/bin
 cp /vagrant/install/oe-* /usr/bin
 
-# copy our new configs to /etc/openeyes
+# copy our new configs to /etc/openeyes (don't overwrite existing config)
 mkdir -p /etc/openeyes
-cp -f /vagrant/install/etc/openeyes/* /etc/openeyes/
-cp -f /vagrant/install/bashrc /etc/bash.bashrc
+cp -n /vagrant/install/etc/openeyes/* /etc/openeyes/
+cp -n /vagrant/install/bashrc /etc/bash.bashrc
 
 # set command options
 # Chose branch / tag to clone (default is master)
 # set live
 branch=master
+defaultbranch=master
 live=0
 develop=0
 force=0
-
+gitroot=openeyes
 # Process command line inputs
 for i in "$@"
 do
 case $i in
-    --live|--l) live=1 
+    --live|-l|--upgrade|-u) live=1 
 		## live will install for production ready environment
 		;;
-	--develop|--d) develop=1 
+	--develop|-d|--d) develop=1; defaultbranch=develop
 		## develop set default branches to develop if the named branch does not exist for a module
 		;;
-	--force|--f) force=1;;
+	--force|-f|--f) force=1;;
 		## force will delete the www/openeyes directory without prompting - use with caution - useful to refresh an installation, or when moving between versions <=1.12 and verrsions >= 1.12.1
-	*) if [ ! -z "$i" ]; then branch=$1; fi
+	*) if [ ! -z "$i" ]; then branch=$i; fi
             # any other text, assume is a branch name. The given branch will be checked-out as part of the installer
     ;;
 esac
@@ -104,25 +105,39 @@ fi
 
 							
 if [ ! "$live" = "1" ]; then
-echo Creating blank database
-cd $installdir
+	echo Creating blank database
+	cd $installdir
 
-echo "
-drop database if exists openeyes;
-create database openeyes;
-grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
-flush privileges;
-" > /tmp/openeyes-mysql-create.sql
+	echo "
+	drop database if exists openeyes;
+	create database openeyes;
+	grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
+	flush privileges;
+	" > /tmp/openeyes-mysql-create.sql
 
-mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
-rm /tmp/openeyes-mysql-create.sql
+	mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
+	rm /tmp/openeyes-mysql-create.sql
 
 
-echo Downloading database
-cd /var/www/openeyes/protected/modules
-git clone -b release/v1.11.2 https://github.com/openeyes/Sample.git sample
-cd sample/sql
-mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
+	echo Downloading database
+	cd /var/www/openeyes/protected/modules
+	if ! git clone -b $branch https://github.com/$gitroot/Sample.git sample ; then 
+		echo "$branch doesn't exist for sample database. Falling back to $defaultbranch branch for openeyes..."
+		git clone -b $defaultbranch https://github.com/$gitroot/Sample.git sample
+	fi
+	
+	cd sample/sql
+	mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
+	
+	# # Set banner to show branch name
+	echo "
+	use openeyes;
+	UPDATE openeyes.setting_installation s SET s.value='New openeyes installation - $branch' WHERE s.key='watermark';
+	" > /tmp/openeyes-mysql-setbanner.sql
+
+	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
+	rm /tmp/openeyes-mysql-setbanner.sql
+	
 fi
 
 
@@ -134,25 +149,25 @@ cd /var/www/openeyes/protected
 
 
 if [ ! "$live" = "1" ]; then
-echo Configuring Apache
+	echo Configuring Apache
 
-echo "
-<VirtualHost *:80>
-ServerName hostname
-DocumentRoot /var/www/openeyes
-<Directory /var/www/openeyes>
-    Options FollowSymLinks
-    AllowOverride All
-    Order allow,deny
-    Allow from all
-</Directory>
-ErrorLog /var/log/apache2/error.log
-LogLevel warn
-CustomLog /var/log/apache2/access.log combined
-</VirtualHost>
-" > /etc/apache2/sites-available/000-default.conf
+	echo "
+	<VirtualHost *:80>
+	ServerName hostname
+	DocumentRoot /var/www/openeyes
+	<Directory /var/www/openeyes>
+		Options FollowSymLinks
+		AllowOverride All
+		Order allow,deny
+		Allow from all
+	</Directory>
+	ErrorLog /var/log/apache2/error.log
+	LogLevel warn
+	CustomLog /var/log/apache2/access.log combined
+	</VirtualHost>
+	" > /etc/apache2/sites-available/000-default.conf
 
-apache2ctl restart
+	apache2ctl restart
 fi
 
 

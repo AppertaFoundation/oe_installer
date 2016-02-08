@@ -1,6 +1,56 @@
 #!/bin/bash
 
+# Process commandline parameters
+
+nobanner=0
+custombanner=0
+custombranch=0
+migrate=1
+bannertext="Database reset at $(date)"
+branch=0
+defaultbranch="master"
+for i in "$@"
+do
+case $i in
+	-nb|--no-banner) nobanner=1 
+		## Do not update the user banner after reset
+		;; 
+	--no-migrate|-nm|--nomigrate) migrate=0 
+		## nomigrate will prevent database migrations from running automatically at the end of reset
+		;;
+	--banner) custombanner=1
+		## Await custom banner text in next parameter
+		;;
+	--branch|-b) custombranch=1
+		## Await branch name in next parameter
+		;;
+	--develop|-d) defaultbranch="develop"
+		## when combined with --branch, will fallback to develop branch if named branch is not found
+		;;
+	*)  if [ "$custombanner" = "1" ]; then bannertext=$i; custombanner=0; fi
+			## Set banner text to custom input after reset
+		
+		if [ "$custombranch" = "1" ]; then branch=$i; custombranch=0; fi
+			## reset to a new branch
+		;;
+esac
+done
+
 dir=$PWD
+
+if [ ! "$branch" = "0" ]; then
+	## Checkout new sample database branch
+	echo "Downloading database for $branch"
+	
+	cd /var/www/openeyes/protected/modules/sample
+
+	git reset --hard
+	git fetch --all
+
+	git checkout tags/$branch 2>/dev/null
+	if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
+	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
+fi
 
 cd /var/www/openeyes/protected/modules/sample/sql
 
@@ -16,14 +66,28 @@ flush privileges;
 mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
 rm /tmp/openeyes-mysql-create.sql
 
+echo "Re-importing database"
+mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
 
-echo Re-importing database
-mysql -uopeneyes "-popeneyes" -D openeyes < openeyes_sample_data.sql
+# Run migrations
+if [ $migrate = "1" ]; then
+	echo Performing database migrations
+	cd /var/www/openeyes/protected
+	./yiic migrate --interactive=0
+	./yiic migratemodules --interactive=0
+fi
 
-echo Performing database migrations
-cd /var/www/openeyes/protected
-./yiic migrate --interactive=0
-./yiic migratemodules --interactive=0
+# Set banner to confirm reset
+if [ ! $nobanner = "1" ]; then	
+	echo "setting banner to: $bannertext"
+	echo "
+	use openeyes;
+	UPDATE openeyes.setting_installation s SET s.value='$bannertext' WHERE s.key='watermark';
+	" > /tmp/openeyes-mysql-setbanner.sql
+
+	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
+	rm /tmp/openeyes-mysql-setbanner.sql
+fi
 
 cd "$dir"
 printf "\e[42m\e[97m  RESET COMPLETE  \e[0m \n"
