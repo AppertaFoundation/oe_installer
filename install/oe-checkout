@@ -22,6 +22,7 @@ defaultbranch=master
 force=0
 killmodules=0
 migrate=1
+fix=1
 customgitroot=0
 nosummary=0
 branch=$defaultbranch
@@ -45,6 +46,9 @@ case $i in
 		;;
 	--no-summary) nosummary=1
 		## don't show summary of checkout at completion
+		;;
+	--no-fix) fix=0
+		## don't run oe-fix at completion
 		;;
 	*)  if [ ! -z "$i" ]; then 
 			if [ "$customgitroot" = "1" ]; then
@@ -207,8 +211,7 @@ done
 
 
 # Now reset/relink various config files etc
-oe-fix
-
+if [ "$fix" = "1" ]; then  oe-fix; fi
 
 cd "$dir"
 
