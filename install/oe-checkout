@@ -3,7 +3,7 @@
 git config core.fileMode false
 
 if [[ -z "$1" ]] ; then
-  echo "usage: $0 <branch> [-f] [--nomigrate]"
+  echo "usage: $0 <branch> [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [-r <remote>] [--no-summary] [--develop | -d]"
   echo "-f forces the checkout, even if local changes are uncommitted"
   echo "--nomigrate will prevent database migrations running automatically after checkout"
   exit 1
@@ -23,16 +23,17 @@ force=0
 killmodules=0
 migrate=1
 fix=1
+compile=1
 customgitroot=0
 nosummary=0
 branch=$defaultbranch
 for i in "$@"
 do
 case $i in
-	-f|-force) force=1 
+	-f|-force|--force) force=1 
 		## Force will ignore any uncomitted changes and checkout over the top
 		;; 
-	-ff|-killmodules) force=1; killmodules=1 
+	-ff|--killmodules|--kill-modules) force=1; killmodules=1 
 		## killmodules should only be used when moving backwards from versions 1.12.1 or later to version 1.12 or earlier - removes the /protected/modules folder and re-clones all modules
 		;;	
 	--develop|--d|-d) defaultbranch=develop 
@@ -49,6 +50,9 @@ case $i in
 		;;
 	--no-fix) fix=0
 		## don't run oe-fix at completion
+		;;
+	--no-compile) compile=0
+		## don't compile java
 		;;
 	*)  if [ ! -z "$i" ]; then 
 			if [ "$customgitroot" = "1" ]; then
@@ -208,6 +212,23 @@ for module in ${javamodules[@]}; do
     cd ..
   fi
 done
+
+# Compile IOLImporter 
+##TODO: When we have more java modules, replace with a generic compilation model
+if [ $compile = 1 ]; then
+  echo "
+  Compiling IOLMAsterImport. Please wait....
+  "
+  
+  cd IOLMasterImport
+  ./compile.sh 
+  if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
+fi
+
+# symlink lib for IOLMasterImport
+##TODO:  When we have more java modules, replace with a generic compilation model
+ln -s ./lib ./dist/lib
+if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
 
 
 # Now reset/relink various config files etc

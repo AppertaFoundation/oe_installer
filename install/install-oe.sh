@@ -8,7 +8,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # copy our commands to /usr/bin
-cp /vagrant/install/oe-* /usr/bin
+cp -f /vagrant/install/oe-* /usr/bin
 
 # copy our new configs to /etc/openeyes (don't overwrite existing config)
 mkdir -p /etc/openeyes
