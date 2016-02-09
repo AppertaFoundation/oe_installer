@@ -29,31 +29,20 @@ if [ ! -d "protected/config/local" ]; then
 fi;
 
 # Make sure yii framework found/linked
-linkme=0
-if [ ! -d "/var/www/openeyes/vendor/yiisoft/yii" ]; then 
-	# if directory doesn't exist
-	linkme=1;
+rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
+mkdir -p /var/www/openeyes/vendor/yiisoft
+if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data /var/www/openeyes/vendor; fi
+
+if [ -d "/usr/lib/openeyes/yii" ]; then
+	# v1.12+
+	echo "Linking Yii framework to /usr/lib/openeyes/yii" 
+	ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii 
 else
-	if [ -h "/var/www/openeyes/vendor/yiisoft/yii" ]; then
-		# if director exists, but is a symlink
-		linkme=1
-	fi
+	#fix for pre v1.12
+	echo "Linking Yii framework to /var/www/openeyes/protected/yii"
+	ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii 
 fi
-if [ $linkme = 1 ]; then
-		rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
-		mkdir -p /var/www/openeyes/vendor/yiisoft
-		if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data /var/www/openeyes/vendor; fi
-		
-		if [ -d "/usr/lib/openeyes/yii" ]; then
-			# v1.12+
-			echo "Linking Yii framework to /usr/lib/openeyes/yii" 
-			ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii 
-		else
-			#fix for pre v1.12
-			echo "Linking Yii framework to /var/www/openeyes/protected/yii"
-			ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii 
-		fi
-fi
+
 
 # Make sure vendor directory found/linked
 if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
