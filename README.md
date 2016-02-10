@@ -2,7 +2,6 @@
 
 This repository should be the only one checked out when building a new OpenEyes machine instance.
 
-**NOTE: Currently this installer does not work for older code versions. The first supported version is the release/1.12 branch of openeyes. This is included in the install instructions below and will be updated once a new release is available**
 
 **Index:**
 
@@ -41,18 +40,17 @@ Software required:
 2. From a terminal window, change to your home directory. Run: cd ~
 3. Clone OpenEyes/oe_installer to a directory of your choice. Run: git clone https://github.com/openeyes/oe_installer.git ~/openeyes
 4. Create the virtual server from your project directory. Run: cd ~/openeyes && vagrant up
-4. Once built (approx. 5 minutes), run: vagrant ssh
-5. From within the vagrant box, run the following commands:
-  i. sudo /vagrant/install/install-system.sh release/1.12
+5. Once built (approx. 5 minutes), run: vagrant ssh
+6. From within the vagrant box, run the following commands:
+  i. sudo /vagrant/install/install-system.sh
   ii. sudo /vagrant/install/install-oe.sh
-6. Checkout the desired branch. Run oe-checkout xxxxx (see Default development tools for details)
-7. Update the database using oe-migrate (see Default development tools for details)
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100
 You can follow the sections below on [Default development tools](#default-development-tools) and [Additional development tools](#additional-development-tools) should you need them.
 
 #### Installing for Windows 7 or later
+<b>IMPORTANT:</b> For this installer to run, the vagrant up command must be issued from a command window with elevated priviledges (admin command prompt). This is due to a limitation with VirtualBox not being able to create symbolic links to shared folders unless it has admin rights. Failure to do this will result in unpredictable consequences!
 
 <b>NOTE:</b> These instructions assume you are installing in to a directory called C:\openeyes on the host. You may change this 
 path as you see fit. However, please note that Windows struggles with filenames longer than 275 characters on file shares, so
@@ -66,15 +64,14 @@ Software required:
 
 <pre>
 1. Install Vagrant, VirtualBox and Git as listed above.
-2. From a terminal window, change to your home directory. Run: cd c:\
+2. From an administrative terminal window, change to your root directory. Run: cd c:\
 3. Clone OpenEyes/oe_installer to a directory of your choice. Run: git clone https://github.com/openeyes/oe_installer.git c:\openeyes
-4. Create the virtual server from your project directory. Run: vagrant up
-4. Once built (approx. 5 minutes), run: vagrant ssh
-5. From within the vagrant box, run the following commands:
+4. Change to the newly created openeyes directory. Run: cd openeyes
+5. Create the virtual server from your project directory. Run: vagrant up
+6. Once built (approx. 5 minutes), run: vagrant ssh
+7. From within the vagrant box, run the following commands:
   i. sudo /vagrant/install/install-system.sh
-  ii. sudo /vagrant/install/install-oe.sh release/1.12
-6. Checkout the desired branch. Run oe-checkout xxxxx (see Default development tools for details)
-7. Update the database using oe-migrate (see Default development tools for details)
+  ii. sudo /vagrant/install/install-oe.sh
 </pre>
 
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
@@ -97,7 +94,7 @@ Note that changes only take effect on subsequent logins.
 Several additional dev commands have been created for you in /usr/bin, to aid development. These can be run from any directory within the VM, but should be run as root (or sudo).
 
 + oe-which: tells you the current branch name for each of your code modules
-+ oe-checkout: will go through each code module and try to checkout the requested branch
++ oe-checkout <branch>: will go through each code module and try to checkout the requested branch
 + oe-update: will go through each code module and update (i.e. pull the latest) code for each
 + oe-reset: will drop the current database and re-install it (also runs oe-migrate to bring the newly installed databas eup to date)
 + oe-migrate: performs database migrations (normally used after a change to a newer code branch)
