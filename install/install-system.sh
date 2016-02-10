@@ -67,6 +67,10 @@ a2enmod rewrite
 cp /vagrant/install/bashrc /etc/bash.bashrc
 source /vagrant/install/bashrc
 
+# Bind mysql to accept connections from remote servers
+## TODO: only do this for vagrant environments
+sed -i "s/\s*bind-address\s*=\s*127\.0\.0\.1/bind-address    = 0.0.0.0/" /etc/mysql/my.cnf
+/etc/init.d/mysql restart
 
 echo --------------------------------------------------
 echo SYSTEM SOFTWARE INSTALLED
