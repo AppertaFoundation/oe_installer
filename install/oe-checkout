@@ -30,16 +30,16 @@ branch=$defaultbranch
 for i in "$@"
 do
 case $i in
-	-f|-force|--force) force=1 
+	-f|-force|--force) force=1
 		## Force will ignore any uncomitted changes and checkout over the top
-		;; 
-	-ff|--killmodules|--kill-modules) force=1; killmodules=1 
+		;;
+	-ff|--killmodules|--kill-modules) force=1; killmodules=1
 		## killmodules should only be used when moving backwards from versions 1.12.1 or later to version 1.12 or earlier - removes the /protected/modules folder and re-clones all modules
-		;;	
-	--develop|--d|-d) defaultbranch=develop 
+		;;
+	--develop|--d|-d) defaultbranch=develop
 		## develop will use develop baranches when the named branch does not exist for a module (by default it would use master)
 		;;
-	--nomigrate|--no-migrate|--n|-n) migrate=0 
+	--nomigrate|--no-migrate|--n|-n) migrate=0
 		## nomigrate will prevent database migrations from running automatically at the end of checkout
 		;;
 	--root|-r|--r|--remote) customgitroot=1
@@ -54,13 +54,13 @@ case $i in
 	--no-compile) compile=0
 		## don't compile java
 		;;
-	*)  if [ ! -z "$i" ]; then 
+	*)  if [ ! -z "$i" ]; then
 			if [ "$customgitroot" = "1" ]; then
 				gitroot=$i;
 				customgitroot=0
 				## Set root path to repo
-			elif [ "$branch" == "master" ]; then 
-				branch=$i 
+			elif [ "$branch" == "master" ]; then
+				branch=$i
 			else echo "Unknown command line: $i"
 				## Set branch name
 			fi
@@ -73,10 +73,10 @@ echo "Checking out $branch..."
 
 if [ ! "$force" = "1" ]; then
 	echo "checking for uncommited changes"
-	
+
 	  changes=0
 	  modulelist=""
-	 
+
 	  # Check openeyes core
 	  cd /var/www/openeyes
 	  git diff --quiet
@@ -84,18 +84,18 @@ if [ ! "$force" = "1" ]; then
 		  changes=1
 		  modulelist="$modulelist openeyes"
 	  fi
-	  
+
 	  # ensure modules directory exists - prevents code being checked out to wrong place
 	  mkdir -p /var/www/openeyes/protected/modules
 	  cd /var/www/openeyes/protected/modules
 	  for module in ${modules[@]}; do
-		if [ ! -d "$module" ]; then 
+		if [ ! -d "$module" ]; then
 			if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
 		else
 			if [ ! "$module" = "openeyes" ]; then cd $module; fi
-		
+
 			# check if this is a git repo
-			if [ -d ".git" ]; then		
+			if [ -d ".git" ]; then
 					git diff --quiet
 					if [ ! $? = 0 ]; then
 					  changes=1
@@ -103,7 +103,7 @@ if [ ! "$force" = "1" ]; then
 					fi
 			fi
 		fi
-		
+
 		if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	  done
 
@@ -142,10 +142,10 @@ if [ $killmodules = 1 ]; then rm -rf /var/www/openeyes/protected/modules; fi
 mkdir -p /var/www/openeyes
 cd /var/www/openeyes
 
-if [ ! -d ".git " ]; then 
+if [ ! -d ".git " ]; then
 	printf "\e[32mopeneyes: Doesn't currently exist - cloning: \e[0m"
 	# checkout branch. If branch doesn't exist then get default instead
-	if ! git clone -b $branch https://github.com/$gitroot/openeyes ./ ; then 
+	if ! git clone -b $branch https://github.com/$gitroot/openeyes ./ ; then
 		echo "$branch doesn't exist. Falling back to $defaultbranch branch for openeyes..."
 		if ! git clone -b $defaultbranch https://github.com/$gitroot/openeyes ./ ; then
 			# If we cannot find default branch at specifeid remote, fall back to OE git hub
@@ -171,14 +171,14 @@ mkdir -p /var/www/openeyes/protected/modules
 cd /var/www/openeyes/protected/modules
 
 for module in ${modules[@]}; do
-  if [ ! -d "$module" ]; then 
-		if [ ! "$module" = "openeyes" ]; then 
+  if [ ! -d "$module" ]; then
+		if [ ! "$module" = "openeyes" ]; then
 			printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
-			
+
 			# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $branch https://github.com/$gitroot/$module; then 
+			if ! git clone -b $branch https://github.com/$gitroot/$module; then
 				echo "falling back to $defaultbranch branch for $module..."
-				if ! git clone -b $defaultbranch https://github.com/$gitroot/$module 
+				if ! git clone -b $defaultbranch https://github.com/$gitroot/$module ; then
 					# If we cannot find default branch at specifeid remote, fall back to OE git hub
 					if [ "$gitroot != "openeyes ]; then
 						echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
@@ -189,7 +189,7 @@ for module in ${modules[@]}; do
 		fi
   else
     cd $module
-	
+
 	# Check if this is a git repo
     if [ -d ".git" ]; then
 		printf "\e[32m$module: \e[0m"
@@ -210,11 +210,11 @@ for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then
     printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
 	# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $branch https://github.com/$gitroot/$module; then 
+			if ! git clone -b $branch https://github.com/$gitroot/$module; then
 				echo "falling back to $defaultbranch branch for $module..."
-				git clone -b $defaultbranch https://github.com/$gitroot/$module 
+				git clone -b $defaultbranch https://github.com/$gitroot/$module
 			fi
-  else 
+  else
     cd $module
     git reset --hard
     git fetch --all
@@ -225,15 +225,15 @@ for module in ${javamodules[@]}; do
   fi
 done
 
-# Compile IOLImporter 
+# Compile IOLImporter
 ##TODO: When we have more java modules, replace with a generic compilation model
 if [ $compile = 1 ]; then
   echo "
   Compiling IOLMAsterImport. Please wait....
   "
-  
+
   cd IOLMasterImport
-  ./compile.sh 
+  ./compile.sh
   if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
 fi
 
@@ -259,10 +259,9 @@ Migrations were not run automaically. If you need to run the database migrations
 fi
 
 # Show summary of checkout
-if [ ! "$nosummary" = "1" ]; then 
+if [ ! "$nosummary" = "1" ]; then
 	oe-which
 	printf "\e[42m\e[97m  CHECKOUT COMPLETE  \e[0m \n"
 fi
 
 echo ""
-
