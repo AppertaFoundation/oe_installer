@@ -126,14 +126,6 @@ if [ ! "$force" = "1" ]; then
 	  changes=0
 	  modulelist=""
 
-	  # Check openeyes core
-	  cd /var/www/openeyes
-	  git diff --quiet
-	  if [ ! $? = 0 ]; then
-		  changes=1
-		  modulelist="$modulelist openeyes"
-	  fi
-
 	  # ensure modules directory exists - prevents code being checked out to wrong place
 	  mkdir -p /var/www/openeyes/protected/modules
 	  cd /var/www/openeyes/protected/modules
@@ -144,7 +136,7 @@ if [ ! "$force" = "1" ]; then
 			if [ ! "$module" = "openeyes" ]; then cd $module; fi
 
 			# check if this is a git repo
-			if [ -d ".git" ]; then
+			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
 					git diff --quiet
 					if [ ! $? = 0 ]; then
 					  changes=1
@@ -185,62 +177,66 @@ if [ ! "$force" = "1" ]; then
 fi
 
 # If -ff was speified, kill all existing modules and re-clone
-if [ $killmodules = 1 ]; then rm -rf /var/www/openeyes/protected/modules; fi
+if [ $killmodules = 1 ]; then
+	echo ""
+	echo "Removing all modules from protected/modules..."
+	echo ""
+	rm -rf /var/www/openeyes/protected/modules
+fi
 
-# check out openeyes core
-mkdir -p /var/www/openeyes
-cd /var/www/openeyes
+# Check out or clone the code modules
+mkdir -p /var/www/
+cd /var/www
 
-if [ ! -d ".git " ]; then
-	printf "\e[32mopeneyes: Doesn't currently exist - cloning from https://${httpuserstring}github.com/$gitroot/openeyes: \e[0m"
-	# checkout branch. If branch doesn't exist then get default instead
-	if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/openeyes ./ ; then
-		echo "$branch doesn't exist. Falling back to $defaultbranch branch for openeyes..."
-		if ! git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/openeyes ./ ; then
+for module in ${modules[@]}; do
+
+  clone=0
+
+  # Move from openeyes repo to modules - NOTE THAT openeyes must be the first module in the modules list, otherwise things go very wrong!
+  if [ ! "$module" = "openeyes" ]; then
+      mkdir -p /var/www/openeyes/protected/modules
+      cd /var/www/openeyes/protected/modules
+  fi
+
+  # Determine if module already exists. If not, clone it
+  if [ ! -d "$module" ] && [ ! "$module" = "openeyes" ]; then
+      clone=1
+  elif [ "$module" = "openeyes" ] && [ ! -d "/var/www/openeyes/.git" ]; then
+      clone=1
+      # If we're dealing with the openeyes parent repo, then clone to the www root
+      #cloneto="/var/www/openeyes"
+  fi
+
+  if [ $clone = 1 ]; then
+
+	printf "\e[32m$module: Doesn't currently exist - cloning from : https://${httpuserstring}github.com/$gitroot/$module \e[0m"
+
+	# checkout branch. If branch doesn't exist then get master instead
+	if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/$module ; then
+		echo "falling back to $defaultbranch branch for $module..."
+		if ! git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/$module ; then
 			# If we cannot find default branch at specifeid remote, fall back to OE git hub
 			if [ "$gitroot != "openeyes ]; then
 				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				git clone -b $defaultbranch https://${httpuserstring}github.com/openeyes/openeyes ./
+				git clone -b $defaultbranch https://${httpuserstring}github.com/openeyes/$module
 			fi
 		fi
 	fi
-else
-	printf "\e[32mopeneyes: \e[0m"
-
-	git reset --hard
-	git fetch --all
-
-	git checkout tags/$branch 2>/dev/null
-	if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
-	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
-fi
-
-# Check out the PHP modules
-mkdir -p /var/www/openeyes/protected/modules
-cd /var/www/openeyes/protected/modules
-
-for module in ${modules[@]}; do
-  if [ ! -d "$module" ]; then
-		if [ ! "$module" = "openeyes" ]; then
-			printf "\e[32m$module: Doesn't currently exist - cloning from : https://${httpuserstring}github.com/$gitroot/$module \e[0m"
-
-			# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/$module; then
-				echo "falling back to $defaultbranch branch for $module..."
-				if ! git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/$module ; then
-					# If we cannot find default branch at specifeid remote, fall back to OE git hub
-					if [ "$gitroot != "openeyes ]; then
-						echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-						git clone -b $defaultbranch https://${httpuserstring}github.com/openeyes/$module./
-					fi
-				fi
-			fi
-		fi
   else
-    cd $module
 
-	# Check if this is a git repo
-    if [ -d ".git" ]; then
+    dirchanged=0
+    processgit=1
+
+    # Determine if module is part of core or a sub-repo - don't process modules that are part of core
+    if [ ! "$module" = "openeyes" ]; then
+        # If we're not processing the parent openeyes repo, then traverse into the module's subdir
+        cd $module
+        if [ ! -d ".git" ]; then processgit=0; fi
+    else
+        cd /var/www/openeyes
+    fi
+
+    if [ $processgit = 1 ]; then
 		printf "\e[32m$module: \e[0m"
 		git reset --hard
 		git fetch --all
@@ -248,7 +244,7 @@ for module in ${modules[@]}; do
 		if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
 		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
 	fi
-    cd ..
+
   fi
 done
 
