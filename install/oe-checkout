@@ -1,24 +1,12 @@
 #!/bin/bash
 
-git config core.fileMode false
-
-if [[ -z "$1" ]] ; then
-  echo "usage: $0 <branch> [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [-r <remote>] [--no-summary] [--develop | -d]"
-  echo "-f forces the checkout, even if local changes are uncommitted"
-  echo "--nomigrate will prevent database migrations running automatically after checkout"
-  exit 1
-fi
-
 source /etc/openeyes/modules.conf
 dir=$PWD
-gitroot="openeyes"
-
-defaultbranch=master
 
 
 # Process commandline parameters
-#  If -f was not specified on the command line, then check each module
-#  to see if any changes are unstaged.
+gitroot="openeyes"
+defaultbranch=master
 force=0
 killmodules=0
 migrate=1
@@ -27,6 +15,13 @@ compile=1
 customgitroot=0
 nosummary=0
 branch=$defaultbranch
+username=""
+pass=""
+httpuserstring=""
+showhelp=0
+
+if [ -z "$1" ]; then showhelp=1; fi
+
 for i in "$@"
 do
 case $i in
@@ -53,7 +48,13 @@ case $i in
 		;;
 	--no-compile) compile=0
 		## don't compile java
-		;;
+	;;
+    -u*) username="${i:2}"
+    ;;
+    -p*) pass="${i:2}"
+    ;;
+    --help) showhelp=1
+    ;;
 	*)  if [ ! -z "$i" ]; then
 			if [ "$customgitroot" = "1" ]; then
 				gitroot=$i;
@@ -69,9 +70,57 @@ case $i in
 esac
 done
 
+# Create correct user string to pass to github
+if [ ! -z $username ]; then
+    if [ ! -z $pass ]; then
+        httpuserstring="${username}:${pass}@"
+    else
+        httpuserstring="${username}@"
+    fi
+fi
+
+# Show help text
+if [ $showhelp = 1 ]; then
+    echo ""
+    echo "DESCRIPTION:"
+    echo "Checks-out all modules of a specified branch. If a module does not exist locally then it will be cloned"
+    echo ""
+    echo "usage: $0 <branch> [--help] [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [-r <remote>] [--no-summary] [--develop | -d] [-u<username>]  [-p<password>]"
+    echo ""
+    echo "COMMAND OPTIONS:"
+    echo "  <branch>       : Checkout / clone the specified <branch>"
+    echo "  --help         : Display this help text"
+    echo "  --no-migrate "
+    echo "          | -n   : Prevent database migrations running automatically after"
+    echo "                   checkout"
+    echo "  --force | -f   : forces the checkout, even if local changes are uncommitted"
+    echo "  --kill-modules "
+    echo "          | -ff  : Will delete all items from protected/modules before checking"
+    echo "                   out. This is required when switching between versions <= 1.12 "
+    echo "                   and versions >= 1.12.1"
+    echo "  --no-compile   : Do not complile java modules after Checkout"
+    echo "  -r <remote>    : Use the specifed remote github fork - defaults to openeyes"
+    echo "  --develop "
+    echo "           |-d   : If specified branch is not found, fallback to develop branch"
+    echo "                   - default woud fallback to master"
+    echo "  --no-summary   : Do not display a summary of the checked-out modules after "
+    echo "                   completion"
+    echo "  -u<username>   : Use the specified <username> for connecting to github"
+    echo "                   - default is anonymous"
+    echo "  -p<password>   : Use the specified <password> for connecting to github"
+    echo "                   - default is to prompt"
+    echo ""
+    exit 1
+fi
+echo ""
 echo "Checking out $branch..."
+echo ""
+
+git config core.fileMode false 2>/dev/null
+
 
 if [ ! "$force" = "1" ]; then
+    echo ""
 	echo "checking for uncommited changes"
 
 	  changes=0
@@ -143,15 +192,15 @@ mkdir -p /var/www/openeyes
 cd /var/www/openeyes
 
 if [ ! -d ".git " ]; then
-	printf "\e[32mopeneyes: Doesn't currently exist - cloning: \e[0m"
+	printf "\e[32mopeneyes: Doesn't currently exist - cloning from https://${httpuserstring}github.com/$gitroot/openeyes: \e[0m"
 	# checkout branch. If branch doesn't exist then get default instead
-	if ! git clone -b $branch https://github.com/$gitroot/openeyes ./ ; then
+	if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/openeyes ./ ; then
 		echo "$branch doesn't exist. Falling back to $defaultbranch branch for openeyes..."
-		if ! git clone -b $defaultbranch https://github.com/$gitroot/openeyes ./ ; then
+		if ! git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/openeyes ./ ; then
 			# If we cannot find default branch at specifeid remote, fall back to OE git hub
 			if [ "$gitroot != "openeyes ]; then
 				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				git clone -b $defaultbranch https://github.com/openeyes/openeyes ./
+				git clone -b $defaultbranch https://${httpuserstring}github.com/openeyes/openeyes ./
 			fi
 		fi
 	fi
@@ -173,16 +222,16 @@ cd /var/www/openeyes/protected/modules
 for module in ${modules[@]}; do
   if [ ! -d "$module" ]; then
 		if [ ! "$module" = "openeyes" ]; then
-			printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
+			printf "\e[32m$module: Doesn't currently exist - cloning from : https://${httpuserstring}github.com/$gitroot/$module \e[0m"
 
 			# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $branch https://github.com/$gitroot/$module; then
+			if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/$module; then
 				echo "falling back to $defaultbranch branch for $module..."
-				if ! git clone -b $defaultbranch https://github.com/$gitroot/$module ; then
+				if ! git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/$module ; then
 					# If we cannot find default branch at specifeid remote, fall back to OE git hub
 					if [ "$gitroot != "openeyes ]; then
 						echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-						git clone -b $defaultbranch https://github.com/openeyes/$module./
+						git clone -b $defaultbranch https://${httpuserstring}github.com/openeyes/$module./
 					fi
 				fi
 			fi
@@ -210,9 +259,9 @@ for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then
     printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
 	# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $branch https://github.com/$gitroot/$module; then
+			if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/$module; then
 				echo "falling back to $defaultbranch branch for $module..."
-				git clone -b $defaultbranch https://github.com/$gitroot/$module
+				git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/$module
 			fi
   else
     cd $module
@@ -233,7 +282,7 @@ if [ $compile = 1 ]; then
   "
 
   cd IOLMasterImport
-  ./compile.sh
+  ./compile.sh > /dev/null 2>&1
   if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
 fi
 

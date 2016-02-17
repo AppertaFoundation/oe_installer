@@ -26,11 +26,18 @@ force=0
 customgitroot=0
 gitroot=openeyes
 cleanconfig=0
+username=""
+pass=""
+httpuserstring=""
+showhelp=0
+
+if [ -z "$1" ]; then showhelp=1; fi
+
 # Process command line inputs
 for i in "$@"
 do
 case $i in
-    --live|-l|--upgrade|-u|--u) live=1 
+    --live|-l|--upgrade|-u|--u) live=1
 		## live will install for production ready environment
 		;;
 	--develop|-d|--d) develop=1; defaultbranch=develop
@@ -45,7 +52,13 @@ case $i in
 	--root|-r|--r|--remote) customgitroot=1
 		## Await custom root for git repo in net parameter
 		;;
-	*)  if [ ! -z "$i" ]; then 
+    -u*) username="${i:2}"
+    ;;
+    -p*) pass="${i:2}"
+    ;;
+    --help) showhelp=1
+    ;;
+	*)  if [ ! -z "$i" ]; then
 			if [ "$customgitroot" = "1" ]; then
 				gitroot=$i
 				customgitroot=0
@@ -59,11 +72,50 @@ case $i in
 esac
 done
 
+# Create correct user string to pass to github
+if [ ! -z $username ]; then
+    if [ ! -z $pass ]; then
+        httpuserstring="${username}:${pass}@"
+    else
+        httpuserstring="${username}@"
+    fi
+fi
+
+# Show help text
+if [ $showhelp = 1 ]; then
+    echo ""
+    echo "DESCRIPTION:"
+    echo "Installs the openeyes application"
+    echo ""
+    echo "usage: $0 <branch> [--help] [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [-r <remote>] [--no-summary] [--develop | -d] [-u<username>]  [-p<password>]"
+    echo ""
+    echo "COMMAND OPTIONS:"
+    echo "  <branch>       : Install the specified <branch> / tag - defualt is to install master"
+    echo "  --help         : Display this help text"
+    echo "  --force | -f   : delete the www/openeyes directory without prompting "
+    echo "                   - use with caution - useful to refresh an installation,"
+    echo "                     or when moving between versions <=1.12 and versions >= 1.12.1"
+    echo "  --clean | -ff  : will completely wipe any existing openeyes configuration "
+    echo "                   out. This is required when switching between versions <= 1.12 "
+    echo "                   from /etc/openeyes - use with caution"
+    echo "  -r <remote>    : Use the specifed remote github fork - defaults to openeyes"
+    echo "  --develop "
+    echo "           |-d   : If specified branch is not found, fallback to develop branch"
+    echo "                   - default woud fallback to master"
+    echo "  -u<username>   : Use the specified <username> for connecting to github"
+    echo "                   - default is anonymous"
+    echo "  -p<password>   : Use the specified <password> for connecting to github"
+    echo "                   - default is to prompt"
+    echo ""
+    exit 1
+fi
+
+
 echo "
 
-Installing openeyes $branch from http://gitgub.com/$gitroot
+Installing openeyes $branch from https://gitgub.com/$gitroot
 
-" 
+"
 
 # Find real folder name where this script is located, then try symlinking it to /vagrant
 SOURCE="${BASH_SOURCE[0]}"
@@ -77,7 +129,7 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 # try the symlink - this is expected to fail in a vagrant environment
 # TODO detect if running in a vagrant environment and don't try linking (it isn't necessary)
 ln -s $DIR /vagrant 2>/dev/null
-if [ ! $? = 1 ]; then 
+if [ ! $? = 1 ]; then
 	echo "
 	$DIR has been symlinked to /vagrant
 	"
@@ -96,9 +148,9 @@ cd /var/www
 if [ -d "openeyes" ]; then
 	if [ ! "$force" = "1" ]; then
 		echo "
-CAUTION: openeyes folder already exists. 
-This installer will delete it. Any uncommitted changes will be lost! 
-If you're upgrading this is necessary. 
+CAUTION: openeyes folder already exists.
+This installer will delete it. Any uncommitted changes will be lost!
+If you're upgrading this is necessary.
 Do you wish to continue?
 "
 		select yn in "Yes" "No"; do
@@ -109,7 +161,7 @@ Do you wish to continue?
 			esac
 		done
 	fi
-	
+
 	if [ "$force" = "1" ]; then
 		if [ "$cleanconfig" = "1" ]; then
 			echo "cleaning old config from /etc/openeyes"
@@ -118,13 +170,13 @@ Do you wish to continue?
 			cp -f /vagrant/install/etc/openeyes/* /etc/openeyes/
 			cp -f /vagrant/install/bashrc /etc/bash.bashrc
 		fi
-		
+
 		if [ -d "openeyes/protected/config" ]; then
 			echo "backing up previous configuration to /etc/openeyes/backup"
 			mkdir -p /etc/openeyes/backup/config
 			cp -f -r openeyes/protected/config/* /etc/openeyes/backup/config/
 		fi
-		
+
 		echo "Removing existing openeyes folder"
 		rm -rf openeyes
 	fi
@@ -132,9 +184,9 @@ Do you wish to continue?
 fi
 
 if [ "$develop" = 1 ]; then
-	oe-checkout $branch -f --no-migrate --no-summary --no-fix --develop
+	oe-checkout $branch -f --no-migrate --no-summary --no-fix --develop -u$username -p$pass
 else
-	oe-checkout $branch -f --no-migrate --no-summary --no-fix 
+	oe-checkout $branch -f --no-migrate --no-summary --no-fix -u$username -p$pass
 fi
 
 cd /var/www/openeyes/protected
@@ -170,9 +222,10 @@ fi
 
 # call oe-fix
 oe-fix
-							
+
 if [ ! "$live" = "1" ]; then
-	echo Creating blank database
+    echo ""
+	echo "Creating blank database..."
 	cd $installdir
 
 	echo "
@@ -188,14 +241,14 @@ if [ ! "$live" = "1" ]; then
 
 	echo Downloading database
 	cd /var/www/openeyes/protected/modules
-	if ! git clone -b $branch https://github.com/$gitroot/Sample.git sample ; then 
+	if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/Sample.git sample ; then
 		echo "$branch doesn't exist for sample database. Falling back to $defaultbranch branch for openeyes..."
-		git clone -b $defaultbranch https://github.com/$gitroot/Sample.git sample
+		git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/Sample.git sample
 	fi
-	
+
 	cd sample/sql
 	mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
-	
+
 	# # Set banner to show branch name
 	echo "
 	use openeyes;
@@ -204,7 +257,7 @@ if [ ! "$live" = "1" ]; then
 
 	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
 	rm /tmp/openeyes-mysql-setbanner.sql
-	
+
 fi
 
 
@@ -269,6 +322,7 @@ mkdir -p /home/iolmaster/incoming
 chown iolmaster:www-data /home/iolmaster/*
 chmod 775 /home/iolmaster/*
 
+echo ""
 oe-which
 
 echo --------------------------------------------------
