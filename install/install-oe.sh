@@ -29,7 +29,10 @@ cleanconfig=0
 username=""
 pass=""
 httpuserstring=""
+usessh=0
+sshuserstring="git"
 showhelp=0
+checkoutparams=""
 
 if [ -z "$1" ]; then showhelp=1; fi
 
@@ -37,10 +40,10 @@ if [ -z "$1" ]; then showhelp=1; fi
 for i in "$@"
 do
 case $i in
-    --live|-l|--upgrade|-u|--u) live=1
+    --live|-l|--upgrade) live=1
 		## live will install for production ready environment
 		;;
-	--develop|-d|--d) develop=1; defaultbranch=develop
+	--develop|-d|--d) develop=1; defaultbranch=develop; checkoutparams="$checkoutparams $i"
 		## develop set default branches to develop if the named branch does not exist for a module
 		;;
 	--force|-f|--f) force=1
@@ -52,10 +55,12 @@ case $i in
 	--root|-r|--r|--remote) customgitroot=1
 		## Await custom root for git repo in net parameter
 		;;
-    -u*) username="${i:2}"
+    -u*) username="${i:2}"; checkoutparams="$checkoutparams $i"
     ;;
-    -p*) pass="${i:2}"
+    -p*) pass="${i:2}"; checkoutparams="$checkoutparams $i"
     ;;
+    --ssh|-ssh) usessh=1; checkoutparams="$checkoutparams $i"
+	;;
     --help) showhelp=1
     ;;
 	*)  if [ ! -z "$i" ]; then
@@ -71,15 +76,6 @@ case $i in
     ;;
 esac
 done
-
-# Create correct user string to pass to github
-if [ ! -z $username ]; then
-    if [ ! -z $pass ]; then
-        httpuserstring="${username}:${pass}@"
-    else
-        httpuserstring="${username}@"
-    fi
-fi
 
 # Show help text
 if [ $showhelp = 1 ]; then
@@ -106,6 +102,7 @@ if [ $showhelp = 1 ]; then
     echo "                   - default is anonymous"
     echo "  -p<password>   : Use the specified <password> for connecting to github"
     echo "                   - default is to prompt"
+    echo "  -ssh		   : Use SSH protocol  - default is https"
     echo ""
     exit 1
 fi
@@ -183,11 +180,9 @@ Do you wish to continue?
 
 fi
 
-if [ "$develop" = 1 ]; then
-	oe-checkout $branch -f --no-migrate --no-summary --no-fix --develop -u$username -p$pass
-else
-	oe-checkout $branch -f --no-migrate --no-summary --no-fix -u$username -p$pass
-fi
+echo calling oe-checkout with $checkoutparams
+oe-checkout $branch -f --no-migrate --no-summary --no-fix $checkoutparams
+
 
 cd /var/www/openeyes/protected
 echo "uzipping yii. Please wait..."
@@ -239,11 +234,31 @@ if [ ! "$live" = "1" ]; then
 	rm /tmp/openeyes-mysql-create.sql
 
 
+    # Create correct user string to pass to github
+    if [ ! -z $username ]; then
+        if [ ! -z $pass ]; then
+    		sshuserstring="$username"
+            httpuserstring="${username}:${pass}@"
+        else
+    		sshuserstring="$username"
+            httpuserstring="${username}@"
+        fi
+    fi
+
+    # Set base url string for cloning all repos
+    basestring="https://${httpuserstring}github.com/$gitroot"
+
+    # If using ssh, change the basestring to use ssh format
+    if [ $usessh = 1 ]; then
+    	basestring="${sshuserstring}@github.com:$gitroot"
+    fi
+
+
 	echo Downloading database
 	cd /var/www/openeyes/protected/modules
-	if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/Sample.git sample ; then
+	if ! git clone -b $branch ${basestring}/Sample.git sample ; then
 		echo "$branch doesn't exist for sample database. Falling back to $defaultbranch branch for openeyes..."
-		git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/Sample.git sample
+		git clone -b $defaultbranch ${basestring}/Sample.git sample
 	fi
 
 	cd sample/sql
