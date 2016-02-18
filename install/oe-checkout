@@ -18,6 +18,8 @@ branch=$defaultbranch
 username=""
 pass=""
 httpuserstring=""
+usessh=0
+sshuserstring="git"
 showhelp=0
 
 if [ -z "$1" ]; then showhelp=1; fi
@@ -53,6 +55,8 @@ case $i in
     ;;
     -p*) pass="${i:2}"
     ;;
+	--ssh|-ssh) usessh=1
+	;;
     --help) showhelp=1
     ;;
 	*)  if [ ! -z "$i" ]; then
@@ -69,15 +73,6 @@ case $i in
     ;;
 esac
 done
-
-# Create correct user string to pass to github
-if [ ! -z $username ]; then
-    if [ ! -z $pass ]; then
-        httpuserstring="${username}:${pass}@"
-    else
-        httpuserstring="${username}@"
-    fi
-fi
 
 # Show help text
 if [ $showhelp = 1 ]; then
@@ -109,12 +104,32 @@ if [ $showhelp = 1 ]; then
     echo "                   - default is anonymous"
     echo "  -p<password>   : Use the specified <password> for connecting to github"
     echo "                   - default is to prompt"
-    echo ""
+    echo "	-ssh		   : Use SSH protocol  - default is https"
+	echo ""
     exit 1
 fi
 echo ""
 echo "Checking out $branch..."
 echo ""
+
+# Create correct user string to pass to github
+if [ ! -z $username ]; then
+    if [ ! -z $pass ]; then
+		sshuserstring="$username"
+        httpuserstring="${username}:${pass}@"
+    else
+		sshuserstring="$username"
+        httpuserstring="${username}@"
+    fi
+fi
+
+# Set base url string for cloning all repos
+basestring="https://${httpuserstring}github.com/$gitroot"
+
+# If using ssh, change the basestring to use ssh format
+if [ $usessh = 1 ]; then
+	basestring="${sshuserstring}@github.com:$gitroot"
+fi
 
 git config core.fileMode false 2>/dev/null
 
@@ -209,16 +224,16 @@ for module in ${modules[@]}; do
 
   if [ $clone = 1 ]; then
 
-	printf "\e[32m$module: Doesn't currently exist - cloning from : https://${httpuserstring}github.com/$gitroot/$module \e[0m"
+	printf "\e[32m$module: Doesn't currently exist - cloning from : ${basestring}/${module}.git \e[0m"
 
 	# checkout branch. If branch doesn't exist then get master instead
-	if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/$module ; then
+	if ! git clone -b $branch ${basestring}/${module}.git ; then
 		echo "falling back to $defaultbranch branch for $module..."
-		if ! git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/$module ; then
+		if ! git clone -b $defaultbranch ${basestring}/${module}.git ; then
 			# If we cannot find default branch at specifeid remote, fall back to OE git hub
 			if [ "$gitroot != "openeyes ]; then
 				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				git clone -b $defaultbranch https://${httpuserstring}github.com/openeyes/$module
+				git clone -b $defaultbranch ${basestring}/${module}.git
 			fi
 		fi
 	fi
@@ -255,9 +270,9 @@ for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then
     printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
 	# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $branch https://${httpuserstring}github.com/$gitroot/$module; then
+			if ! git clone -b $branch ${basestring}/${module}.git ; then
 				echo "falling back to $defaultbranch branch for $module..."
-				git clone -b $defaultbranch https://${httpuserstring}github.com/$gitroot/$module
+				git clone -b $defaultbranch ${basestring}/${module}.git
 			fi
   else
     cd $module
