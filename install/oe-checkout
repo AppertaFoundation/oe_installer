@@ -149,7 +149,7 @@ if [ ! "$force" = "1" ]; then
 			if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
 		else
 			if [ ! "$module" = "openeyes" ]; then cd $module; fi
-
+			
 			# check if this is a git repo
 			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
 					git diff --quiet
@@ -163,6 +163,8 @@ if [ ! "$force" = "1" ]; then
 		if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	  done
 
+	  # ensure modules directory exists - prevents code being checked out to wrong place
+	  mkdir -p /var/www/openeyes/protected/javamodules
 	  cd  /var/www/openeyes/protected/javamodules/
 	  for module in ${javamodules[@]}; do
 		if [ ! -d "$module" ]; then
