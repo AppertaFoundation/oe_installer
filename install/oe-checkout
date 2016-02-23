@@ -287,24 +287,6 @@ for module in ${javamodules[@]}; do
   fi
 done
 
-# Compile IOLImporter
-##TODO: When we have more java modules, replace with a generic compilation model
-if [ $compile = 1 ]; then
-  echo "
-  Compiling IOLMAsterImport. Please wait....
-  "
-
-  cd IOLMasterImport
-  ./compile.sh > /dev/null 2>&1
-  if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
-fi
-
-# symlink lib for IOLMasterImport
-##TODO:  When we have more java modules, replace with a generic compilation model
-ln -s ../lib ./dist/lib
-if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
-
-
 # Now reset/relink various config files etc
 if [ "$fix" = "1" ]; then  oe-fix; fi
 
