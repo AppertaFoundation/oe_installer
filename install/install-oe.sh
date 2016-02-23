@@ -19,7 +19,7 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 # try the symlink - this is expected to fail in a vagrant environment
 # TODO detect if running in a vagrant environment and don't try linking (it isn't necessary)
-ln -s $DIR /vagrant 2>/dev/null
+ln -s $DIR/.. /vagrant 2>/dev/null
 if [ ! $? = 1 ]; then
 	echo "
 	$DIR has been symlinked to /vagrant
