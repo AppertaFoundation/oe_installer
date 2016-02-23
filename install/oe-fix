@@ -7,6 +7,7 @@ compile=1
 resartserv=1
 clearcahes=1
 buildassests=1
+migrate=1
 showhelp=0
 for i in "$@"
 do
@@ -19,6 +20,8 @@ case $i in
 	;;
 	--no-assets) buildassests=0
 	;;
+    --no-migrate|--nomigrate) migrate=0
+	;;
     --help) showhelp=1
     ;;
 	*)  echo "Unknown command line: $i"
@@ -30,9 +33,9 @@ done
 if [ $showhelp = 1 ]; then
     echo ""
     echo "DESCRIPTION:"
-    echo "Checks-out all modules of a specified branch. If a module does not exist locally then it will be cloned"
+    echo "Applies various fixes to make sure files in in the correct place, database is migrated, code is compiled, etc."
     echo ""
-    echo "usage: $0 <branch> [--help] [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [-r <remote>] [--no-summary] [--develop | -d] [-u<username>]  [-p<password>]"
+    echo "usage: $0 <branch> [--help] [--no-compile] [--no-restart] [--no-clear ] [--no-assets] [--no-migrate]"
     echo ""
     echo "COMMAND OPTIONS:"
 	echo ""
@@ -40,7 +43,8 @@ if [ $showhelp = 1 ]; then
     echo "  --no-compile   : Do not complile java modules"
 	echo "  --no-restart   : Do not restart services"
 	echo "  --no-clear     : Do not clear caches"
-	echo "  --no-assets    : Do not (re)build assets)"
+	echo "  --no-assets    : Do not (re)build assets"
+    echo "  --no-migrate   : Do not run db migrations"
 	echo ""
     exit 1
 fi
@@ -106,7 +110,8 @@ if ps ax | grep -v grep | grep run-dicom-service.sh > /dev/null
 fi
 
 cd /var/www/openeyes/protected/javamodules/IOLMasterImport
-rm "/var/www/openeyes/protected/javamodules/IOLMasterImport/dist/lib" 2>/dev/null || :
+rm -rf dist/lib 2>/dev/null || :
+mkdir -p dist/lib
 ln -s ./lib ./dist/lib
 if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
 
@@ -124,6 +129,18 @@ fi
 if [ $dwservrunning = 1 ] && [ $resartserv = 1 ]; then
 	echo "Restarting dicom-file-watcher..."
 	service dicom-file-watcher start
+fi
+
+# Automatically migrate up, unless --no-migrate parameter is given
+if [ "$migrate" = "1" ]; then
+    echo ""
+    echo "Migrating database..."
+	oe-migrate --quiet
+    echo ""
+else
+	echo "
+Migrations were not run automaically. If you need to run the database migrations, run command oe-migrate
+"
 fi
 
 # Clear caches

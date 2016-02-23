@@ -20,6 +20,7 @@ pass=""
 httpuserstring=""
 usessh=0
 sshuserstring="git"
+fixparams=""
 showhelp=0
 
 if [ -z "$1" ]; then showhelp=1; fi
@@ -36,7 +37,7 @@ case $i in
 	--develop|--d|-d) defaultbranch=develop
 		## develop will use develop baranches when the named branch does not exist for a module (by default it would use master)
 		;;
-	--nomigrate|--no-migrate|--n|-n) migrate=0
+	--nomigrate|--no-migrate|--n|-n) fixparams="$fixparams --no-migrate"
 		## nomigrate will prevent database migrations from running automatically at the end of checkout
 		;;
 	--root|-r|--r|--remote) customgitroot=1
@@ -288,19 +289,9 @@ for module in ${javamodules[@]}; do
 done
 
 # Now reset/relink various config files etc
-if [ "$fix" = "1" ]; then  oe-fix; fi
+if [ "$fix" = "1" ]; then  oe-fix $fixparams; fi
 
 cd "$dir"
-
-
-# Automatically migrate up, unless --nomigrate parameter is given
-if [ "$migrate" = "1" ]; then
-	oe-migrate
-else
-	echo "
-Migrations were not run automaically. If you need to run the database migrations, run command oe-migrate
-"
-fi
 
 # Show summary of checkout
 if [ ! "$nosummary" = "1" ]; then
