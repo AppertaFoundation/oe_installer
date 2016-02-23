@@ -1,5 +1,24 @@
 #!/bin/bash
 
+# Find real folder name where this script is located, then try symlinking it to /vagrant
+# This is needed for non-vagrant environments - will silenly fail if /vagrant already exists
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+# try the symlink - this is expected to fail in a vagrant environment
+# TODO detect if running in a vagrant environment and don't try linking (it isn't necessary)
+ln -s $DIR /vagrant 2>/dev/null
+if [ ! $? = 1 ]; then
+	echo "
+	$DIR has been symlinked to /vagrant
+	"
+fi
+
 # Terminate if any command fails
 set -e
 
