@@ -35,19 +35,19 @@ if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data /var/www/openey
 
 if [ -d "/usr/lib/openeyes/yii" ]; then
 	# v1.12+
-	echo "Linking Yii framework to /usr/lib/openeyes/yii" 
-	ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii 
+	echo "Linking Yii framework to /usr/lib/openeyes/yii"
+	ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
 else
 	#fix for pre v1.12
 	echo "Linking Yii framework to /var/www/openeyes/protected/yii"
-	ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii 
+	ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii
 fi
 
 
 # Make sure vendor directory found/linked
 if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
 	echo Linking vendor framework
-	ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors 
+	ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
 	chown -R www-data:www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
 	if [ ! $? = 0 ]; then echo "unable to link vendors - this is expected for versions prior to v1.12"; fi
 fi
@@ -56,4 +56,8 @@ fi
 echo "Clearing caches..."
 rm -rf /var/www/openeyes/protected/runtime/cache/* 2>/dev/null || :
 rm -rf /var/www/openeyes/assets/* 2>/dev/null || :
+echo ""
+echo "rebuilding assets..."
+# use curl to ping the login page - forces php/apache to rebuild the assets directory
+curl http://localhost
 echo "...Done"
