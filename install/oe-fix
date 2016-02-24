@@ -111,7 +111,7 @@ fi
 
 cd /var/www/openeyes/protected/javamodules/IOLMasterImport
 rm -rf dist/lib 2>/dev/null || :
-mkdir -p dist/lib
+mkdir -p dist
 ln -s ./lib ./dist/lib
 if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
 
