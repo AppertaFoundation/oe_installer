@@ -53,8 +53,6 @@ sshuserstring="git"
 showhelp=0
 checkoutparams=""
 
-if [ -z "$1" ]; then showhelp=1; fi
-
 # Process command line inputs
 for i in "$@"
 do
@@ -86,6 +84,7 @@ case $i in
 			if [ "$customgitroot" = "1" ]; then
 				gitroot=$i
 				customgitroot=0
+                $checkoutparams="$checkoutparams -r $i"
 				## Set root path to repo
 			else
 				if [ "$branch" == "master" ]; then branch=$i; else echo "Unknown command line: $i"; fi
@@ -162,6 +161,8 @@ Do you wish to continue?
 	fi
 
 	if [ "$force" = "1" ]; then
+        # If cleanconfig (-ff) has been given on the command line, then completely
+        # wipe the existing oe config before continuing. USE WITH EXTREME CAUTION
 		if [ "$cleanconfig" = "1" ]; then
 			echo "cleaning old config from /etc/openeyes"
 			rm -rf /etc/openeyes
@@ -169,6 +170,7 @@ Do you wish to continue?
 			cp -f /vagrant/install/etc/openeyes/* /etc/openeyes/
 			cp -f /vagrant/install/bashrc /etc/bash.bashrc
 		fi
+        # END of cleanconfig
 
 		if [ -d "openeyes/protected/config" ]; then
 			echo "backing up previous configuration to /etc/openeyes/backup"
@@ -260,7 +262,13 @@ if [ ! "$live" = "1" ]; then
 	cd /var/www/openeyes/protected/modules
 	if ! git clone -b $branch ${basestring}/Sample.git sample ; then
 		echo "$branch doesn't exist for sample database. Falling back to $defaultbranch branch for openeyes..."
-		git clone -b $defaultbranch ${basestring}/Sample.git sample
+        if ! git clone -b $defaultbranch ${basestring}/sample.git sample ; then
+			# If we cannot find default branch at specifeid remote, fall back to OE git hub
+			if [ "$gitroot != "openeyes ]; then
+				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
+				git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/sample.git sample
+			fi
+		fi
 	fi
 
 	cd sample/sql
