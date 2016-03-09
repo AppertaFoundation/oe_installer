@@ -236,7 +236,7 @@ for module in ${modules[@]}; do
 			# If we cannot find default branch at specifeid remote, fall back to OE git hub
 			if [ "$gitroot != "openeyes ]; then
 				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				git clone -b $defaultbranch ${basestring}/${module}.git
+				git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
 			fi
 		fi
 	fi
@@ -275,7 +275,13 @@ for module in ${javamodules[@]}; do
 	# checkout branch. If branch doesn't exist then get master instead
 			if ! git clone -b $branch ${basestring}/${module}.git ; then
 				echo "falling back to $defaultbranch branch for $module..."
-				git clone -b $defaultbranch ${basestring}/${module}.git
+				if ! git clone -b $defaultbranch ${basestring}/${module}.git ; then
+					# If we cannot find default branch at specifeid remote, fall back to OE git hub
+					if [ "$gitroot != "openeyes ]; then
+						echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
+						git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
+					fi
+				fi
 			fi
   else
     cd $module
