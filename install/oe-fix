@@ -75,6 +75,16 @@ if [ ! -d "protected/config/local" ]; then
 	sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
 fi;
 
+if [ ! -f "protected/config/local/common.php" ]; then
+    if [ -d "/etc/openeyes/backup/config/" ]; then
+        echo "WARNING: Restoring backed up local configuration ..."
+        cp -R /etc/openeyes/backup/config/local/* protected/config/local/.
+    else
+        echo "WARNING: Copying sample configuration into local ..."
+        cp -R protected/config/local.sample/* protected/config/local/.
+    fi;
+fi;
+
 # Make sure yii framework found/linked
 rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
 mkdir -p /var/www/openeyes/vendor/yiisoft

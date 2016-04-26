@@ -104,7 +104,7 @@ if [ $showhelp = 1 ]; then
     echo "usage: $0 <branch> [--help] [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [-r <remote>] [--no-summary] [--develop | -d] [-u<username>]  [-p<password>]"
     echo ""
     echo "COMMAND OPTIONS:"
-    echo "  <branch>       : Install the specified <branch> / tag - defualt is to install master"
+    echo "  <branch>       : Install the specified <branch> / tag - default is to install master"
     echo "  --help         : Display this help text"
     echo "  --force | -f   : delete the www/openeyes directory without prompting "
     echo "                   - use with caution - useful to refresh an installation,"
