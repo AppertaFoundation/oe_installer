@@ -78,7 +78,7 @@ cp chromedriver /usr/bin/
 
 # Download selenium standalone server 2.48.2
 
-wget http://selenium-release.storage.googleapis.com/2.48/selenium-server-standalone-2.48.2.jar
+wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.0.jar
 cp /vagrant/install/start-selenium-server.sh /var/www/behat
 
 
