@@ -59,10 +59,6 @@ cd /vagrant/install
 dpkg -i --force-depends wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 
 
-npm install -g grunt-cli
-ln -s /usr/bin/nodejs /usr/bin/node
-
-
 #  Install pre-compiled FAM module and configure PHP to use it
 sed -i "s/;   extension=msql.so/extension=fam.so/" /etc/php5/apache2/php.ini
 sed -i "s/;   extension=msql.so/extension=fam.so/" /etc/php5/cli/php.ini
