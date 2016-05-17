@@ -21,13 +21,7 @@ cp /vagrant/install/package.json .
 cp /vagrant/install/Gruntfile.js .
 
 cd /var/www/grunt
-apt-get -y install nodejs npm ruby-dev ruby-compass
-sudo npm update -g npm
-sudo npm install grunt --save-dev
-sudo npm install -g grunt-cli
-sudo npm install
-sudo npm install grunt-contrib-uglify --save-dev
-sudo npm install grunt-contrib-concat --save-dev
+apt-get -y install ruby-dev
 sudo gem install compass --no-ri --no-rdoc
 
 
