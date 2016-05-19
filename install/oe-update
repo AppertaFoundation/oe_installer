@@ -19,6 +19,8 @@ git pull
 # Check out the PHP modules
 
 cd /var/www/openeyes/protected/modules
+if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to checkout if it exists
+
 for module in ${modules[@]}; do
   if [ ! -d "$module" ]; then
 		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
