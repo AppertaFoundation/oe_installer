@@ -22,12 +22,14 @@ printf "\e[32m%-20s\e[39m-- openeyes\n" $b
 
 # Check PHP modules
 cd /var/www/openeyes/protected/modules
+if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to checkout if it exists
+
 for module in ${modules[@]}; do
-	if [ ! -d "$module" ]; then 
+	if [ ! -d "$module" ]; then
 		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
 	else
 		cd $module
-	
+
 		# Check if this is a git repo
 		if [ -d ".git" ]; then
 		  b="$(gitbranch)"
@@ -52,4 +54,3 @@ done
 
 printf "Done\n\n"
 cd "$dir"
-
