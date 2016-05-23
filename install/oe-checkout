@@ -134,10 +134,8 @@ fi
 
 git config core.fileMode false 2>/dev/null
 
-# ensure modules directory exists - prevents code being checked out to wrong place
-mkdir -p /var/www/openeyes/protected/modules
-cd /var/www/openeyes/protected/modules
 
+cd /var/www/openeyes/protected/modules 2>/dev/null
 if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to checkout if it exists
 
 
