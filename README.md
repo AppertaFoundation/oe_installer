@@ -41,12 +41,13 @@ Software required:
 3. Clone OpenEyes/oe_installer to a directory of your choice. Run: git clone https://github.com/openeyes/oe_installer.git ~/openeyes
 4. Create the virtual server from your project directory. Run: cd ~/openeyes && vagrant up
 5. Once built (approx. 5 minutes), run: vagrant ssh
-6. From within the vagrant box, run the following commands:
+6. You should now be connected to the terminal of your vagrant box (command line will show vagrant@vagrant-ubuntu-trusty-64~>
+7. Run the following commands (on the terminal of the vagrant box):
   i. sudo /vagrant/install/install-system.sh
   ii. sudo /vagrant/install/install-oe.sh
 </pre>
 
-At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100
+At this point you should have a fully working OpenEyes server, reachable at http://localhost:8888 or http://192.168.90.100
 You can follow the sections below on [Default development tools](#default-development-tools) and [Additional development tools](#additional-development-tools) should you need them.
 
 #### Installing for Windows 7 or later
@@ -91,16 +92,16 @@ Note that changes only take effect on subsequent logins.
 
 ### Default development tools
 
-Several additional dev commands have been created for you in /usr/bin, to aid development. These can be run from any directory within the VM, but should be run as root (or sudo).
+Several additional terminal commands have been created for you in /usr/bin, to aid development. These can be run from any directory within the Vagrant Virtual Machine, but should be run as root (or sudo - e.g., sudo oe-xxxxx).
 
 + oe-which: tells you the current branch name for each of your code modules
-+ oe-checkout <branch>: will go through each code module and try to checkout the requested branch
-+ oe-update: will go through each code module and update (i.e. pull the latest) code for each
-+ oe-reset: will drop the current database and re-install it (also runs oe-migrate to bring the newly installed databas eup to date)
++ oe-checkout <branch>: will go through each code module and try to checkout the requested branch or version (e.g., sudo oe-checkout v1.13)
++ oe-update: will go through each code module and update (i.e. pull the latest) code
++ oe-reset: will drop the current database and re-install it (also runs oe-migrate to bring the newly installed database up to date)
 + oe-migrate: performs database migrations (normally used after a change to a newer code branch)
-+ oe-fix: fixes some links to yii framework and vendor libraries when switching between pre- and post-1.12 releases
++ oe-fix: fixes some links to yii framework and vendor libraries when switching between pre and post v1.12 releases
 
-For example, to get the latest build and all database changes, you will need to run oe-update, followed by oe-migrate (or oe-reset); you will also need to remove the contents of the /var/www/openeyes/assets folder to ensure you get the latest .js files and other assets.
+For example, to get the latest build and all database changes, you will need to run: sudo oe-update
 
 ### Additional development tools
 
