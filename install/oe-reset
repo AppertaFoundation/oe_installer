@@ -9,13 +9,15 @@ migrate=1
 bannertext="Database reset at $(date)"
 branch=0
 defaultbranch="master"
+showhelp=0
+
 for i in "$@"
 do
 case $i in
-	-nb|--no-banner) nobanner=1 
+	-nb|--no-banner) nobanner=1
 		## Do not update the user banner after reset
-		;; 
-	--no-migrate|-nm|--nomigrate) migrate=0 
+		;;
+	--no-migrate|-nm|--nomigrate) migrate=0
 		## nomigrate will prevent database migrations from running automatically at the end of reset
 		;;
 	--banner) custombanner=1
@@ -27,21 +29,49 @@ case $i in
 	--develop|-d) defaultbranch="develop"
 		## when combined with --branch, will fallback to develop branch if named branch is not found
 		;;
+	--help) showhelp=1
+		;;
 	*)  if [ "$custombanner" = "1" ]; then bannertext=$i; custombanner=0; fi
 			## Set banner text to custom input after reset
-		
+
 		if [ "$custombranch" = "1" ]; then branch=$i; custombranch=0; fi
 			## reset to a new branch
 		;;
 esac
 done
 
+if [ $showhelp = 1 ]; then
+    echo ""
+    echo "DESCRIPTION:"
+    echo "Resets database to latest 'sample' database"
+    echo ""
+    echo "usage: $0 [--branch | b ] [--help] [--no-migrate | -nm ] [--banner ] [--develop | -d] [ --no-banner | -nb ]"
+    echo ""
+    echo "COMMAND OPTIONS:"
+    echo "  --help         : Display this help text"
+    echo "  --no-migrate "
+    echo "          | -nm   : Prevent database migrations running automatically after"
+    echo "                   checkout"
+	echo "  --branch       : Download sample database on the specified branch"
+	echo "          | b      before resetting"
+    echo "  --develop    "
+    echo "          |-d    : If specified branch is not found, fallback to develop branch"
+    echo "                   - default would fallback to master"
+    echo "  --no-banner  "
+	echo "          |-nb   : Remove the user banner text after resetting"
+    echo "  --banner>      : Set the user banner to the specified text after reset"
+    echo "                   - default is 'Database reset at <time>'"
+	echo ""
+    exit 1
+fi
+
+
 dir=$PWD
 
 if [ ! "$branch" = "0" ]; then
 	## Checkout new sample database branch
 	echo "Downloading database for $branch"
-	
+
 	cd /var/www/openeyes/protected/modules/sample
 
 	git reset --hard
@@ -78,7 +108,7 @@ if [ $migrate = "1" ]; then
 fi
 
 # Set banner to confirm reset
-if [ ! $nobanner = "1" ]; then	
+if [ ! $nobanner = "1" ]; then
 	echo "setting banner to: $bannertext"
 	echo "
 	use openeyes;

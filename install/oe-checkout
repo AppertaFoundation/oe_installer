@@ -109,6 +109,7 @@ if [ $showhelp = 1 ]; then
 	echo ""
     exit 1
 fi
+
 echo ""
 echo "Checking out $branch..."
 echo ""
