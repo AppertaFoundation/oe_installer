@@ -25,7 +25,7 @@ fi
 # Get behat
 cd /vagrant/install
 rm -rf /var/www/behat
-git clone git://github.com/Behat/Behat.git /var/www/behat 
+git clone http://github.com/Behat/Behat.git /var/www/behat 
 cd /var/www/behat
 
 cp /vagrant/install/composer.json /var/www/behat/
