@@ -31,19 +31,19 @@ Vagrant.configure(2) do |config|
   config.vm.network "private_network", :auto_network => true
   config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", type: 'nfs', create: true
 
-  VirtualBox
-  config.vm.provider "virtualbox" do |vb|
-    vb.memory = "768"
-    vb.gui = true
+  # VirtualBox
+  config.vm.provider "virtualbox" do |v|
+    v.memory = "768"
+    v.gui = true
   end
 
   # VMWare Fusion
-  # config.vm.provider "vmware_fusion" do |vf, override|
-  #   override.vm.box = "puppetlabs/ubuntu-14.04-64-nocm"
-  #   vf.vmx["displayname"] = "Openeyes"
-  #   vf.vmx["memsize"] = "1024"
-  #   vf.vmx["numvcpus"] = "1"
-  # end
+  config.vm.provider "vmware_fusion" do |v, override|
+    override.vm.box = "puppetlabs/ubuntu-14.04-64-nocm"
+    v.vmx["displayname"] = "Openeyes"
+    v.vmx["memsize"] = "1024"
+    v.vmx["numvcpus"] = "1"
+  end
 
   config.hostsupdater.remove_on_suspend = true
 
