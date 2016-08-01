@@ -19,6 +19,7 @@ unless PLUGINS.empty?
   exit 1
 end
 
+AutoNetwork.default_pool = "172.16.0.0/24"
 
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
@@ -30,6 +31,10 @@ Vagrant.configure(2) do |config|
   config.vm.network :forwarded_port, host: 3333, guest: 3306
   config.vm.network "private_network", :auto_network => true
   config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", type: 'nfs', create: true
+
+  # Prefer VMware Fusion before VirtualBox
+  config.vm.provider "vmware_fusion"
+  config.vm.provider "virtualbox"
 
   # VirtualBox
   config.vm.provider "virtualbox" do |v|
