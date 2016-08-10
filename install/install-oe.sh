@@ -204,19 +204,21 @@ cd /usr/lib/openeyes
 if [ ! -d "yii" ]; then echo "."; if unzip -oq yii.zip ; then echo "."; fi; fi
 if [ ! -d "vendors" ]; then echo "."; if unzip -oq vendors.zip ; then echo "."; fi; fi
 
-
-
-
 mkdir -p /var/www/openeyes/cache
 mkdir -p /var/www/openeyes/assets
 mkdir -p /var/www/openeyes/protected/cache
 mkdir -p /var/www/openeyes/protected/cache/events
+mkdir -p /var/www/openeyes/protected/files
 mkdir -p /var/www/openeyes/protected/runtime
+mkdir -p /var/www/openeyes/protected/runtime/cache
 chmod 777 /var/www/openeyes/cache
 chmod 777 /var/www/openeyes/assets
 chmod 777 /var/www/openeyes/protected/cache
 chmod 777 /var/www/openeyes/protected/cache/events
+chmod 777 /var/www/openeyes/protected/files
 chmod 777 /var/www/openeyes/protected/runtime
+chmod 777 /var/www/openeyes/protected/runtime/cache
+
 if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
 	chown -R www-data:www-data /var/www/*
 fi
