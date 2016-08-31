@@ -1,4 +1,4 @@
 # /etc/cron.d/dicom: dicom queue processor
 # Run every 5 mins, 24/7
-*/5 * * * *	root	cd /var/www/openeyes/protected/cli_commands/file_watcher && php runQueueProcessor.php 2>/dev/null
+*/5 * * * *	root	cd /var/www/openeyes/protected/cli_commands/file_watcher && php runQueueProcessor.php >/dev/null 2>&1
 
