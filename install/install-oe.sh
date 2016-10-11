@@ -52,6 +52,7 @@ usessh=0
 sshuserstring="git"
 showhelp=0
 checkoutparams=""
+accept=0
 
 # Process command line inputs
 for i in "$@"
@@ -69,6 +70,9 @@ case $i in
 	--clean|-ff|--ff) force=1; cleanconfig=1
 		## will completely wipe any existing openeyes configuration from /etc/openeyes - use with caution
 		;;
+    --accept) accept=1;
+    		## Accepts the disclaimer, without pausing the installation
+    		;;
 	--root|-r|--r|--remote) customgitroot=1
 		## Await custom root for git repo in net parameter
 		;;
@@ -120,7 +124,9 @@ if [ $showhelp = 1 ]; then
     echo "                   - default is anonymous"
     echo "  -p<password>   : Use the specified <password> for connecting to github"
     echo "                   - default is to prompt"
-    echo "  -ssh		   : Use SSH protocol  - default is https"
+    echo "  -ssh		 : Use SSH protocol  - default is https"
+    echo ""
+    echo "  --accept	 : Indicate acceptance of the disclaimer without prompting"
     echo ""
     exit 1
 fi
@@ -129,7 +135,6 @@ fi
 echo "
 
 Installing openeyes $branch from https://gitgub.com/$gitroot
-
 "
 
 
@@ -142,7 +147,22 @@ Downloading OpenEyes code base...
 
 cd /var/www
 
-# If openeyes dir exists, prompt user to delete it
+# Show disclaimer
+echo "
+DISCLAIMER: OpenEyes is provided under a GPL v3.0 license and all terms of that
+license apply (https://www.gnu.org/licenses/gpl-3.0.html). Use of the OpenEyes
+software or code is entirely at your own risk. Neither the OpenEyes Foundation,
+ACROSS Health Ltd nor Moorfields Eye Hospital NHS Foundation Trust accept any
+responsibility for loss or damage to any person, property or reputation as a
+result of using the software or code. No warranty is provided by any party,
+implied or otherwise. This software and code is not guaranteed safe to use in a
+clinical environment and you should make your own assessment on the suitability
+for such use. Installation of any openeyes software indicates acceptance of this
+disclaimer.
+
+"
+
+# If openeyes dir exists, prompt user to delete it. If it doesn't exist, ensure the user accepts the disclaimer (i.e, this is a first install)
 if [ -d "openeyes" ]; then
 	if [ ! "$force" = "1" ]; then
 		echo "
@@ -181,7 +201,24 @@ Do you wish to continue?
 		echo "Removing existing openeyes folder"
 		rm -rf openeyes
 	fi
-
+else
+    if [ ! "$accept" = "1" ]; then
+		echo "
+To continue installing you must accept the disclaimer...
+"
+		select yn in "Accept" "Decline"; do
+			case $yn in
+				Accept ) echo "Accepted. Continuing installation...
+                "; accept="1"; break;;
+				Decline ) echo "Declined. Aborting installation.
+          You cannot use this installer without accepting the disclaimer
+				"; exit;;
+			esac
+		done
+    else
+        echo "        --accept flag detected. Disclaimer was accepted. Continuing...
+        "
+	fi
 fi
 
 echo calling oe-checkout with $checkoutparams
