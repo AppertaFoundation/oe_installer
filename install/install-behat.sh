@@ -25,7 +25,7 @@ fi
 # Get behat
 cd /vagrant/install
 rm -rf /var/www/behat
-git clone http://github.com/Behat/Behat.git /var/www/behat 
+git clone http://github.com/Behat/Behat.git /var/www/behat
 cd /var/www/behat
 
 cp /vagrant/install/composer.json /var/www/behat/
@@ -62,7 +62,7 @@ cp /vagrant/install/behat /var/www/behat/bin/
 apt-get install -y --force-yes xorg jwm firefox
 
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
 apt-get update
 apt-get install -y google-chrome-stable
 
@@ -88,7 +88,7 @@ echo "exec /usr/bin/jwm" > /home/$user/.xsession
 
 # Clean out some irrelevant files
 rm LICENSE *.md
-chmod +x start-selenium-server.sh 
+chmod +x start-selenium-server.sh
 
 
 # Reset file permissions and ownership in behat directory
