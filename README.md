@@ -147,10 +147,8 @@ Log on as your normal user (presumed to be 'me' for this guide - amend as requir
 Run: sudo apt-get install git
 Change to your home directory. Run: cd /home/me 
 Clone the oe_installer repository to your home directory. Run: git clone https://github.com/openeyes/oe_installer.git /home/me/openeyes
-Symlink /home/me/openeyes to /vagrant. Run: sudo ln -s /home/me/openeyes /vagrant
 Run: sudo /vagrant/install/install-system.sh
-Run: sudo /vagrant/install/install-oe.sh
-Run: sudo oe-migrate
+Run: sudo /vagrant/install/install-oe.sh --live
 ```
 
 At this point you have a working server running on localhost (or your assigned IP address). You may wish to edit `/etc/apache2/sites-available/000-default.conf`
