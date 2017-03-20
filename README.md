@@ -85,18 +85,6 @@ Software required:
 At this point you should have a fully working OpenEyes server, reachable at localhost:8888 or 192.168.90.100.
 You can follow the sections below on [Default development tools](#default-development-tools) and [Additional development tools](#additional-development-tools) should you need them.
 
-##### Additional concerns for Windows users
-
-File shares under VirtualBox are pretty slow in version 5. You can try swapping to Version 4.3.x (any version between these two does not seem to work).
-If you find the command prompt very slow on the virtual machine, you can remove the coloured command prompt (which displays the current branch if you
-are in a git repository directory). To remove this, edit the /etc/bash.bashrc file and add the second PS1 line (shown below) at the end:
-
-```
-PS1="\e[0m\n\e[44m\e[97m \u@\h \e[41m\$(gitbranch)\e[0m\n\w>"
-PS1="u@\h\n\w>"
-```
-
-Note that changes only take effect on subsequent logins.
 
 ### Default development tools
 
