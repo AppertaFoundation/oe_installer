@@ -262,8 +262,36 @@ if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
 	chown -R www-data:www-data /var/www/*
 fi
 
+# The default environment type is assumed to be DEV/AWS.
+# If we are on a vagrant box, set it to DEV/VAGRANT
+
+if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
+  hostname OpenEyesVM
+  sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
+  cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
+fi
+
+# If we are on a live install, set the environment config accordingly
+# NOTE: This has to run BEFORE first call to oe-fix
+if [ "$live" = "1" ]; then
+	echo "# env can be one of DEV or LIVE
+# envtype can be one of LIVE, AWS or VAGRANT
+env=LIVE
+envtype=LIVE
+" >/etc/openeyes/env.conf
+fi
+
 # call oe-fix
 oe-fix
+
+
+# If we are on a live install, set the environment in common.php accordingly
+# NOTE: This has to run AFTER first call to oe-fix
+if [ "$live" = "1" ]; then
+
+	sed -i "s/'environment' => 'dev',/'environment' => 'live',/" /var/www/openeyes/protected/config/local/common.php
+
+fi
 
 if [ ! "$live" = "1" ]; then
     echo ""
@@ -358,24 +386,6 @@ if [ ! "$live" = "1" ]; then
 	apache2ctl restart
 fi
 
-
-# The default environment type is assumed to be DEV/AWS.
-# If we are on a vagrant box, set it to DEV/VAGRANT
-# For live systems, /etc/openeyes/env.conf will have to be edited manually
-
-if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-  hostname OpenEyesVM
-  sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
-  cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
-fi
-
-if [ "$live" = "1" ]; then
-echo "# env can be one of DEV or LIVE
-# envtype can be one of LIVE, AWS or VAGRANT
-env=LIVE
-envtype=LIVE
-" >/etc/openeyes/env.conf
-fi
 
 
 # Copy DICOM related files in place as required
