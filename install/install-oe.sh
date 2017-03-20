@@ -116,6 +116,8 @@ if [ $showhelp = 1 ]; then
     echo "  --clean | -ff  : will completely wipe any existing openeyes configuration "
     echo "                   out. This is required when switching between versions <= 1.12 "
     echo "                   from /etc/openeyes - use with caution"
+	echo "	--live	| -l	: Install for a production environment (disables some "
+	echo "					  development features and improves security"
     echo "  -r <remote>    : Use the specifed remote github fork - defaults to openeyes"
     echo "  --develop "
     echo "           |-d   : If specified branch is not found, fallback to develop branch"
