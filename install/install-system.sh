@@ -87,6 +87,13 @@ source /vagrant/install/bashrc
 sed -i "s/\s*bind-address\s*=\s*127\.0\.0\.1/bind-address    = 0.0.0.0/" /etc/mysql/my.cnf
 /etc/init.d/mysql restart
 
+# Install php composer
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+mv composer.phar /usr/local/bin/composer
+
+
 echo --------------------------------------------------
 echo SYSTEM SOFTWARE INSTALLED
 echo Please check previous messages for any errors

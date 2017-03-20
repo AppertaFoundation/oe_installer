@@ -45,6 +45,7 @@ if [ $showhelp = 1 ]; then
 	echo "  --no-clear     : Do not clear caches"
 	echo "  --no-assets    : Do not (re)build assets"
     echo "  --no-migrate   : Do not run db migrations"
+	echo "  --no-composer  : Do not update composer dependencies"
 	echo ""
     exit 1
 fi
@@ -107,6 +108,13 @@ if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
 	ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
 	chown -R www-data:www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
 	if [ ! $? = 0 ]; then echo "unable to link vendors - this is expected for versions prior to v1.12"; fi
+fi
+
+# update composer dependencies
+if [ "$env" = "LIVE" ]; then
+	composer install --no-dev --no-plugins --no-scripts
+else
+	composer install --no-plugins --no-scripts
 fi
 
 ## (re)-link dist directory for IOLMasterImport module and recompile
