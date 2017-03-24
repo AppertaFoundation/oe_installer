@@ -49,6 +49,9 @@ case $i in
 	--no-fix) fix=0
 		## don't run oe-fix at completion
 		;;
+	--no-pull|--nopull) nopull=1
+		## Do not issue git pull after checkout
+		;;
 	--no-compile) compile=0
 		## don't compile java
 	;;
@@ -81,7 +84,7 @@ if [ $showhelp = 1 ]; then
     echo "DESCRIPTION:"
     echo "Checks-out all modules of a specified branch. If a module does not exist locally then it will be cloned"
     echo ""
-    echo "usage: $0 <branch> [--help] [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [-r <remote>] [--no-summary] [--develop | -d] [-u<username>]  [-p<password>]"
+    echo "usage: $0 <branch> [--help] [--force | -f] [--no-migrate | -n] [--kill-modules | -ff ] [--no-compile] [--no-pull] [-r <remote>] [--no-summary] [--develop | -d] [-u<username>]  [-p<password>]"
     echo ""
     echo "COMMAND OPTIONS:"
     echo "  <branch>       : Checkout / clone the specified <branch>"
@@ -89,6 +92,7 @@ if [ $showhelp = 1 ]; then
     echo "  --no-migrate "
     echo "          | -n   : Prevent database migrations running automatically after"
     echo "                   checkout"
+	echo "	--no-pull		: Prevent automatic fast-forward to latest remote head"
     echo "  --force | -f   : forces the checkout, even if local changes are uncommitted"
     echo "  --kill-modules "
     echo "          | -ff  : Will delete all items from protected/modules before checking"
@@ -263,6 +267,12 @@ for module in ${modules[@]}; do
 		git checkout tags/$branch 2>/dev/null
 		if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
 		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
+
+		## fast forward to latest head
+		if [ ! "$nopull" = "1" ]; then
+			echo "Pulling latest changes: "
+			git pull
+		fi
 	fi
 
   fi
@@ -287,11 +297,19 @@ for module in ${javamodules[@]}; do
 			fi
   else
     cd $module
+	printf "\e[32m$module: \e[0m"
     git reset --hard
     git fetch --all
     git checkout tags/$branch 2>/dev/null
     if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
 	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
+
+	## fast forward to latest head
+	if [ ! "$nopull" = "1" ]; then
+		echo "Pulling latest changes: "
+		git pull
+	fi
+
     cd ..
   fi
 done
