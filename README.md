@@ -159,3 +159,10 @@ all code with a newly checked out site. Each live deployment will have their own
 + Edit the file /etc/openeyes/db.conf with your database credentials
 + Edit the /var/www/openeyes/protected/config/local/common.php file with values from your backed up copy
 ```
+
+## MySQL
+Default access details for the MySQL Database are:
+
+Port: 3306 (3333 for vagrant)
+Username: openeyes
+Password: openeyes
