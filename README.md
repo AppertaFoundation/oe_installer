@@ -163,6 +163,8 @@ all code with a newly checked out site. Each live deployment will have their own
 ## MySQL
 Default access details for the MySQL Database are:
 
+```
 Port: 3306 (3333 for vagrant)
 Username: openeyes
 Password: openeyes
+```
