@@ -1,162 +1,61 @@
 #!/bin/bash
 
-# Process commandline parameters
+git config core.fileMode false 2>/dev/null
 
-nobanner=0
-custombanner=0
-custombranch=0
-migrate=1
-bannertext="Database reset at $(date)"
-branch=0
-defaultbranch="master"
-demo=0
-showhelp=0
-
-for i in "$@"
-do
-case $i in
-	-nb|--no-banner) nobanner=1
-		## Do not update the user banner after reset
-		;;
-	--no-migrate|-nm|--nomigrate) migrate=0
-		## nomigrate will prevent database migrations from running automatically at the end of reset
-		;;
-	--banner) custombanner=1
-		## Await custom banner text in next parameter
-		;;
-	--branch|-b) custombranch=1
-		## Await branch name in next parameter
-		;;
-	--develop|-d) defaultbranch="develop"
-		## when combined with --branch, will fallback to develop branch if named branch is not found
-		;;
-	--demo) demo=1
-		## Install demo scripts (worklists, etc)
-		;;
-	--help) showhelp=1
-		;;
-	*)  if [ "$custombanner" = "1" ]; then bannertext=$i; custombanner=0; fi
-			## Set banner text to custom input after reset
-
-		if [ "$custombranch" = "1" ]; then branch=$i; custombranch=0; fi
-			## reset to a new branch
-		;;
-esac
-done
-
-if [ $showhelp = 1 ]; then
-    echo ""
-    echo "DESCRIPTION:"
-    echo "Resets database to latest 'sample' database"
-    echo ""
-    echo "usage: $0 [--branch | b ] [--help] [--no-migrate | -nm ] [--banner ] [--develop | -d] [ --no-banner | -nb ]"
-    echo ""
-    echo "COMMAND OPTIONS:"
-    echo "  --help         : Display this help text"
-    echo "  --no-migrate "
-    echo "          | -nm   : Prevent database migrations running automatically after"
-    echo "                   checkout"
-	echo "  --branch       : Download sample database on the specified branch"
-	echo "          | b      before resetting"
-    echo "  --develop    "
-    echo "          |-d    : If specified branch is not found, fallback to develop branch"
-    echo "                   - default would fallback to master"
-    echo "  --no-banner  "
-	echo "          |-nb   : Remove the user banner text after resetting"
-    echo "  --banner>      : Set the user banner to the specified text after reset"
-    echo "                   - default is 'Database reset at <time>'"
-	echo "  --demo         : Install additional scripts to set up openeyes for demo"
-	echo ""
-    exit 1
-fi
-
-
+source /etc/openeyes/modules.conf
 dir=$PWD
 
-if [ ! "$branch" = "0" ]; then
-	## Checkout new sample database branch
-	echo "Downloading database for $branch"
+#  If -f was not specified on the command line, then check each module
+#  to see if any changes are unstaged.
 
-	cd /var/www/openeyes/protected/modules/sample
+# Check root
+cd /var/www/openeyes
+printf "\e[32mopeneyes: \e[0m"
+if [ "$1" = "-f" ]; then git reset --hard; fi
+# use -ff to kill all modules and reload
+if [ "$1" = "-ff" ]; then rm -rf /var/www/openeyes/protected/modules; git reset --hard; fi
+git pull
 
-	git reset --hard
-	git fetch --all
+# Check out the PHP modules
 
-	git checkout tags/$branch 2>/dev/null
-	if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
-	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
-fi
+cd /var/www/openeyes/protected/modules
+if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to checkout if it exists
 
-cd /var/www/openeyes/protected/modules/sample/sql
+for module in ${modules[@]}; do
+  if [ ! -d "$module" ]; then
+		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
+  else
+    cd $module
+	if [ -d ".git" ]; then
+		printf "\e[32m$module: \e[0m"
+		if [ "$1" = "-f" ]; then git reset --hard; fi
+		git pull
+	fi
+    cd ..
+  fi
+done
 
-echo Clearing current database
+# Check out the Java modules
 
-echo "
-drop database if exists openeyes;
-create database openeyes;
-grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
-flush privileges;
-" > /tmp/openeyes-mysql-create.sql
+cd /var/www/openeyes/protected/javamodules
+for module in ${javamodules[@]}; do
+  if [ ! -d "$module" ]; then
+    printf "\e[31mModule $module not found\e[0m\n"
+  else
+    cd $module
+    printf "\e[32m$module: \e[0m"
+    if [ "$1" = "-f" ]; then git reset --hard; fi
+    git pull
+    cd ..
+  fi
+done
 
-mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
-rm /tmp/openeyes-mysql-create.sql
 
-echo "Re-importing database"
-mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
+# Now reset/relink various config files etc
+oe-fix
 
-# Run migrations
-if [ $migrate = "1" ]; then
-	echo Performing database migrations
-	cd /var/www/openeyes/protected
-	./yiic migrate --interactive=0
-	./yiic migratemodules --interactive=0
-fi
-
-# Run demo scripts
-if [ $demo = "1" ]; then
-	cd /var/www/openeyes/protected/modules/sample/sql/demo
-
-	# import all demo sql scripts
-	shopt -s nullglob
-    for f in *.sql
-    do
-		echo "importing $f"
-		mysql -uroot "-ppassword" -D openeyes < $f
-    done
-
-	# run demo setup scripts
-	shopt -s nullglob
-    for f in *.sh
-    do
-		echo "running $f"
-		bash "./$f"
-    done
-
-	# i="0"
-	# morefiles="1"
-	# while [ $morefiles = "1" ]
-	# do
-	# 	if [ -f "demo"$i".sql" ]; then
-	# 		echo "importing demo"$i".sql"
-	# 		mysql -uroot "-ppassword" -D openeyes < "demo"$i".sql"
-	# 		i=$[$i+1]
-	# 	else
-	# 		morefiles="0"
-	# 	fi
-	# done
-fi
-
-# Set banner to confirm reset
-if [ ! $nobanner = "1" ]; then
-	echo "setting banner to: $bannertext"
-	echo "
-	use openeyes;
-	UPDATE openeyes.setting_installation s SET s.value='$bannertext' WHERE s.key='watermark';
-	" > /tmp/openeyes-mysql-setbanner.sql
-
-	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
-	rm /tmp/openeyes-mysql-setbanner.sql
-fi
 
 cd "$dir"
-printf "\e[42m\e[97m  RESET COMPLETE  \e[0m \n"
+printf "\e[42m\e[97m  UPDATE COMPLETE  \e[0m \n"
+oe-which
+echo ""
