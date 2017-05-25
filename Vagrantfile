@@ -58,8 +58,8 @@ Vagrant.configure(2) do |config|
   config.vm.network :forwarded_port, host: 3333, guest: 3306
   config.vm.network "private_network", :auto_network => true
 
-  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", type: 'nfs', create: true
-  config.vm.synced_folder ".", "/vagrant", type: "nfs"
+  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true #, type: 'nfs', 
+  config.vm.synced_folder ".", "/vagrant" #, type: "nfs"
 
   # Prefer VMware Fusion before VirtualBox
   config.vm.provider "vmware_fusion"
@@ -91,6 +91,7 @@ Vagrant.configure(2) do |config|
     v.memory = mem
     v.gui = true
 	v.cpus = 1
+	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
   end
 
   # VMWare Fusion
