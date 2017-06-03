@@ -164,6 +164,24 @@ disclaimer.
 
 "
 
+if [ ! "$accept" = "1" ]; then
+		echo "
+To continue installing you must accept the disclaimer...
+"
+		select yn in "Accept" "Decline"; do
+			case $yn in
+				Accept ) echo "Accepted. Continuing installation...
+                "; accept="1"; break;;
+				Decline ) echo "Declined. Aborting installation.
+          You cannot use this installer without accepting the disclaimer
+				"; exit;;
+			esac
+		done
+    else
+        echo "        --accept flag detected. Disclaimer was accepted. Continuing...
+        "
+fi
+	
 # If openeyes dir exists, prompt user to delete it. If it doesn't exist, ensure the user accepts the disclaimer (i.e, this is a first install)
 if [ -d "openeyes" ]; then
 	if [ ! "$force" = "1" ]; then
@@ -203,24 +221,7 @@ Do you wish to continue?
 		echo "Removing existing openeyes folder"
 		rm -rf openeyes
 	fi
-else
-    if [ ! "$accept" = "1" ]; then
-		echo "
-To continue installing you must accept the disclaimer...
-"
-		select yn in "Accept" "Decline"; do
-			case $yn in
-				Accept ) echo "Accepted. Continuing installation...
-                "; accept="1"; break;;
-				Decline ) echo "Declined. Aborting installation.
-          You cannot use this installer without accepting the disclaimer
-				"; exit;;
-			esac
-		done
-    else
-        echo "        --accept flag detected. Disclaimer was accepted. Continuing...
-        "
-	fi
+    
 fi
 
 echo calling oe-checkout with $checkoutparams
