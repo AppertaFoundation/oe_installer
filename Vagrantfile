@@ -55,29 +55,29 @@ SCRIPT
 
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
-  #config.vm.box_check_update = true
+  config.vm.box_check_update = false
 
   config.vm.hostname = "openeyes.vm"
-  
+
 
   config.vm.network :forwarded_port, host: 8888, guest: 80
   config.vm.network :forwarded_port, host: 3333, guest: 3306
   config.vm.network "private_network", :auto_network => true
 
-  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true #, type: 'nfs' 
-  config.vm.synced_folder ".", "/vagrant" #, type: "nfs"
+  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root" #, type: "smb", mount_options: ["vers=2.1"] #create: true #, type: 'nfs'
+  config.vm.synced_folder ".", "/vagrant" #, type: "smb", mount_options: ["vers=2.1"]  #, type: "nfs"
 
   # Prefer VMWare fusion before VirtualBox
   config.vm.provider "vmware_fusion"
   config.vm.provider "virtualbox"
-  
+
 	# Give VM 1/4 system memory or 768MB, whichever is greater
 	if OS.mac?
 		# sysctl returns Bytes and we need to convert to MB
 		mem = `sysctl -n hw.memsize`.to_i / 1024
 	elsif OS.linux?
 		# meminfo shows KB and we need to convert to MB
-		mem = `grep 'MemTotal' /proc/meminfo | sed -e 's/MemTotal://' -e 's/ kB//'`.to_i 
+		mem = `grep 'MemTotal' /proc/meminfo | sed -e 's/MemTotal://' -e 's/ kB//'`.to_i
 	elsif OS.windows?
 		# Windows code via https://github.com/rdsubhas/vagrant-faster
 		mem = `wmic computersystem Get TotalPhysicalMemory`.split[1].to_i / 1024
@@ -90,14 +90,15 @@ Vagrant.configure(2) do |config|
 	elsif mem > 2028
 		mem = 2048
 	end
-	
-	
+
+
   # VirtualBox
   config.vm.provider "virtualbox" do |v|
     v.memory = mem
     v.gui = true
 	v.cpus = 1
 	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
+	#v.customize [ "modifyvm", :id, "--nictype1", "virtio" ]
   end
 
   # VMWare Fusion
@@ -107,20 +108,20 @@ Vagrant.configure(2) do |config|
     v.vmx["memsize"] = mem.to_s
     v.vmx["numvcpus"] = "1"
   end
-  
+
   # Hyper-V
   config.vm.provider "hyperv" do |h, override|
 	override.vm.box = "karlatkinson/hyperv-ubuntu-14"
-	
+
 	# manual ip
 	override.vm.provision "shell",
       run: "always",
       inline: "sudo ifconfig eth0 172.16.0.2 netmask 255.255.255.0 up"
-	
+
 	#override.vm.provision "shell",
     #  run: "always",
     #  inline: "sudo route add default gw 172.16.0.1"
-	
+
 	h.vmname = "OpenEyes"
 	h.cpus = 2
 	h.memory = 768
