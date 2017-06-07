@@ -57,7 +57,7 @@ if [ $showhelp = 1 ]; then
     echo "          | -nm   : Prevent database migrations running automatically after"
     echo "                   checkout"
 	echo "  --branch       : Download sample database on the specified branch"
-	echo "          | b      before resetting"
+	echo "          | -b      before resetting"
     echo "  --develop    "
     echo "          |-d    : If specified branch is not found, fallback to develop branch"
     echo "                   - default would fallback to master"
@@ -72,6 +72,10 @@ fi
 
 
 dir=$PWD
+
+echo "Stopping dicom-file-watcher..."
+service dicom-file-watcher stop
+if [ ! $? = 0 ]; then echo "dicom-file-watcher not running"; fi
 
 if [ ! "$branch" = "0" ]; then
 	## Checkout new sample database branch
@@ -157,6 +161,11 @@ if [ ! $nobanner = "1" ]; then
 	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
 	rm /tmp/openeyes-mysql-setbanner.sql
 fi
+
+oe-fix --no-compile --no-migrate --no-restart --no-composer
+
+echo "Starting dicom-file-watcher..."
+service dicom-file-watcher start
 
 cd "$dir"
 printf "\e[42m\e[97m  RESET COMPLETE  \e[0m \n"

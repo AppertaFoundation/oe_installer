@@ -9,6 +9,8 @@ clearcahes=1
 buildassests=1
 migrate=1
 showhelp=0
+composer=1
+
 for i in "$@"
 do
 case $i in
@@ -24,6 +26,8 @@ case $i in
 	;;
     --help) showhelp=1
     ;;
+	--no-composer) composer=0
+	;;
 	*)  echo "Unknown command line: $i"
     ;;
 esac
@@ -111,10 +115,12 @@ if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
 fi
 
 # update composer dependencies
-if [ "$env" = "LIVE" ]; then
-	composer install --no-dev --no-plugins --no-scripts
-else
-	composer install --no-plugins --no-scripts
+if [ $composer == 1 ]; then
+	if [ "$env" = "LIVE" ]; then
+		composer install --no-dev --no-plugins --no-scripts
+	else
+		composer install --no-plugins --no-scripts
+	fi
 fi
 
 ## (re)-link dist directory for IOLMasterImport module and recompile
