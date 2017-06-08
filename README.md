@@ -19,7 +19,7 @@ This repository should be the only one checked out when building a new OpenEyes 
   2. [Installing for Live/Production use](#installing-for-live-use)
   3. [Management Tools](#management-tools)
   4. [Default connection and password info](#default-connection-and-password-info)
-    * [Vagrant Virtual Machine Console](#vagrant-virtualmachine-onsole)
+    * [Vagrant Virtual Machine Console](#vagrant-virtual-machine-console)
     * [MySQL](#mysql)
 
 # Installing for Development (using Vagrant and VirtualBox)
