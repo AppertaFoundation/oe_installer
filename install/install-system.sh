@@ -42,7 +42,7 @@ echo 'vm.swappiness = 10' >> /etc/sysctl.conf
 
 
 echo Performing package updates
-apt-get -y update
+apt -y update
 
 
 echo Installing required system packages

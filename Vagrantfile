@@ -3,7 +3,7 @@
 
 Vagrant.require_version ">= 1.5"
 
-PLUGINS = %w(vagrant-auto_network vagrant-vbguest)
+PLUGINS = %w(vagrant-auto_network vagrant-vbguest vagrant-hostsupdater)
 
 PLUGINS.reject! { |plugin| Vagrant.has_plugin? plugin }
 
@@ -64,8 +64,8 @@ Vagrant.configure(2) do |config|
   config.vm.network :forwarded_port, host: 3333, guest: 3306
   config.vm.network "private_network", :auto_network => true
 
-  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root" #, type: "smb", mount_options: ["vers=2.1"] #create: true #, type: 'nfs'
-  config.vm.synced_folder ".", "/vagrant" #, type: "smb", mount_options: ["vers=2.1"]  #, type: "nfs"
+  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root" #, type: "smb", mount_options: ["vers=2.1"] #, type: 'nfs', create: true
+  config.vm.synced_folder ".", "/vagrant", type: 'nfs' #, type: "smb", mount_options: ["vers=2.1"]  #, type: "nfs"
 
   # Prefer VMWare fusion before VirtualBox
   config.vm.provider "vmware_fusion"
@@ -98,7 +98,7 @@ Vagrant.configure(2) do |config|
     v.gui = true
 	v.cpus = 1
 	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
-	#v.customize [ "modifyvm", :id, "--nictype1", "virtio" ]
+
   end
 
   # VMWare Fusion
@@ -131,6 +131,6 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision "shell", inline: $script, keep_color: true
 
-  #config.hostsupdater.remove_on_suspend = true
+  config.hostsupdater.remove_on_suspend = true
 
 end
