@@ -9,7 +9,7 @@ echo -e "vagrant\nvagrant" | sudo smbpasswd -s -a root
 
 echo "
 [openeyes]
-        path = /var/www/openeyes
+        path = /var/www/
         valid users = vagrant root
         admin users = root vagrant
         write list = root vagrant
