@@ -122,7 +122,7 @@ if [ $demo = "1" ]; then
 
 	# import all demo sql scripts
 	shopt -s nullglob
-    for f in *.sql
+    for f in `ls *.sql | sort -V`
     do
 		echo "importing $f"
 		mysql -uroot "-ppassword" -D openeyes < $f
@@ -130,24 +130,11 @@ if [ $demo = "1" ]; then
 
 	# run demo setup scripts
 	shopt -s nullglob
-    for f in *.sh
+    for f in `ls *.sh | sort -V`
     do
 		echo "running $f"
 		bash "./$f"
     done
-
-	# i="0"
-	# morefiles="1"
-	# while [ $morefiles = "1" ]
-	# do
-	# 	if [ -f "demo"$i".sql" ]; then
-	# 		echo "importing demo"$i".sql"
-	# 		mysql -uroot "-ppassword" -D openeyes < "demo"$i".sql"
-	# 		i=$[$i+1]
-	# 	else
-	# 		morefiles="0"
-	# 	fi
-	# done
 fi
 
 # Set banner to confirm reset
