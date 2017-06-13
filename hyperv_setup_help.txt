@@ -1,0 +1,22 @@
+******************************************************************************************************
+Experimental Hyper-V support
+----------------------------
+
+This is currently in an alpha stage and no support is available. These notes are for anybody that 
+wishes to continue the work
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+To configure a NAT switch in Hyper-V, run the following commands in an administrative power shell:
+******************************************************************************************************
+
+New-VMSwitch –SwitchName “NATSwitch” –SwitchType Internal
+
+New-NetIPAddress –IPAddress 172.16.0.1 -PrefixLength 24 -InterfaceAlias "vEthernet (NATSwitch)"
+
+New-NetNat –Name VMSwitchNat –InternalIPInterfaceAddressPrefix 172.16.0.0/24
+
+Add-NetNatStaticMapping -NatName “VMSwitchNat” -Protocol TCP -ExternalIPAddress 0.0.0.0 -InternalIPAddress 172.16.0.2 -InternalPort 80 -ExternalPort 8888
+
+Add-NetNatStaticMapping -NatName “VMSwitchNat” -Protocol TCP -ExternalIPAddress 0.0.0.0 -InternalIPAddress 172.16.0.2 -InternalPort 22 -ExternalPort 2222
+
+Add-NetNatStaticMapping -NatName “VMSwitchNat” -Protocol TCP -ExternalIPAddress 0.0.0.0 -InternalIPAddress 172.16.0.2 -InternalPort 3306 -ExternalPort 3333
