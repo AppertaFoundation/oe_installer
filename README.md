@@ -12,7 +12,7 @@ This repository should be the only one checked out when building a new OpenEyes 
 
 **Index:**
 
-  1. [Installing for Development - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox)
+  1. [Installing for Development or testing - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox)
     * [Installing for Mac OS X 10.6 or later](#installing-for-mac-os-x-106-or-later)
     * [Installing for Windows 7 or later](#installing-for-windows-7-or-later)
     * [Additional development tools](#additional-development-tools)
@@ -22,7 +22,7 @@ This repository should be the only one checked out when building a new OpenEyes 
     * [Vagrant Virtual Machine Console](#vagrant-virtual-machine-console)
     * [MySQL](#mysql)
 
-# Installing for Development (using Vagrant and VirtualBox)
+# Installing for Development or testing (using Vagrant and VirtualBox)
 
 The default development setup uses a Mac OSX (preferred) or Windows host, and runs a virtual server provided by VirtualBox with managed setup by Vagrant. Vagrant is not essential (see live use setup below) but offers a few advantages for developers, such as:
 
