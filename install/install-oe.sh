@@ -32,7 +32,9 @@ cp -f /vagrant/install/oe-* /usr/bin
 # copy our new configs to /etc/openeyes (don't overwrite existing config)
 mkdir -p /etc/openeyes
 cp -n /vagrant/install/etc/openeyes/* /etc/openeyes/
-cp -n /vagrant/install/bashrc /etc/bash.bashrc
+cp -n /vagrant/install/bashrc /etc/bash.
+cp -n /var/www/openeyes/protected/config/local.sample/common.sample.php /var/www/openeyes/protected/config/local/common.php
+cp -n /var/www/openeyes/protected/config/local.sample/console.sample.php /var/www/openeyes/protected/config/local/console.php
 
 # set command options
 # Chose branch / tag to clone (default is master)
@@ -130,6 +132,8 @@ if [ $showhelp = 1 ]; then
     echo ""
     echo "  --accept	 : Indicate acceptance of the disclaimer without prompting"
     echo ""
+    echo "  --upgrade	 : Upgrade an existing installation"
+    echo ""
     exit 1
 fi
 
@@ -181,7 +185,7 @@ To continue installing you must accept the disclaimer...
         echo "        --accept flag detected. Disclaimer was accepted. Continuing...
         "
 fi
-	
+
 # If openeyes dir exists, prompt user to delete it. If it doesn't exist, ensure the user accepts the disclaimer (i.e, this is a first install)
 if [ -d "openeyes" ]; then
 	if [ ! "$force" = "1" ]; then
@@ -221,7 +225,7 @@ Do you wish to continue?
 		echo "Removing existing openeyes folder"
 		rm -rf openeyes
 	fi
-    
+
 fi
 
 echo calling oe-checkout with $checkoutparams
