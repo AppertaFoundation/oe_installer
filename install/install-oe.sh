@@ -274,6 +274,7 @@ if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   hostname OpenEyesVM
   sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
   cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
+  sudo usermod -a -G www-data vagrant
 fi
 
 # If we are on a live install, set the environment config accordingly
