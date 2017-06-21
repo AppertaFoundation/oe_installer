@@ -10,6 +10,7 @@ buildassests=1
 migrate=1
 showhelp=0
 composer=1
+nowarnmigrate=0
 
 for i in "$@"
 do
@@ -27,6 +28,8 @@ case $i in
     --help) showhelp=1
     ;;
 	--no-composer) composer=0
+	;;
+	--no-warn-migrate) nowarnmigrate=1
 	;;
 	*)  echo "Unknown command line: $i"
     ;;
@@ -59,67 +62,71 @@ source /etc/openeyes/env.conf
 cd /var/www/openeyes
 if [ -f ".htaccess.sample" ]; then
 echo Renaming .htaccess file
-mv .htaccess.sample .htaccess
+sudo mv .htaccess.sample .htaccess
 if [ ! "$env" = "VAGRANT" ]; then chown -R www-data:www-data .htaccess; fi
 fi
 
 if [ -f "index.example.php" ]; then
 echo Renaming index.php file
-mv index.example.php index.php
+sudo mv index.example.php index.php
 if [ ! "$env" = "VAGRANT" ]; then chown -R www-data:www-data index.php; fi
 fi
 
 if [ ! -d "protected/config/local" ]; then
 	echo "WARNING: this code branch uses db settings from common.php, not /etc/openeyes"
-	mv protected/config/local.sample protected/config/local
-	mv protected/config/local/common.sample.php protected/config/local/common.php
-	if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data protected/config/local; fi
-	chmod -R 775 protected/config/local
+	sudo mv protected/config/local.sample protected/config/local
+	sudo mv protected/config/local/common.sample.php protected/config/local/common.php
+	if [ ! "$envtype" = "VAGRANT" ]; then sudo chown -R www-data:www-data protected/config/local; fi
+	sudo chmod -R 775 protected/config/local
 	# When using old oe versions, overwirte password in commpon.php to use new default usermname/password
-	sed -i "s/'username' => 'root',/'username' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
-	sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
+	sudo sed -i "s/'username' => 'root',/'username' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
+	sudo sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
 fi;
 
 if [ ! -f "protected/config/local/common.php" ]; then
     if [ -d "/etc/openeyes/backup/config/" ]; then
-        echo "WARNING: Restoring backed up local configuration ..."
-        cp -R /etc/openeyes/backup/config/local/* protected/config/local/.
+        echo "*********** WARNING: Restoring backed up local configuration ... ***********"
+        sudo cp -R /etc/openeyes/backup/config/local/* protected/config/local/.
     else
         echo "WARNING: Copying sample configuration into local ..."
-        cp -R protected/config/local.sample/* protected/config/local/.
+        #sudo cp -R protected/config/local.sample/* protected/config/local/.
+		sudo mkdir -p protected/config/local
+		sudo cp -n /var/www/openeyes/protected/config/local.sample/common.sample.php /var/www/openeyes/protected/config/local/common.php
+		sudo cp -n /var/www/openeyes/protected/config/local.sample/console.sample.php /var/www/openeyes/protected/config/local/console.php
+
     fi;
 fi;
 
 # Make sure yii framework found/linked
-rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
-mkdir -p /var/www/openeyes/vendor/yiisoft
-if [ ! "$envtype" = "VAGRANT" ]; then chown -R www-data:www-data /var/www/openeyes/vendor; fi
+sudo rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
+sudo mkdir -p /var/www/openeyes/vendor/yiisoft
+if [ ! "$envtype" = "VAGRANT" ]; then sudo chown -R www-data:www-data /var/www/openeyes/vendor; fi
 
 if [ -d "/usr/lib/openeyes/yii" ]; then
 	# v1.12+
 	echo "Linking Yii framework to /usr/lib/openeyes/yii"
-	ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
+	sudo ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
 else
 	#fix for pre v1.12
 	echo "Linking Yii framework to /var/www/openeyes/protected/yii"
-	ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii
+	sudo ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii
 fi
 
 
 # Make sure vendor directory found/linked
 if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
 	echo Linking vendor framework
-	ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
-	chown -R www-data:www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
+	sudo ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
+	sudo chown -R www-data:www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
 	if [ ! $? = 0 ]; then echo "unable to link vendors - this is expected for versions prior to v1.12"; fi
 fi
 
 # update composer dependencies
 if [ $composer == 1 ]; then
 	if [ "$env" = "LIVE" ]; then
-		composer install --no-dev --no-plugins --no-scripts
+		sudo composer install --no-dev --no-plugins --no-scripts
 	else
-		composer install --no-plugins --no-scripts
+		sudo composer install --no-plugins --no-scripts
 	fi
 fi
 
@@ -130,13 +137,13 @@ if ps ax | grep -v grep | grep run-dicom-service.sh > /dev/null
 	then
 		dwservrunning=1
 		echo "Stopping dicom-file-watcher..."
-		service dicom-file-watcher stop
+		sudo service dicom-file-watcher stop
 fi
 
 cd /var/www/openeyes/protected/javamodules/IOLMasterImport
-rm -rf dist/lib 2>/dev/null || :
-mkdir -p dist
-ln -s ../lib ./dist/lib
+sudo rm -rf dist/lib 2>/dev/null || :
+sudo mkdir -p dist
+sudo ln -s ../lib ./dist/lib
 if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
 
 # Compile IOLImporter
@@ -145,14 +152,14 @@ if [ $compile = 1 ]; then
   echo "
   Compiling IOLMAsterImport. Please wait....
   "
-  ./compile.sh > /dev/null 2>&1
+  sudo ./compile.sh > /dev/null 2>&1
   if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
 fi
 
 # restart the service if we stopped it
 if [ $dwservrunning = 1 ] && [ $resartserv = 1 ]; then
 	echo "Restarting dicom-file-watcher..."
-	service dicom-file-watcher start
+	sudo service dicom-file-watcher start
 fi
 
 # Automatically migrate up, unless --no-migrate parameter is given
@@ -162,16 +169,18 @@ if [ "$migrate" = "1" ]; then
 	oe-migrate --quiet
     echo ""
 else
+	if [ "$nowarnmigrate" = "0" ]; then
 	echo "
 Migrations were not run automaically. If you need to run the database migrations, run command oe-migrate
 "
+	fi
 fi
 
 # Clear caches
 if [ $clearcahes = 1 ]; then
 	echo "Clearing caches..."
-	rm -rf /var/www/openeyes/protected/runtime/cache/* 2>/dev/null || :
-	rm -rf /var/www/openeyes/assets/* 2>/dev/null || :
+	sudo rm -rf /var/www/openeyes/protected/runtime/cache/* 2>/dev/null || :
+	sudo rm -rf /var/www/openeyes/assets/* 2>/dev/null || :
 	echo ""
 fi
 

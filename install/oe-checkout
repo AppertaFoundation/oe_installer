@@ -137,7 +137,7 @@ if [ $usessh = 1 ]; then
 	basestring="${sshuserstring}@github.com:$gitroot"
 fi
 
-git config core.fileMode false 2>/dev/null
+sudo git config core.fileMode false 2>/dev/null
 
 
 cd /var/www/openeyes/protected/modules 2>/dev/null
@@ -159,7 +159,7 @@ if [ ! "$force" = "1" ]; then
 
 			# check if this is a git repo
 			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
-					git diff --quiet
+					sudo git diff --quiet
 					if [ ! $? = 0 ]; then
 					  changes=1
 					  modulelist="$modulelist $module"
@@ -171,14 +171,14 @@ if [ ! "$force" = "1" ]; then
 	  done
 
 	  # ensure modules directory exists - prevents code being checked out to wrong place
-	  mkdir -p /var/www/openeyes/protected/javamodules
+	  sudo mkdir -p /var/www/openeyes/protected/javamodules
 	  cd  /var/www/openeyes/protected/javamodules/
 	  for module in ${javamodules[@]}; do
 		if [ ! -d "$module" ]; then
 			printf "\e[31mModule $module not found\e[0m\n"
 		else
 			cd $module;
-			git diff --quiet
+			sudo git diff --quiet
 			if [ ! $? = 0 ]; then
 			  changes=1
 			  modulelist="$modulelist $module"
@@ -205,11 +205,11 @@ if [ $killmodules = 1 ]; then
 	echo ""
 	echo "Removing all modules from protected/modules..."
 	echo ""
-	rm -rf /var/www/openeyes/protected/modules
+	sudo rm -rf /var/www/openeyes/protected/modules
 fi
 
 # Check out or clone the code modules
-mkdir -p /var/www/
+sudo mkdir -p /var/www/
 cd /var/www
 
 for module in ${modules[@]}; do
@@ -218,7 +218,7 @@ for module in ${modules[@]}; do
 
   # Move from openeyes repo to modules - NOTE THAT openeyes must be the first module in the modules list, otherwise things go very wrong!
   if [ ! "$module" = "openeyes" ]; then
-      mkdir -p /var/www/openeyes/protected/modules
+      sudo mkdir -p /var/www/openeyes/protected/modules
       cd /var/www/openeyes/protected/modules
   fi
 
@@ -236,13 +236,13 @@ for module in ${modules[@]}; do
 	printf "\e[32m$module: Doesn't currently exist - cloning from : ${basestring}/${module}.git \e[0m"
 
 	# checkout branch. If branch doesn't exist then get master instead
-	if ! git clone -b $branch ${basestring}/${module}.git ; then
+	if ! sudo git clone -b $branch ${basestring}/${module}.git ; then
 		echo "falling back to $defaultbranch branch for $module..."
-		if ! git clone -b $defaultbranch ${basestring}/${module}.git ; then
+		if ! sudo git clone -b $defaultbranch ${basestring}/${module}.git ; then
 			# If we cannot find default branch at specifeid remote, fall back to OE git hub
 			if [ "$gitroot != "openeyes ]; then
 				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
+				sudo git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
 			fi
 		fi
 	fi
@@ -262,16 +262,16 @@ for module in ${modules[@]}; do
 
     if [ $processgit = 1 ]; then
 		printf "\e[32m$module: \e[0m"
-		git reset --hard
-		git fetch --all
-		git checkout tags/$branch 2>/dev/null
-		if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
-		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
+		sudo git reset --hard
+		sudo git fetch --all
+		sudo git checkout tags/$branch 2>/dev/null
+		if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
+		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
 
 		## fast forward to latest head
 		if [ ! "$nopull" = "1" ]; then
 			echo "Pulling latest changes: "
-			git pull
+			sudo git pull
 		fi
 	fi
 
@@ -279,35 +279,35 @@ for module in ${modules[@]}; do
 done
 
 # Check out the Java modules
-mkdir -p /var/www/openeyes/protected/javamodules
+sudo mkdir -p /var/www/openeyes/protected/javamodules
 cd /var/www/openeyes/protected/javamodules
 for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then
     printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
 	# checkout branch. If branch doesn't exist then get master instead
-			if ! git clone -b $branch ${basestring}/${module}.git ; then
+			if ! sudo git clone -b $branch ${basestring}/${module}.git ; then
 				echo "falling back to $defaultbranch branch for $module..."
-				if ! git clone -b $defaultbranch ${basestring}/${module}.git ; then
+				if ! sudo git clone -b $defaultbranch ${basestring}/${module}.git ; then
 					# If we cannot find default branch at specifeid remote, fall back to OE git hub
 					if [ "$gitroot != "openeyes ]; then
 						echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-						git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
+						sudo git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
 					fi
 				fi
 			fi
   else
     cd $module
 	printf "\e[32m$module: \e[0m"
-    git reset --hard
-    git fetch --all
-    git checkout tags/$branch 2>/dev/null
-    if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
-	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
+    sudo git reset --hard
+    sudo git fetch --all
+    sudo git checkout tags/$branch 2>/dev/null
+    if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
+	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
 
 	## fast forward to latest head
 	if [ ! "$nopull" = "1" ]; then
 		echo "Pulling latest changes: "
-		git pull
+		sudo git pull
 	fi
 
     cd ..

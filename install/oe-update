@@ -5,10 +5,10 @@ dir=$PWD
 cd /vagrant/install
 
 printf "\e[32minstaller: \e[0m"
-git pull
+sudo git pull
 
 bash update-oe-tools.sh
 
-bash runupdate.sh "$@"
+sudo bash runupdate.sh "$@"
 
 cd "$dir"

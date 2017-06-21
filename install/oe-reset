@@ -74,7 +74,7 @@ fi
 dir=$PWD
 
 echo "Stopping dicom-file-watcher..."
-service dicom-file-watcher stop
+sudo service dicom-file-watcher stop
 if [ ! $? = 0 ]; then echo "dicom-file-watcher not running"; fi
 
 if [ ! "$branch" = "0" ]; then
@@ -83,12 +83,12 @@ if [ ! "$branch" = "0" ]; then
 
 	cd /var/www/openeyes/protected/modules/sample
 
-	git reset --hard
-	git fetch --all
+    sudo git reset --hard
+	sudo git fetch --all
 
-	git checkout tags/$branch 2>/dev/null
-	if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
-	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
+	sudo git checkout tags/$branch 2>/dev/null
+	if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
+	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
 fi
 
 cd /var/www/openeyes/protected/modules/sample/sql
@@ -133,7 +133,7 @@ if [ $demo = "1" ]; then
     for f in `ls *.sh | sort -V`
     do
 		echo "running $f"
-		bash "./$f"
+		sudo bash "./$f"
     done
 fi
 
@@ -149,10 +149,10 @@ if [ ! $nobanner = "1" ]; then
 	rm /tmp/openeyes-mysql-setbanner.sql
 fi
 
-oe-fix --no-compile --no-migrate --no-restart --no-composer
+oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer
 
 echo "Starting dicom-file-watcher..."
-service dicom-file-watcher start
+sudo service dicom-file-watcher start
 
 cd "$dir"
 printf "\e[42m\e[97m  RESET COMPLETE  \e[0m \n"
