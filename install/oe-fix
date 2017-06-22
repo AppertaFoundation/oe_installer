@@ -98,19 +98,21 @@ if [ ! -f "protected/config/local/common.php" ]; then
 fi;
 
 # Make sure yii framework found/linked
-sudo rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
-sudo mkdir -p /var/www/openeyes/vendor/yiisoft
-if [ ! "$envtype" = "VAGRANT" ]; then sudo chown -R www-data:www-data /var/www/openeyes/vendor; fi
+#  ******* Retired since v1.17, now using composer - following block can be removed if no errors are found
+# sudo rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
+# sudo mkdir -p /var/www/openeyes/vendor/yiisoft
+# if [ ! "$envtype" = "VAGRANT" ]; then sudo chown -R www-data:www-data /var/www/openeyes/vendor; fi
+#
+# if [ -d "/usr/lib/openeyes/yii" ]; then
+# 	# v1.12+
+# 	echo "Linking Yii framework to /usr/lib/openeyes/yii"
+# 	sudo ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
+# else
+# 	#fix for pre v1.12
+# 	echo "Linking Yii framework to /var/www/openeyes/protected/yii"
+# 	sudo ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii
+# fi
 
-if [ -d "/usr/lib/openeyes/yii" ]; then
-	# v1.12+
-	echo "Linking Yii framework to /usr/lib/openeyes/yii"
-	sudo ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
-else
-	#fix for pre v1.12
-	echo "Linking Yii framework to /var/www/openeyes/protected/yii"
-	sudo ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii
-fi
 
 
 # Make sure vendor directory found/linked
