@@ -50,6 +50,8 @@ for module in ${javamodules[@]}; do
   fi
 done
 
+# update composer
+sudo composer self-update
 
 # Now reset/relink various config files etc
 oe-fix
