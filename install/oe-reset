@@ -89,6 +89,8 @@ if [ ! "$branch" = "0" ]; then
 	sudo git checkout tags/$branch 2>/dev/null
 	if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
 	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
+    # fast-forward to head
+	sudo git pull
 fi
 
 cd /var/www/openeyes/protected/modules/sample/sql
