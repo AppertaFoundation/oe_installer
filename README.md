@@ -71,7 +71,7 @@ Software required:
 ```
 1. Install Vagrant, VirtualBox and Git, following default install instructions from the above links.
     1.1 When installing git, choose to use bash tools, not the default Windows command prompt
-2. From an administrative command prompt window, change to your root directory.
+2. From an ADMINISTRATIVE command prompt window, change to your root directory.
     Run: cd c:\
 3. Clone OpenEyes/oe_installer.
     Run: git clone https://github.com/openeyes/oe_installer.git
