@@ -4,7 +4,7 @@ installChocolatey.cmd
 
 REM install git for windows and set path
 :: cmd.exe /C "choco install git -y -params "/GitAndUnixToolsOnPath""
-choco install git -y -params "/GitAndUnixToolsOnPath"
+choco upgrade git -y -params "/GitAndUnixToolsOnPath"
 
 REM install Virtual Box
 ::cmd.exe /C "choco upgrade virtualbox -y -params "/NoExtensionPack""
