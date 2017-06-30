@@ -70,6 +70,7 @@ Software required:
 
 ```
 1. Install Vagrant, VirtualBox and Git, following default install instructions from the above links.
+    1.1 When installing git, choose to use bash tools, not the default Windows command prompt
 2. From an administrative command prompt window, change to your root directory.
     Run: cd c:\
 3. Clone OpenEyes/oe_installer.
@@ -78,6 +79,7 @@ Software required:
     Run: cd oe_installer
 5. Create the virtual server from your project directory.
     Run: vagrant up
+    5.1. If this is your first time running Vagrant, it may install some plugins first, then ask you to run again. In which case, run vagrant up again to continue
 6. It will take 5 - 10 minutes for the install to complete (depending on the speed of your internet connection)
 7. At this point you should have a fully working OpenEyes server, reachable at http://localhost:8888
 8. You can follow the sections below [Additional development tools] should you need them.
