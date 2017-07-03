@@ -124,8 +124,6 @@ echo .
 
 choco upgrade vagrant -y
 
-pause
-
 echo .
 echo .
 echo .
@@ -141,8 +139,6 @@ echo .
 echo .
 choco upgrade virtualbox -y
 ::-params "/NoExtensionPack"
-
-pause
 
 :: reload PATH
 call :refreshEnv
@@ -160,7 +156,6 @@ echo .
 
 cd \ && git clone https://github.com/openeyes/oe_installer openeyes
 
-pause
 
 echo .
 echo .
@@ -178,7 +173,7 @@ echo .
 
 cd \openeyes
 vagrant up
-pause
+
 vagrant up
 
 echo ***************************************************************
@@ -194,6 +189,5 @@ echo ****   and type: cd \openeyes                              ****
 echo ****             vagrant halt                              ****
 echo ****                                                       ****
 echo ***************************************************************
-
-
+echo .
 pause
