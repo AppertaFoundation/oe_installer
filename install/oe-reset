@@ -110,6 +110,27 @@ rm /tmp/openeyes-mysql-create.sql
 echo "Re-importing database"
 mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
 
+# Run pre-migration demo scripts
+if [ $demo = "1" ]; then
+	cd /var/www/openeyes/protected/modules/sample/sql/demo/pre-migrate
+
+	# import all demo sql scripts
+	shopt -s nullglob
+    for f in `ls *.sql | sort -V`
+    do
+		echo "importing $f"
+		mysql -uroot "-ppassword" -D openeyes < $f
+    done
+
+	# run demo setup scripts
+	shopt -s nullglob
+    for f in `ls *.sh | sort -V`
+    do
+		echo "running $f"
+		sudo bash "./$f"
+    done
+fi
+
 # Run migrations
 if [ $migrate = "1" ]; then
 	echo Performing database migrations
