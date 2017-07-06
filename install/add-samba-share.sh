@@ -7,7 +7,7 @@ sudo apt install samba -y
 
 echo -e "vagrant\nvagrant" | sudo smbpasswd -s -a root
 
-echo "
+sudo echo "
 [openeyes]
         path = /var/www/
         valid users = vagrant root

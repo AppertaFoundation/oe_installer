@@ -123,12 +123,14 @@ if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
 	if [ ! $? = 0 ]; then echo "unable to link vendors - this is expected for versions prior to v1.12"; fi
 fi
 
-# update composer dependencies
+# update composer and npm dependencies
 if [ $composer == 1 ]; then
 	if [ "$env" = "LIVE" ]; then
 		sudo composer install --no-dev --no-plugins --no-scripts
+		npm install --production
 	else
 		sudo composer install --no-plugins --no-scripts
+		npm install
 	fi
 fi
 
