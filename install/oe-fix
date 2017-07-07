@@ -1,11 +1,7 @@
 #!/bin/bash
 
-dir=$PWD
+bash /vagrant/installupdate-oe-tools.sh
 
-cd /vagrant/install
-
-bash update-oe-tools.sh
-
-sudo bash runfix.sh "$@"
+sudo bash /vagrant/install/runfix.sh "$@"
 
 cd "$dir"
