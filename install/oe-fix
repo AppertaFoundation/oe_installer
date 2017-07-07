@@ -59,6 +59,9 @@ fi
 
 source /etc/openeyes/env.conf
 
+## Update tools
+bash /vagrant/install/update-oe-tools.sh
+
 cd /var/www/openeyes
 if [ -f ".htaccess.sample" ]; then
 echo Renaming .htaccess file
@@ -126,10 +129,16 @@ fi
 # update composer and npm dependencies
 if [ $composer == 1 ]; then
 	if [ "$env" = "LIVE" ]; then
+		echo "Installing/updating composer dependencies for LIVE"
 		sudo composer install --no-dev --no-plugins --no-scripts
+
+		echo "Installing/updating npm dependencies for LIVE"
 		npm install --production
 	else
+		echo "Installing/updating composer dependencies"
 		sudo composer install --no-plugins --no-scripts
+
+		echo "Installing/updating npm dependencies"
 		npm install
 	fi
 fi

@@ -134,9 +134,7 @@ fi
 # Run migrations
 if [ $migrate = "1" ]; then
 	echo Performing database migrations
-	cd /var/www/openeyes/protected
-	./yiic migrate --interactive=0
-	./yiic migratemodules --interactive=0
+	oe-migrate -q
 fi
 
 # Run demo scripts
