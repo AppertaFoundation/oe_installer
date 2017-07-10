@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bash /vagrant/installupdate-oe-tools.sh
+bash /vagrant/install/update-oe-tools.sh
 
 sudo bash /vagrant/install/runfix.sh "$@"
 
