@@ -10,6 +10,7 @@ bannertext="Database reset at $(date)"
 branch=0
 defaultbranch="master"
 demo=0
+nofiles=0
 showhelp=0
 
 for i in "$@"
@@ -34,6 +35,8 @@ case $i in
 		## Install demo scripts (worklists, etc)
 		;;
 	--help) showhelp=1
+		;;
+	--no-files) nofiles=1
 		;;
 	*)  if [ "$custombanner" = "1" ]; then bannertext=$i; custombanner=0; fi
 			## Set banner text to custom input after reset
@@ -63,6 +66,7 @@ if [ $showhelp = 1 ]; then
     echo "                   - default would fallback to master"
     echo "  --no-banner  "
 	echo "          |-nb   : Remove the user banner text after resetting"
+	echo "  --no-files     : Do not clear protected/files during reset"
     echo "  --banner>      : Set the user banner to the specified text after reset"
     echo "                   - default is 'Database reset at <time>'"
 	echo "  --demo         : Install additional scripts to set up openeyes for demo"
@@ -107,8 +111,10 @@ flush privileges;
 mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
 rm /tmp/openeyes-mysql-create.sql
 
-echo deleting protected files
-sudo rm -rf /var/www/openeyes/protected/files/*
+if [ $nofiles = "0" ]; then
+	echo Deleting protected files
+	sudo rm -rf /var/www/openeyes/protected/files/*
+fi
 
 echo "Re-importing database"
 mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
