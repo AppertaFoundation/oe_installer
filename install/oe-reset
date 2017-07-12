@@ -167,6 +167,27 @@ if [ $demo = "1" ]; then
     done
 fi
 
+# Run local post-migaration demo scripts
+if [ $demo = "1" ]; then
+	cd /var/www/openeyes/protected/modules/sample/sql/demo/local-post
+
+	# import all demo sql scripts
+	shopt -s nullglob
+    for f in `ls *.sql | sort -V`
+    do
+		echo "importing $f"
+		mysql -uroot "-ppassword" -D openeyes < $f
+    done
+
+	# run demo setup scripts
+	shopt -s nullglob
+    for f in `ls *.sh | sort -V`
+    do
+		echo "running $f"
+		sudo bash "./$f"
+    done
+fi
+
 # Set banner to confirm reset
 if [ ! $nobanner = "1" ]; then
 	echo "setting banner to: $bannertext"
