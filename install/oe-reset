@@ -107,6 +107,9 @@ flush privileges;
 mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
 rm /tmp/openeyes-mysql-create.sql
 
+echo deleting protected files
+sudo rm -rf /var/www/openeyes/protected/files/*
+
 echo "Re-importing database"
 mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
 
