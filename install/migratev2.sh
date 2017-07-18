@@ -8,3 +8,5 @@ printf "\e[31mMIGRATING PAST SURGERY TO V2\e[0m\n"
 /var/www/openeyes/protected/yiic pastsurgerymigrate
 printf "\e[31mMIGRATING SOCIAL HISTORY TO V2\e[0m\n"
 /var/www/openeyes/protected/yiic socialhistorymigrate
+printf "\e[31mMIGRATING RISKS TO V2\e[0m\n"
+/var/www/openeyes/protected/yiic risksmigrate
