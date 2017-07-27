@@ -37,6 +37,7 @@ if [ $quiet = 0 ]; then
     sudo php ./yiic migrate --interactive=0
     sudo php ./yiic migratemodules --interactive=0
 else
+	sudo mkdir -p /etc/openeyes
 	sudo touch /etc/openeyes/migrate.log
 	sudo chmod 775 /etc/openeyes/migrate.log
 	sudo php ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
