@@ -127,6 +127,8 @@ mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo/pre-migrate
 
+	unset f
+
 	# import all demo sql scripts
 	shopt -s nullglob
     for f in `ls *.sql | sort -V`
@@ -134,6 +136,8 @@ if [ $demo = "1" ]; then
 		echo "importing $f"
 		mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
     done
+
+	unset f
 
 	# run demo setup scripts
 	shopt -s nullglob
@@ -154,6 +158,8 @@ fi
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo
 
+	unset f
+
 	# import all demo sql scripts
 	shopt -s nullglob
     for f in `ls *.sql | sort -V`
@@ -161,6 +167,8 @@ if [ $demo = "1" ]; then
 		echo "importing $f"
 		mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
     done
+
+	unset f
 
 	# run demo setup scripts
 	shopt -s nullglob
@@ -175,6 +183,8 @@ fi
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo/local-post
 
+	unset f
+
 	# import all demo sql scripts
 	shopt -s nullglob
     for f in `ls *.sql | sort -V`
@@ -183,12 +193,14 @@ if [ $demo = "1" ]; then
 		mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
     done
 
+	unset f
+
 	# run demo setup scripts
 	shopt -s nullglob
-    for g in `ls *.sh | sort -V`
+    for f in `ls *.sh | sort -V`
     do
-		echo "running $g"
-		sudo bash "./$g"
+		echo "running $f"
+		sudo bash "./$f"
     done
 fi
 
