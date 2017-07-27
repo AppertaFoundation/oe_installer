@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# DB connection variables
-dbuser="root"
-dbpassword="password"
-
 # Process commandline parameters
 
 nobanner=0
@@ -112,7 +108,7 @@ grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
 flush privileges;
 " > /tmp/openeyes-mysql-create.sql
 
-mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-create.sql
+mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
 rm /tmp/openeyes-mysql-create.sql
 
 if [ $nofiles = "0" ]; then
@@ -121,7 +117,7 @@ if [ $nofiles = "0" ]; then
 fi
 
 echo "Re-importing database"
-mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
+mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
 
 # Run pre-migration demo scripts
 if [ $demo = "1" ]; then
@@ -132,7 +128,7 @@ if [ $demo = "1" ]; then
     for f in `ls *.sql | sort -V`
     do
 		echo "importing $f"
-		mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		mysql -uroot "-ppassword" -D openeyes < $f
     done
 
 	# run demo setup scripts
@@ -159,7 +155,7 @@ if [ $demo = "1" ]; then
     for f in `ls *.sql | sort -V`
     do
 		echo "importing $f"
-		mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		mysql -uroot "-ppassword" -D openeyes < $f
     done
 
 	# run demo setup scripts
@@ -180,15 +176,15 @@ if [ $demo = "1" ]; then
     for f in `ls *.sql | sort -V`
     do
 		echo "importing $f"
-		mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		mysql -uroot "-ppassword" -D openeyes < $f
     done
 
 	# run demo setup scripts
 	shopt -s nullglob
-    for g in `ls *.sh | sort -V`
+    for f in `ls *.sh | sort -V`
     do
-		echo "running $g"
-		sudo bash "./$g"
+		echo "running $f"
+		sudo bash "./$f"
     done
 fi
 
@@ -200,7 +196,7 @@ if [ ! $nobanner = "1" ]; then
 	UPDATE openeyes.setting_installation s SET s.value='$bannertext' WHERE s.key='watermark';
 	" > /tmp/openeyes-mysql-setbanner.sql
 
-	mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-setbanner.sql
+	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
 	rm /tmp/openeyes-mysql-setbanner.sql
 fi
 

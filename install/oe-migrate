@@ -34,13 +34,13 @@ fi
 dir=$PWD
 cd /var/www/openeyes/protected
 if [ $quiet = 0 ]; then
-    sudo php ./yiic migrate --interactive=0
-    sudo php ./yiic migratemodules --interactive=0
+    sudo ./yiic migrate --interactive=0
+    sudo ./yiic migratemodules --interactive=0
 else
 	sudo touch /etc/openeyes/migrate.log
 	sudo chmod 775 /etc/openeyes/migrate.log
-	sudo php ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
-    sudo php ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
+	sudo ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
+    sudo ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
     echo "Migrations applied - see /etc/openeyes/migrate.log for more details"
 fi
 cd "$dir"
