@@ -16,6 +16,7 @@ defaultbranch="master"
 demo=0
 nofiles=0
 showhelp=0
+setpw=0
 
 for i in "$@"
 do
@@ -42,11 +43,17 @@ case $i in
 		;;
 	--no-files) nofiles=1
 		;;
+	-p) setpw=1
+		## Use a different root password
+		;;
 	*)  if [ "$custombanner" = "1" ]; then bannertext=$i; custombanner=0; fi
 			## Set banner text to custom input after reset
 
 		if [ "$custombranch" = "1" ]; then branch=$i; custombranch=0; fi
 			## reset to a new branch
+
+		if [ "$setpw" = "1" ]; then dbpassword=$i; fi
+			## Override DB password
 		;;
 esac
 done
@@ -56,7 +63,7 @@ if [ $showhelp = 1 ]; then
     echo "DESCRIPTION:"
     echo "Resets database to latest 'sample' database"
     echo ""
-    echo "usage: $0 [--branch | b ] [--help] [--no-migrate | -nm ] [--banner ] [--develop | -d] [ --no-banner | -nb ]"
+    echo "usage: $0 [--branch | b branchname] [--help] [--no-migrate | -nm ] [--banner \"banner text\"] [--develop | -d] [ --no-banner | -nb ] [-p password]"
     echo ""
     echo "COMMAND OPTIONS:"
     echo "  --help         : Display this help text"
@@ -73,6 +80,7 @@ if [ $showhelp = 1 ]; then
 	echo "  --no-files     : Do not clear protected/files during reset"
     echo "  --banner>      : Set the user banner to the specified text after reset"
     echo "                   - default is 'Database reset at <time>'"
+	echo "	-p			   : specify root password for mysql (default is \"password\")"
 	echo "  --demo         : Install additional scripts to set up openeyes for demo"
 	echo ""
     exit 1
