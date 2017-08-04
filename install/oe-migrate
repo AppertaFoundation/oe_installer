@@ -43,5 +43,9 @@ else
 	sudo php ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
     sudo php ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
     echo "Migrations applied - see /etc/openeyes/migrate.log for more details"
+	if grep -i ERROR /etc/openeyes/migrate.log 2>/dev/null ; then
+		printf "\n\e[5;41;1m\n\nMIGRATE ENCOUNTERED ERRORS - PLEASE SEE LOG - /etc/openeyes/migrate.log\n\n\n \e[0m\n"
+		grep -i ERROR /etc/openeyes/migrate.log
+	fi
 fi
 cd "$dir"

@@ -167,6 +167,8 @@ fi
 if [ $migrate = "1" ]; then
 	echo Performing database migrations
 	oe-migrate -q
+	echo "The following migrations were applied..."
+	grep applied /etc/openeyes/migrate.log
 fi
 
 # Run demo scripts
