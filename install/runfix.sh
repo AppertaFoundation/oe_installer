@@ -189,6 +189,11 @@ Migrations were not run automaically. If you need to run the database migrations
 	fi
 fi
 
+# import eyedraw config
+printf "\nImporting eyedraw configuration\n"
+sudo php /var/www/openeyes/protected/yiic eyedrawconfigload --filename=/var/www/openeyes/protected/config/core/OE_ED_CONFIG.xml 2>/dev/null
+
+
 # Clear caches
 if [ $clearcahes = 1 ]; then
 	echo "Clearing caches..."
