@@ -97,7 +97,18 @@ if [ ! "$branch" = "0" ]; then
 	## Checkout new sample database branch
 	echo "Downloading database for $branch"
 
+	sudo mkdir -p /var/www/openeyes/protected/modules/sample
 	cd /var/www/openeyes/protected/modules/sample
+
+	if [ ! -d ".git" ]; then
+
+		if ! sudo git clone -b $branch https://github.com/openeyes/sample.git . ; then
+			echo "falling back to master branch for sample..."
+			sudo git clone https://github.com/openeyes/sample.git .
+		fi
+
+	fi
+
 
     sudo git reset --hard
 	sudo git fetch --all

@@ -203,9 +203,10 @@ fi
 # If -ff was speified, kill all existing modules and re-clone
 if [ $killmodules = 1 ]; then
 	echo ""
-	echo "Removing all modules from protected/modules..."
+	echo "Removing all modules from protected/modules and protected/javamodules..."
 	echo ""
 	sudo rm -rf /var/www/openeyes/protected/modules
+	sudo rm -rf /var/www/openeyes/protected/javamodules
 fi
 
 # Check out or clone the code modules
