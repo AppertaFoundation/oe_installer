@@ -10,3 +10,5 @@ printf "\e[31mMIGRATING SOCIAL HISTORY TO V2\e[0m\n"
 /var/www/openeyes/protected/yiic socialhistorymigrate
 printf "\e[31mMIGRATING RISKS TO V2\e[0m\n"
 /var/www/openeyes/protected/yiic risksmigrate
+printf "\e[31mMIGRATING BIOMETRY LENSES TO V2\e[0m\n"
+##/var/www/openeyes/protected/yiic biometrymigrate

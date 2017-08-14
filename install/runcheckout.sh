@@ -198,6 +198,9 @@ if [ ! "$force" = "1" ]; then
 		exit 1
 	  fi
 	#fi
+else
+	# delete dependencies during force (they will get re-added by oe-fix)
+	sudo rm -rf /var/www/openeyes/node_modules
 fi
 
 # If -ff was speified, kill all existing modules and re-clone
@@ -297,23 +300,18 @@ for module in ${javamodules[@]}; do
 				fi
 			fi
   else
+    cd $module
+	printf "\e[32m$module: \e[0m"
+    sudo git reset --hard
+    sudo git fetch --all
+    sudo git checkout tags/$branch 2>/dev/null
+    if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
+	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
 
-	cd $module
-
-	if [ -d ".git" ]; then 
-		printf "\e[32m$module: \e[0m"
-	    sudo git reset --hard
-	    sudo git fetch --all
-	    sudo git checkout tags/$branch 2>/dev/null
-	    if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
-		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
-
-		## fast forward to latest head
-		if [ ! "$nopull" = "1" ]; then
-			echo "Pulling latest changes: "
-			sudo git pull
-		fi
-
+	## fast forward to latest head
+	if [ ! "$nopull" = "1" ]; then
+		echo "Pulling latest changes: "
+		sudo git pull
 	fi
 
     cd ..

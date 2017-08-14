@@ -129,7 +129,9 @@ if [ "$force" = 0 ]; then
         echo ""
         exit 1
   fi
-
+else
+	# delete dependencies during force (they will get re-added by oe-fix)
+	sudo rm -rf /var/www/openeyes/node_modules
 fi
 
 printf "\e[32mopeneyes: \e[0m"
