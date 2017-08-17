@@ -64,8 +64,8 @@ Vagrant.configure(2) do |config|
   config.vm.network :forwarded_port, host: 3333, guest: 3306
   config.vm.network "private_network", :auto_network => true
 
-  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root" #, type: "smb", mount_options: ["vers=2.1"] #, type: 'nfs', create: true
-  config.vm.synced_folder ".", "/vagrant", type: 'nfs' #, type: "smb", mount_options: ["vers=2.1"]  #, type: "nfs"
+  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true #, type: 'nfs', type: "smb", mount_options: ["vers=2.1"]
+  config.vm.synced_folder ".", "/vagrant" #, type: 'nfs' #, type: "smb", mount_options: ["vers=2.1"]  #, type: "nfs"
 
   # Prefer VMWare fusion before VirtualBox
   config.vm.provider "vmware_fusion"
