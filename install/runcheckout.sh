@@ -9,6 +9,7 @@ gitroot="openeyes"
 defaultbranch=master
 force=0
 killmodules=0
+resetconfig=0
 migrate=1
 fix=1
 compile=1
@@ -34,6 +35,8 @@ case $i in
 	-ff|--killmodules|--kill-modules) force=1; killmodules=1
 		## killmodules should only be used when moving backwards from versions 1.12.1 or later to version 1.12 or earlier - removes the /protected/modules folder and re-clones all modules
 		;;
+	-fc|--reset-config) resetconfig=1; fixparams="$fixparams --reset-config"
+	;;
 	--develop|--d|-d) defaultbranch=develop
 		## develop will use develop baranches when the named branch does not exist for a module (by default it would use master)
 		;;
@@ -98,6 +101,9 @@ if [ $showhelp = 1 ]; then
     echo "          | -ff  : Will delete all items from protected/modules before checking"
     echo "                   out. This is required when switching between versions <= 1.12 "
     echo "                   and versions >= 1.12.1"
+	echo "	--reset-config "
+	echo "		| -fc	   : Reset config/local/common.php to default settings"
+	echo "				   : WARNING: Will destroy existing config"
     echo "  --no-compile   : Do not complile java modules after Checkout"
     echo "  -r <remote>    : Use the specifed remote github fork - defaults to openeyes"
     echo "  --develop "
@@ -317,6 +323,13 @@ for module in ${javamodules[@]}; do
     cd ..
   fi
 done
+
+if [ "$resetconfig" = "1" ]; then
+	echo "
+WARNING: Resetting local config to defaults
+"
+	sudo rm -rf /var/www/protected/config/local/*.php
+fi
 
 # Now reset/relink various config files etc
 if [ "$fix" = "1" ]; then  oe-fix $fixparams; fi

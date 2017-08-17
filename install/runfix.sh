@@ -11,6 +11,7 @@ migrate=1
 showhelp=0
 composer=1
 nowarnmigrate=0
+resetconfig=0
 
 for i in "$@"
 do
@@ -30,6 +31,8 @@ case $i in
 	--no-composer) composer=0
 	;;
 	--no-warn-migrate) nowarnmigrate=1
+	;;
+	-fc|--reset-config) resetconfig=1
 	;;
 	*)  echo "Unknown command line: $i"
     ;;
@@ -75,47 +78,25 @@ sudo mv index.example.php index.php
 if [ ! "$env" = "VAGRANT" ]; then chown -R www-data:www-data index.php; fi
 fi
 
-if [ ! -d "protected/config/local" ]; then
-	echo "WARNING: this code branch uses db settings from common.php, not /etc/openeyes"
-	sudo mv protected/config/local.sample protected/config/local
-	sudo mv protected/config/local/common.sample.php protected/config/local/common.php
-	if [ ! "$envtype" = "VAGRANT" ]; then sudo chown -R www-data:www-data protected/config/local; fi
-	sudo chmod -R 775 protected/config/local
-	# When using old oe versions, overwirte password in commpon.php to use new default usermname/password
-	sudo sed -i "s/'username' => 'root',/'username' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
-	sudo sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
-fi;
-
 if [ ! -f "protected/config/local/common.php" ]; then
-    if [ -d "/etc/openeyes/backup/config/" ]; then
+    if [ -d "/etc/openeyes/backup/config/" ] && [ "$resetconfig" = "0" ]; then
         echo "*********** WARNING: Restoring backed up local configuration ... ***********"
+		sudo mkdir -p protected/config/local
         sudo cp -R /etc/openeyes/backup/config/local/* protected/config/local/.
     else
         echo "WARNING: Copying sample configuration into local ..."
         #sudo cp -R protected/config/local.sample/* protected/config/local/.
 		sudo mkdir -p protected/config/local
-		sudo cp -n /var/www/openeyes/protected/config/local.sample/common.sample.php /var/www/openeyes/protected/config/local/common.php
-		sudo cp -n /var/www/openeyes/protected/config/local.sample/console.sample.php /var/www/openeyes/protected/config/local/console.php
-
+		sudo cp -n protected/config/local.sample/common.sample.php protected/config/local/common.php
+		sudo cp -n protected/config/local.sample/console.sample.php protected/config/local/console.php
     fi;
+
+	# Fix permissions
+	sudo chown -R www-data:www-data protected/config/local
+	sudo chmod -R 775 protected/config/local
+	sudo sed -i "s/'username' => 'root',/'username' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
+	sudo sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
 fi;
-
-# Make sure yii framework found/linked
-#  ******* Retired since v1.17, now using composer - following block can be removed if no errors are found
-# sudo rm "/var/www/openeyes/vendor/yiisoft/yii" 2>/dev/null || :
-# sudo mkdir -p /var/www/openeyes/vendor/yiisoft
-# if [ ! "$envtype" = "VAGRANT" ]; then sudo chown -R www-data:www-data /var/www/openeyes/vendor; fi
-#
-# if [ -d "/usr/lib/openeyes/yii" ]; then
-# 	# v1.12+
-# 	echo "Linking Yii framework to /usr/lib/openeyes/yii"
-# 	sudo ln -s /usr/lib/openeyes/yii /var/www/openeyes/vendor/yiisoft/yii
-# else
-# 	#fix for pre v1.12
-# 	echo "Linking Yii framework to /var/www/openeyes/protected/yii"
-# 	sudo ln -s /var/www/openeyes/protected/yii /var/www/openeyes/vendor/yiisoft/yii
-# fi
-
 
 
 # Make sure vendor directory found/linked
@@ -199,6 +180,9 @@ if [ $clearcahes = 1 ]; then
 	echo "Clearing caches..."
 	sudo rm -rf /var/www/openeyes/protected/runtime/cache/* 2>/dev/null || :
 	sudo rm -rf /var/www/openeyes/assets/* 2>/dev/null || :
+	# Fix permissions
+	sudo chown -R www-data:www-data /var/www/openeyes/protected/runtime/cache/
+	sudo chmod -R 775 /var/www/openeyes/assets/
 	echo ""
 fi
 
