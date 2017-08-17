@@ -182,6 +182,7 @@ if [ $clearcahes = 1 ]; then
 	sudo rm -rf /var/www/openeyes/assets/* 2>/dev/null || :
 	# Fix permissions
 	sudo chown -R www-data:www-data /var/www/openeyes/protected/runtime/cache/
+	sudo chown -R www-data:www-data /var/www/openeyes/assets
 	sudo chmod -R 775 /var/www/openeyes/assets/
 	echo ""
 fi
