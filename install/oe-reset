@@ -157,9 +157,11 @@ if [ $demo = "1" ]; then
 	# run demo setup scripts
 	shopt -s nullglob
     for g in `ls *.sh | sort -V`
-    do
-		echo "running $g"
-		sudo bash "./$g"
+	do
+		if [[ $g == *.sh ]]; then
+			echo "running $g"
+			sudo bash "./$g"
+		fi
     done
 fi
 
@@ -187,8 +189,10 @@ if [ $demo = "1" ]; then
 	shopt -s nullglob
     for g in `ls *.sh | sort -V`
     do
-		echo "running $g"
-		sudo bash "./$g"
+		if [[ $g == *.sh ]]; then
+			echo "running $g"
+			sudo bash "./$g"
+		fi
     done
 fi
 
@@ -207,9 +211,11 @@ if [ $demo = "1" ]; then
 	# run demo setup scripts
 	shopt -s nullglob
     for g in `ls *.sh | sort -V`
-    do
-		echo "running $g"
-		sudo bash "./$g"
+	do
+		if [[ $g == *.sh ]]; then
+			echo "running $g"
+			sudo bash "./$g"
+		fi
     done
 fi
 
