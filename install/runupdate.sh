@@ -76,9 +76,8 @@ cd /var/www/openeyes/protected/modules 2>/dev/null
 if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to checkout if it exists
 
 if [ "$force" = 0 ]; then
-
     echo ""
-	echo "checking for uncommited changes"
+  cho "checking for uncommited changes"
 
   changes=0
   modulelist=""
@@ -119,15 +118,30 @@ if [ "$force" = 0 ]; then
     	fi
   done
 
-  #  If we have unstaged changes, then abort and  warn which modules are affected
+  #  If we have unstaged changes, then pause and  warn which modules are affected
   if [ "$changes" = "1" ]; then
-        printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n"
+        printf "\e[41m\e[97m  WARNING  \e[0m \n"
         echo "There are uncommitted changes in the following modules: $modulelist"
-        printf "To ignore these changes, run: \e[1m oe-update -f \e[0m \n"
+		echo "To continue and attempt to merge, select option 1"
+		echo "To cancel and review changes, select option 2"
+        printf "To discard these changes, run: \e[1m oe-update -f \e[0m \n"
         echo "Alternatively, manually git reset --hard to ignore, or git stash to keep, etc"
-        printf "\e[41m\e[97m  CHECKOUT ABORTED  \e[0m \n";
+        printf "\e[41m\e[97m  WARNING  \e[0m \n";
         echo ""
-        exit 1
+
+		select yn in "Continue" "Cancel"; do
+			case $yn in
+				Continue ) echo "
+
+Continuing update and attempting to merge...
+If errors are encounted, you will need to fix manually or use oe-update - f to discard local changes
+
+				"; accept="1"; break;;
+				Cancel ) echo "
+Cancelling...
+				"; exit 1;;
+			esac
+		done
   fi
 else
 	# delete dependencies during force (they will get re-added by oe-fix)
