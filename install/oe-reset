@@ -142,6 +142,23 @@ fi
 echo "Re-importing database"
 sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
 
+# Force default institution code to match common.php
+icode=$(grep -oP '(?<=institution_code. => .).*?(?=.,)' /var/www/openeyes/protected/config/local/common.php)
+if [ ! -z $icode ]; then
+
+	echo "
+
+	setting institution to $icode
+
+	"
+
+	echo "UPDATE institution SET remote_id = '$icode' WHERE id = 1;" > /tmp/openeyes-mysql-institute.sql
+
+	mysql -uroot "-ppassword" -D openeyes < /tmp/openeyes-mysql-institute.sql
+
+	rm /tmp/openeyes-mysql-institute.sql
+fi
+
 # Run pre-migration demo scripts
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo/pre-migrate
