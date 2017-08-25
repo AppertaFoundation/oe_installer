@@ -24,3 +24,4 @@
 *.jpg binary
 *.bmp binary
 *.tiff binary
+*.dcm binary
