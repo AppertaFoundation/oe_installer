@@ -77,7 +77,7 @@ if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to c
 
 if [ "$force" = 0 ]; then
     echo ""
-  cho "checking for uncommited changes"
+  echo "checking for uncommited changes"
 
   changes=0
   modulelist=""
