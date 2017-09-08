@@ -80,7 +80,7 @@ fi
 
 if [ ! -f "protected/config/local/common.php" ]; then
     if [ -d "/etc/openeyes/backup/config/" ] && [ "$resetconfig" = "0" ]; then
-        echo "*********** WARNING: Restoring backed up local configuration ... ***********"
+        echo "\n\n*********** WARNING: Restoring backed up local configuration ... ***********\n\n"
 		sudo mkdir -p protected/config/local
         sudo cp -R /etc/openeyes/backup/config/local/* protected/config/local/.
     else
@@ -171,7 +171,7 @@ Migrations were not run automaically. If you need to run the database migrations
 fi
 
 # import eyedraw config
-printf "\nImporting eyedraw configuration\n"
+printf "\n\nImporting eyedraw configuration...\n\n"
 sudo php /var/www/openeyes/protected/yiic eyedrawconfigload --filename=/var/www/openeyes/protected/config/core/OE_ED_CONFIG.xml 2>/dev/null
 
 
