@@ -14,6 +14,8 @@ fi
 apt-get -y install ruby-dev build-essential
 sudo gem install compass --no-ri --no-rdoc
 
+sudo npm install -g grunt-cli
+
 
 echo --------------------------------------------------
 echo DEVTOOLS INSTALLED
