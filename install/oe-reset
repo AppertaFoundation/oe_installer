@@ -180,23 +180,19 @@ fi
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo/pre-migrate
 
-	# import all demo sql scripts
-	shopt -s nullglob
-    for f in `ls *.sql | sort -V`
-    do
-		echo "importing $f"
-		sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
-    done
+	echo "RUNNING PRE_MIGRATION SCRIPTS..."
 
-	# run demo setup scripts
 	shopt -s nullglob
-    for g in `ls *.sh | sort -V`
+	for f in `ls | sort -V`
 	do
-		if [[ $g == *.sh ]]; then
-			echo "running $g"
-			sudo bash "./$g"
+		if [[ $f == *.sql ]]; then
+			echo "importing $f"
+			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		elif [[ $f == *.sh ]]; then
+			echo "running $f"
+			sudo bash "./$f"
 		fi
-    done
+	done
 fi
 
 # Run migrations
@@ -211,23 +207,19 @@ fi
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo
 
-	# import all demo sql scripts
-	shopt -s nullglob
-    for f in `ls *.sql | sort -V`
-    do
-		echo "importing $f"
-		sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
-    done
+	echo "RUNNING DEMO SCRIPTS..."
 
-	# run demo setup scripts
 	shopt -s nullglob
-    for g in `ls *.sh | sort -V`
-    do
-		if [[ $g == *.sh ]]; then
-			echo "running $g"
-			sudo bash "./$g"
+	for f in `ls | sort -V`
+	do
+		if [[ $f == *.sql ]]; then
+			echo "importing $f"
+			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		elif [[ $f == *.sh ]]; then
+			echo "running $f"
+			sudo bash "./$f"
 		fi
-    done
+	done
 fi
 
 # Run genetics scripts if genetics is enabled
@@ -237,7 +229,7 @@ if grep -q "'Genetics'," /var/www/openeyes/protected/config/local/common.php && 
 	echo "RUNNING Genetics files..."
 
 	shopt -s nullglob
-    for f in `ls * | sort -V`
+    for f in `ls | sort -V`
     do
 		if [[ $f == *.sql ]]; then
 			echo "importing $f"
@@ -254,21 +246,17 @@ fi
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo/local-post
 
-	# import all demo sql scripts
-	shopt -s nullglob
-    for f in `ls *.sql | sort -V`
-    do
-		echo "importing $f"
-		mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
-    done
+	echo "RUNNING POST RESET SCRIPTS..."
 
-	# run demo setup scripts
 	shopt -s nullglob
-    for g in `ls *.sh | sort -V`
-	do
-		if [[ $g == *.sh ]]; then
-			echo "running $g"
-			sudo bash "./$g"
+    for f in `ls | sort -V`
+    do
+		if [[ $f == *.sql ]]; then
+			echo "importing $f"
+			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		elif [[ $f == *.sh ]]; then
+			echo "running $f"
+			sudo bash "./$f"
 		fi
     done
 fi
