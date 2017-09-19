@@ -3,9 +3,9 @@
 This repository should be the only one checked out when building a new OpenEyes machine instance.
 
 **Disclaimer:**
-> _OpenEyes is provided under a GPL v3 license and all terms of that license apply ([https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html)).
-> Use of the OpenEyes software or code is entirely at your own risk. Neither the OpenEyes Foundation, ACROSS Health Ltd
-> nor Moorfields Eye Hospital NHS Foundation Trust accept any responsibility for loss or damage to any person, property or
+> _OpenEyes is provided under a GNU Affero General Public License v3 license and all terms of that license apply ([https://www.gnu.org/licenses/agpl-3.0.html](https://www.gnu.org/licenses/agpl-3.0.html)).
+> Use of the OpenEyes software or code is entirely at your own risk. Neither the OpenEyes Foundation, ABEHR Digital Ltd
+> nor any other party accept any responsibility for loss or damage to any person, property or
 > reputation as a result of using the software or code. No warranty is provided by any party, implied or
 > otherwise. This software and code is not guaranteed safe to use in a clinical environment and you
 > should make your own assessment on the suitability for such use._
