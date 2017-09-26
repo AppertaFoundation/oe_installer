@@ -134,6 +134,8 @@ php composer-setup.php
 php -r "unlink('composer-setup.php');"
 mv composer.phar /usr/local/bin/composer
 
+# ensure mcrypt has been installed sucesfully
+sudo php5enmod mcrypt
 
 echo --------------------------------------------------
 echo SYSTEM SOFTWARE INSTALLED
