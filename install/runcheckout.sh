@@ -3,7 +3,6 @@
 source /etc/openeyes/modules.conf
 dir=$PWD
 
-
 # Process commandline parameters
 gitroot="openeyes"
 defaultbranch=master
@@ -173,19 +172,22 @@ if [ ! "$force" = "1" ]; then
 
 	  for module in ${modules[@]}; do
 		if [ ! -d "$module" ]; then
-			if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
-		else
-			if [ ! "$module" = "openeyes" ]; then cd $module; fi
-
-			# check if this is a git repo
-			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
-					sudo git diff --quiet
-					if [ ! $? = 0 ]; then
-					  changes=1
-					  modulelist="$modulelist $module"
-					fi
+			if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"
+				break
 			fi
 		fi
+
+				if [ ! "$module" = "openeyes" ]; then cd $module; fi
+				
+				# check if this is a git repo
+				if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
+						sudo git diff --quiet
+						if [ ! $? = 0 ]; then
+						  changes=1
+						  modulelist="$modulelist $module"
+						fi
+				fi
+
 
 		if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	  done

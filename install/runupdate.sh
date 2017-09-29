@@ -5,7 +5,6 @@ git config core.fileMode false 2>/dev/null
 source /etc/openeyes/modules.conf
 dir=$PWD
 
-
 # Process commandline parameters
 gitroot="openeyes"
 force=0
@@ -83,23 +82,27 @@ if [ "$force" = 0 ]; then
   modulelist=""
 
   for module in ${modules[@]}; do
-    	if [ ! -d "$module" ]; then
-    		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
-    	else
-    		if [ ! "$module" = "openeyes" ]; then cd $module; fi
+	if [ ! -d "$module" ]; then
+		if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"
+			break
+		fi
+	fi
 
-    		# check if this is a git repo
-    		if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
-    				sudo git diff --quiet
-    				if [ ! $? = 0 ]; then
-    				  changes=1
-    				  modulelist="$modulelist $module"
-    				fi
-    		fi
-    	fi
+			if [ ! "$module" = "openeyes" ]; then cd $module; fi
 
-    	if [ ! "$module" = "openeyes" ]; then cd ..; fi
+			# check if this is a git repo
+			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
+					sudo git diff --quiet
+					if [ ! $? = 0 ]; then
+					  changes=1
+					  modulelist="$modulelist $module"
+					fi
+			fi
+
+
+	if [ ! "$module" = "openeyes" ]; then cd ..; fi
   done
+
 
   # ensure modules directory exists - prevents code being checked out to wrong place
   sudo mkdir -p /var/www/openeyes/protected/javamodules
@@ -118,7 +121,7 @@ if [ "$force" = 0 ]; then
     	fi
   done
 
-  #  If we have unstaged changes, then pause and  warn which modules are affected
+  #  If we have unstaged changes, then pause and warn which modules are affected
   if [ "$changes" = "1" ]; then
         printf "\e[41m\e[97m  WARNING  \e[0m \n"
         echo "There are uncommitted changes in the following modules: $modulelist"
