@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Reset various config files
+## Resets various caches and configs
 
 # Test command parameters
 compile=1
@@ -12,6 +12,7 @@ showhelp=0
 composer=1
 nowarnmigrate=0
 resetconfig=0
+eyedraw=1
 
 for i in "$@"
 do
@@ -25,6 +26,8 @@ case $i in
 	--no-assets) buildassests=0
 	;;
     --no-migrate|--nomigrate) migrate=0
+	;;
+	--no-eyedraw|-ned) eyedraw=0
 	;;
     --help) showhelp=1
     ;;
@@ -56,6 +59,7 @@ if [ $showhelp = 1 ]; then
 	echo "  --no-assets    : Do not (re)build assets"
     echo "  --no-migrate   : Do not run db migrations"
 	echo "  --no-composer  : Do not update composer dependencies"
+	echo "  --no-eyedraw   : Do not (re)import eyedraw configuration"
 	echo ""
     exit 1
 fi
@@ -160,7 +164,10 @@ fi
 if [ "$migrate" = "1" ]; then
     echo ""
     echo "Migrating database..."
-	oe-migrate --quiet
+	if ! oe-migrate --quiet; then
+		## Quit if migrate failed
+		exit 1
+	fi
     echo ""
 else
 	if [ "$nowarnmigrate" = "0" ]; then
@@ -171,9 +178,10 @@ Migrations were not run automaically. If you need to run the database migrations
 fi
 
 # import eyedraw config
-printf "\n\nImporting eyedraw configuration...\n\n"
-sudo php /var/www/openeyes/protected/yiic eyedrawconfigload --filename=/var/www/openeyes/protected/config/core/OE_ED_CONFIG.xml 2>/dev/null
-
+if [ "$eyedraw" = "1" ]; then
+	printf "\n\nImporting eyedraw configuration...\n\n"
+	sudo php /var/www/openeyes/protected/yiic eyedrawconfigload --filename=/var/www/openeyes/protected/config/core/OE_ED_CONFIG.xml 2>/dev/null
+fi
 
 # Clear caches
 if [ $clearcahes = 1 ]; then
