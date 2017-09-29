@@ -42,10 +42,32 @@ else
 	sudo chmod 775 /etc/openeyes/migrate.log
 	sudo php ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
     sudo php ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
-	if grep -i ERROR /etc/openeyes/migrate.log 2>/dev/null ; then
+	if grep -i 'error\|exception' /etc/openeyes/migrate.log ; then
+
 		printf "\n\e[5;41;1m\n\nMIGRATE ENCOUNTERED ERRORS - PLEASE SEE LOG - /etc/openeyes/migrate.log\n\n\n \e[0m\n"
-		grep -B 2 -A 7 -i ERROR /etc/openeyes/migrate.log
-	elif grep applied /etc/openeyes/migrate.log >/dev/null ; then
+		echo "The following migration errors were encountered:"
+		grep -B 2 -A 7 -i 'error\|exception' /etc/openeyes/migrate.log
+		printf "\n\nTo continue with the reset of the script, select option 1"
+		echo "To exit, select option 2"
+
+		printf "\e[41m\e[97m  MIGRATE ERRORS ENCOUNTERED  \e[0m \n";
+		echo ""
+
+		select yn in "Continue" "Exit"; do
+			case $yn in
+				Continue ) echo "
+
+Continuing. System is in unknown state and further errors may be encountered...
+
+				"; break;;
+				Exit ) echo "
+Exiting. Please fix errors and try again...
+				"; exit 1;;
+			esac
+		done
+
+
+	elif grep -q "applied" /etc/openeyes/migrate.log >/dev/null ; then
 		echo "Migrations applied - see /etc/openeyes/migrate.log for more details"
 	else
 		echo "No new migrations to apply - see /etc/openeyes/migrate.log for more details"
