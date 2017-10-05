@@ -31,7 +31,7 @@ case $i in
 	;;
     --help) showhelp=1
     ;;
-	--no-composer) composer=0
+	--no-composer|--no-dependencies|-nd) composer=0
 	;;
 	--no-warn-migrate) nowarnmigrate=1
 	;;
@@ -58,7 +58,7 @@ if [ $showhelp = 1 ]; then
 	echo "  --no-clear     : Do not clear caches"
 	echo "  --no-assets    : Do not (re)build assets"
     echo "  --no-migrate   : Do not run db migrations"
-	echo "  --no-composer  : Do not update composer dependencies"
+	echo "  --no-dependencies  : Do not update composer or npm dependencies"
 	echo "  --no-eyedraw   : Do not (re)import eyedraw configuration"
 	echo ""
     exit 1
