@@ -93,6 +93,10 @@ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt install -y nodejs
 npm install -g npm
 
+# Install grunt
+echo "installing global npm dependencies"
+npm install -g grunt-cli
+
 # wkhtmltox is now bundled in the repository. Original download location is:
 # wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 cd /vagrant/install
