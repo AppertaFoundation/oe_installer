@@ -201,7 +201,7 @@ if [ $noperms = 0 ]; then
 	sudo chgrp -R www-data /var/www/openeyes
 	sudo chmod -R g+s /var/www/openeyes
 
-	sudo chmod -R 764 protected/config/local
+	sudo chmod -R 764 /var/www/openeyes/protected/config/local
 	sudo chmod -R 764 /var/www/openeyes/assets/
 	sudo chmod -R 774 /var/www/openeyes/protected/runtime/cache/
 fi
