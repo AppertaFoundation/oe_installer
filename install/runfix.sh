@@ -13,6 +13,7 @@ composer=1
 nowarnmigrate=0
 resetconfig=0
 eyedraw=1
+noperms=0
 
 for i in "$@"
 do
@@ -32,6 +33,8 @@ case $i in
     --help) showhelp=1
     ;;
 	--no-composer|--no-dependencies|-nd) composer=0
+	;;
+	--no-permissions|-np) noperms=1
 	;;
 	--no-warn-migrate) nowarnmigrate=1
 	;;
@@ -60,6 +63,7 @@ if [ $showhelp = 1 ]; then
     echo "  --no-migrate   : Do not run db migrations"
 	echo "  --no-dependencies  : Do not update composer or npm dependencies"
 	echo "  --no-eyedraw   : Do not (re)import eyedraw configuration"
+	echo "	--no-permissions : Do not reset file permissions"
 	echo ""
     exit 1
 fi
@@ -89,15 +93,13 @@ if [ ! -f "protected/config/local/common.php" ]; then
         sudo cp -R /etc/openeyes/backup/config/local/* protected/config/local/.
     else
         echo "WARNING: Copying sample configuration into local ..."
-        #sudo cp -R protected/config/local.sample/* protected/config/local/.
 		sudo mkdir -p protected/config/local
 		sudo cp -n protected/config/local.sample/common.sample.php protected/config/local/common.php
 		sudo cp -n protected/config/local.sample/console.sample.php protected/config/local/console.php
     fi;
 
-	# Fix permissions
-	sudo chown -R www-data:www-data protected/config/local
-	sudo chmod -R 775 protected/config/local
+	# Reset to default db credentials
+	# TODO: Find a better way to do this
 	sudo sed -i "s/'username' => 'root',/'username' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
 	sudo sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
 fi;
@@ -118,13 +120,13 @@ if [ $composer == 1 ]; then
 		sudo composer install --no-dev --no-plugins --no-scripts
 
 		echo "Installing/updating npm dependencies for LIVE"
-		npm install --production
+		sudo npm install --production
 	else
 		echo "Installing/updating composer dependencies"
 		sudo composer install --no-plugins --no-scripts
 
 		echo "Installing/updating npm dependencies"
-		npm install
+		sudo npm install
 	fi
 fi
 
@@ -188,11 +190,20 @@ if [ $clearcahes = 1 ]; then
 	echo "Clearing caches..."
 	sudo rm -rf /var/www/openeyes/protected/runtime/cache/* 2>/dev/null || :
 	sudo rm -rf /var/www/openeyes/assets/* 2>/dev/null || :
-	# Fix permissions
-	sudo chown -R www-data:www-data /var/www/openeyes/protected/runtime/cache/
-	sudo chown -R www-data:www-data /var/www/openeyes/assets
-	sudo chmod -R 775 /var/www/openeyes/assets/
 	echo ""
+fi
+
+# Fix permissions
+if [ $noperms = 0 ]; then
+	echo "Resetting file permissions..."
+	sudo gpasswd -a "$USER" www-data
+	sudo chown -R "$USER" /var/www/openeyes
+	sudo chgrp -R www-data /var/www/openeyes
+	sudo chmod -R g+s /var/www/openeyes
+
+	sudo chmod -R 764 protected/config/local
+	sudo chmod -R 764 /var/www/openeyes/assets/
+	sudo chmod -R 774 /var/www/openeyes/protected/runtime/cache/
 fi
 
 if [ $buildassests = 1 ]; then

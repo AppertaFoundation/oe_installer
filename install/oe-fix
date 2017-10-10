@@ -2,6 +2,6 @@
 
 bash /vagrant/install/update-oe-tools.sh
 
-sudo bash /vagrant/install/runfix.sh "$@"
+bash /vagrant/install/runfix.sh "$@"
 
 cd "$dir"

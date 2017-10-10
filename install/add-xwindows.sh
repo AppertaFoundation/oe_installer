@@ -10,8 +10,8 @@ sudo chown -R vagrant:vagrant .
 sudo find /home/vagrant/ -type d -exec chmod 750 {} +
 sudo find /home/vagrant/ -type f -exec chmod 640 {} +
 
-sudo adduser ubuntu root
-sudo adduser ubuntu www-data
+sudo gpasswd -a ubuntu www-data
+sudo gpasswd -a ubuntu root
 
 sudo apt install chromium-browser atom -y
 
