@@ -197,8 +197,7 @@ fi
 if [ $noperms = 0 ]; then
 	echo "Resetting file permissions..."
 	sudo gpasswd -a "$USER" www-data
-	sudo chown -R "$USER" /var/www/openeyes
-	sudo chgrp -R www-data /var/www/openeyes
+	sudo chown -R "$USER":www-data /var/www/openeyes
 	sudo chmod -R g+s /var/www/openeyes
 
 	sudo chmod -R 774 /var/www/openeyes/protected/config/local
