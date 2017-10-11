@@ -203,7 +203,7 @@ if [ $noperms = 0 ]; then
 
 	sudo chmod -R 774 /var/www/openeyes/protected/config/local
 	sudo chmod -R 774 /var/www/openeyes/assets/
-	sudo chmod -R 774 /var/www/openeyes/protected/runtime/cache/
+	sudo chmod -R 774 /var/www/openeyes/protected/runtime
 fi
 
 if [ $buildassests = 1 ]; then
