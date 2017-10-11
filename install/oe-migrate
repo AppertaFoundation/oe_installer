@@ -39,7 +39,7 @@ if [ $quiet = 0 ]; then
 else
 	sudo mkdir -p /etc/openeyes
 	sudo touch /etc/openeyes/migrate.log
-	sudo chmod 777 /etc/openeyes/migrate.log
+	sudo chmod 776 /etc/openeyes/migrate.log
 	sudo php ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
     sudo php ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
 	if grep -i 'error\|exception' /etc/openeyes/migrate.log ; then
