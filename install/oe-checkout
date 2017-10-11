@@ -9,6 +9,6 @@ sudo git pull
 
 bash update-oe-tools.sh
 
-sudo bash runcheckout.sh "$@"
+bash runcheckout.sh "$@"
 
 cd "$dir"

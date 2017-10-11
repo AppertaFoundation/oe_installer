@@ -9,6 +9,6 @@ sudo git pull
 
 bash update-oe-tools.sh
 
-sudo bash runupdate.sh "$@"
+bash runupdate.sh "$@"
 
 cd "$dir"
