@@ -5,11 +5,12 @@ sudo apt update
 sudo apt-get install --no-install-recommends xubuntu-desktop -y
 
 
-
-sudo chown -R vagrant:vagrant .
+sudo chown -R vagrant:vagrant /home/vagrant
 sudo find /home/vagrant/ -type d -exec chmod 750 {} +
 sudo find /home/vagrant/ -type f -exec chmod 640 {} +
 
+sudo gpasswd -a vagrant www-data
+sudo gpasswd -a vagrant root
 sudo gpasswd -a ubuntu www-data
 sudo gpasswd -a ubuntu root
 
