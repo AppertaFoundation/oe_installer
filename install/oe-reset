@@ -273,7 +273,7 @@ if [ ! $nobanner = "1" ]; then
 	sudo rm /tmp/openeyes-mysql-setbanner.sql
 fi
 
-sudo oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer
+oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer
 
 echo "Starting dicom-file-watcher..."
 sudo service dicom-file-watcher start
