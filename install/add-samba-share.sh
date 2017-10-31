@@ -6,6 +6,7 @@ sudo apt update
 sudo apt install samba -y
 
 echo -e "vagrant\nvagrant" | sudo smbpasswd -s -a root
+echo -e "vagrant\nvagrant" | sudo smbpasswd -s -a vagrant
 
 sudo echo "
 [openeyes]
@@ -13,9 +14,7 @@ sudo echo "
         valid users = vagrant root
         admin users = root vagrant
         write list = root vagrant
-        force user = root
-        force group = root
-        group = root
+        force user = vagrant
         read only = No
 
 " >> /etc/samba/smb.conf
@@ -29,7 +28,7 @@ printf "\e[32m
 Added samba share \\\\\\openeyes.vm\\openeyes
 
 Connect as:-
-User: root
+User: vagrant
 Password: vagrant
 
 ************************************************\e[0m"
