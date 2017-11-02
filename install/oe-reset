@@ -242,6 +242,18 @@ if grep -q "'Genetics'," /var/www/openeyes/protected/config/local/common.php && 
 
 fi
 
+# Set banner to confirm reset
+if [ ! $nobanner = "1" ]; then
+	echo "setting banner to: $bannertext"
+	sudo echo "
+	use openeyes;
+	UPDATE openeyes.setting_installation s SET s.value='$bannertext' WHERE s.key='watermark';
+	" > /tmp/openeyes-mysql-setbanner.sql
+
+	sudo mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-setbanner.sql
+	sudo rm /tmp/openeyes-mysql-setbanner.sql
+fi
+
 # Run local post-migaration demo scripts
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo/local-post
@@ -259,18 +271,6 @@ if [ $demo = "1" ]; then
 			sudo bash "./$f"
 		fi
     done
-fi
-
-# Set banner to confirm reset
-if [ ! $nobanner = "1" ]; then
-	echo "setting banner to: $bannertext"
-	sudo echo "
-	use openeyes;
-	UPDATE openeyes.setting_installation s SET s.value='$bannertext' WHERE s.key='watermark';
-	" > /tmp/openeyes-mysql-setbanner.sql
-
-	sudo mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-setbanner.sql
-	sudo rm /tmp/openeyes-mysql-setbanner.sql
 fi
 
 oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer
