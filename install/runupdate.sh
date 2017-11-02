@@ -20,6 +20,8 @@ usessh=0
 sshuserstring="git"
 fixparams=""
 showhelp=0
+ignorelocal=0
+
 
 for i in "$@"
 do
@@ -38,7 +40,10 @@ case $i in
 		;;
 	--no-compile) fixparams="$fixparams --no-compile"
 		## don't compile java
-	;;
+		;;
+	-y|--ignore-local) ignorelocal=1
+		## ignore local modifications and attempt to update
+		;;
     --help) showhelp=1
     ;;
 	*)  if [ ! -z "$i" ]; then
@@ -62,6 +67,8 @@ if [ $showhelp = 1 ]; then
     echo "          | -n   : Prevent database migrations running automatically after"
     echo "                   update"
     echo "  --force | -f   : forces the checkout, even if local changes are uncommitted"
+	echo "  --ignore-local"
+	echo "            | -y : ignore local modifications and attempt to pull anyway"
     echo "  --no-compile   : Do not complile java modules after Checkout"
     echo "  --no-summary   : Do not display a summary of the checked-out modules after "
     echo "                   completion"
@@ -132,19 +139,23 @@ if [ "$force" = 0 ]; then
         printf "\e[41m\e[97m  WARNING  \e[0m \n";
         echo ""
 
-		select yn in "Continue" "Cancel"; do
-			case $yn in
-				Continue ) echo "
+		if [ "$ignorelocal" = "0" ]; then
+			select yn in "Continue" "Cancel"; do
+				case $yn in
+					Continue ) echo "
 
-Continuing update and attempting to merge...
-If errors are encounted, you will need to fix manually or use oe-update - f to discard local changes
+	Continuing update and attempting to merge...
+	If errors are encounted, you will need to fix manually or use oe-update - f to discard local changes
 
-				"; accept="1"; break;;
-				Cancel ) echo "
-Cancelling...
-				"; exit 1;;
-			esac
-		done
+					"; accept="1"; break;;
+					Cancel ) echo "
+	Cancelling...
+					"; exit 1;;
+				esac
+			done
+		else
+			echo "--ignore-local switch applied - continuing"
+		fi
   fi
 else
 	# delete dependencies during force (they will get re-added by oe-fix)
