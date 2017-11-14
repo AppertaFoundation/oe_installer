@@ -17,8 +17,7 @@ sudo gpasswd -a ubuntu root
 sudo apt install chromium-browser atom -y
 
 # Remove some unessessary bloat
-sudo apt-get remove gnome-mines gnome-sudoku pidgin pidgin-otr xchat thunderbird exo-utils firefox tra
-nsmission-gtk gmusicbrowser -y
+sudo apt-get remove gnome-mines gnome-sudoku pidgin pidgin-otr xchat thunderbird exo-utils firefox transmission-gtk gmusicbrowser -y
 sudo apt-get autoremove -y
 
 echo "You must set a password for the Ubuntu user..."
