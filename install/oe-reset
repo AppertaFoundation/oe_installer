@@ -154,6 +154,7 @@ sudo rm /tmp/openeyes-mysql-create.sql
 if [ $nofiles = "0" ]; then
 	echo Deleting protected files
 	sudo rm -rf /var/www/openeyes/protected/files/*
+	sudo rm -rf /tmp/docman
 fi
 
 echo "Re-importing database"
