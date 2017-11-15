@@ -78,7 +78,7 @@ if [ ! "$dependonly" = "1" ]; then
 fi
 
 echo Performing package updates
-apt -y update
+apt-get -y update
 
 
 echo Installing required system packages
@@ -86,11 +86,11 @@ export DEBIAN_FRONTEND=noninteractive
 debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password password password'
 debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again password password'
 
-apt install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl php5-gd imagemagick php5-imagick libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre libgamin0 gamin openjdk-7-jdk xfonts-base ruby ant libbatik-java libreoffice-core libreoffice-common libreoffice-writer php5-mcrypt
+apt-get install -y git-core libapache2-mod-php5 php5-cli php5-mysql php5-ldap php5-curl php5-xsl php5-gd imagemagick php5-imagick libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre libgamin0 gamin openjdk-7-jdk xfonts-base ruby ant libbatik-java libreoffice-core libreoffice-common libreoffice-writer php5-mcrypt
 
 # install node.js and npm
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-sudo apt install -y nodejs
+sudo apt-get install -y nodejs
 npm install -g npm
 
 # Install grunt
