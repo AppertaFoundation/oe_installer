@@ -24,6 +24,9 @@ sshuserstring="git"
 fixparams=""
 showhelp=0
 
+# Read in stored git config (username, root, usessh, etc)
+source /etc/openeyes/git.conf
+
 if [ -z "$1" ]; then showhelp=1; fi
 
 for i in "$@"
@@ -137,6 +140,26 @@ echo ""
 echo "Checking out $branch..."
 echo ""
 
+# Collect username if not already set
+if [ -z $username ]; then
+	echo ""
+	echo "-----------------------------------------------------------------------------------"
+	echo "-  Please supply your github username - this is required to access private repos  -"
+	echo "-----------------------------------------------------------------------------------"
+	echo ""
+	echo "github username: "
+
+	read username
+fi
+
+# store username and git settings out to disk
+echo "username=$username
+gitroot=$gitroot
+usessh=$usessh" | sudo tee /etc/openeyes/git.conf > /dev/null
+
+# Set to cache password in memory (should only ask once per day or each reboot)
+git config --global credential.helper 'cache --timeout=86400'
+
 # Create correct user string to pass to github
 if [ ! -z $username ]; then
     if [ ! -z $pass ]; then
@@ -156,7 +179,7 @@ if [ $usessh = 1 ]; then
 	basestring="${sshuserstring}@github.com:$gitroot"
 fi
 
-sudo git config core.fileMode false 2>/dev/null
+sudo git config --global core.fileMode false 2>/dev/null
 
 
 cd /var/www/openeyes/protected/modules 2>/dev/null
@@ -178,7 +201,7 @@ if [ ! "$force" = "1" ]; then
 		fi
 
 				if [ ! "$module" = "openeyes" ]; then cd $module; fi
-				
+
 				# check if this is a git repo
 				if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
 						sudo git diff --quiet

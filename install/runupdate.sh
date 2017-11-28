@@ -22,6 +22,8 @@ fixparams=""
 showhelp=0
 ignorelocal=0
 
+# Read in stored github config (username, root, usessh, etc)
+source /etc/openeyes/git.conf
 
 for i in "$@"
 do
@@ -75,8 +77,6 @@ if [ $showhelp = 1 ]; then
 	echo ""
     exit 1
 fi
-
-sudo git config core.fileMode false 2>/dev/null
 
 cd /var/www/openeyes/protected/modules 2>/dev/null
 if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to checkout if it exists

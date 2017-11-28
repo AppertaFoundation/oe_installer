@@ -155,12 +155,12 @@ cd /var/www
 
 # Show disclaimer
 echo "
-DISCLAIMER: OpenEyes is provided under a GNU Affero General Public License v3.0 
-license and all terms of that license apply 
-(https://www.gnu.org/licenses/agpl-3.0.html). 
-Use of the OpenEyes software or code is entirely at your own risk. Neither the 
-OpenEyes Foundation, ABEHR Digital Ltd or any other party accept any responsibility 
-for loss or damage to any person, property or reputation as a result of using the 
+DISCLAIMER: OpenEyes is provided under a GNU Affero General Public License v3.0
+license and all terms of that license apply
+(https://www.gnu.org/licenses/agpl-3.0.html).
+Use of the OpenEyes software or code is entirely at your own risk. Neither the
+OpenEyes Foundation, ABEHR Digital Ltd or any other party accept any responsibility
+for loss or damage to any person, property or reputation as a result of using the
 software or code. No warranty is provided by any party, implied or otherwise. This
 software and code is not guaranteed safe to use in a clinical environment and
 you should make your own assessment on the suitability for such use. Installation
@@ -319,6 +319,8 @@ if [ ! "$live" = "1" ]; then
 	mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
 	rm /tmp/openeyes-mysql-create.sql
 
+    # Read in stored gitconfig from file (should have already been set earlier by main checkout)
+    source /etc/openeyes/git.conf
 
     # Create correct user string to pass to github
     if [ ! -z $username ]; then

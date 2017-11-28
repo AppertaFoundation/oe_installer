@@ -17,6 +17,12 @@ demo=0
 nofiles=0
 showhelp=0
 setpw=0
+username=""
+pass=""
+gitroot="openeyes"
+
+# Read in stored git config (username, root, usessh, etc)
+source /etc/openeyes/git.conf
 
 for i in "$@"
 do
@@ -106,6 +112,26 @@ fi
 
 dir=$PWD
 
+# Create correct user string to pass to github
+if [ ! -z $username ]; then
+    if [ ! -z $pass ]; then
+		sshuserstring="$username"
+        httpuserstring="${username}:${pass}@"
+    else
+		sshuserstring="$username"
+        httpuserstring="${username}@"
+    fi
+fi
+
+# Set base url string for cloning all repos
+basestring="https://${httpuserstring}github.com/$gitroot"
+
+# If using ssh, change the basestring to use ssh format
+if [ $usessh = 1 ]; then
+	basestring="${sshuserstring}@github.com:$gitroot"
+fi
+
+
 echo "Stopping dicom-file-watcher..."
 sudo service dicom-file-watcher stop
 if [ ! $? = 0 ]; then echo "dicom-file-watcher not running"; fi
@@ -118,12 +144,7 @@ if [ ! "$branch" = "0" ]; then
 	cd /var/www/openeyes/protected/modules/sample
 
 	if [ ! -d ".git" ]; then
-
-		if ! sudo git clone -b $branch https://github.com/openeyes/sample.git . ; then
-			echo "falling back to master branch for sample..."
-			sudo git clone https://github.com/openeyes/sample.git .
-		fi
-
+			sudo git clone ${basestring}/sample.git .
 	fi
 
 

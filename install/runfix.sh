@@ -109,7 +109,7 @@ fi;
 if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
 	echo Linking vendor framework
 	sudo ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
-	sudo chown -R www-data:www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
+	sudo chown -R "$USER":www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
 	if [ ! $? = 0 ]; then echo "unable to link vendors - this is expected for versions prior to v1.12"; fi
 fi
 
@@ -198,12 +198,13 @@ if [ $noperms = 0 ]; then
 	echo "Resetting file permissions..."
 	sudo gpasswd -a "$USER" www-data
 	sudo chown -R "$USER":www-data /var/www/openeyes
-	sudo chmod -R g+s /var/www/openeyes
 
 	sudo chmod -R 774 /var/www/openeyes/protected/config/local
 	sudo chmod -R 774 /var/www/openeyes/assets/
 	sudo chmod -R 774 /var/www/openeyes/protected/runtime
 	sudo chmod -R 774 /var/www/openeyes/protected/files
+
+	sudo chmod -R g+s /var/www/openeyes
 fi
 
 if [ $buildassests = 1 ]; then
@@ -211,6 +212,12 @@ if [ $buildassests = 1 ]; then
 	# use curl to ping the login page - forces php/apache to rebuild the assets directory
 	curl -s http://localhost/site/login > /dev/null
 fi
+
+# Set some git properties
+
+git config core.fileMode false 2>/dev/null
+# Set to cache password in memory (should only ask once per day or each reboot)
+git config --global credential.helper 'cache --timeout=86400'
 
 echo ""
 echo "...Done"
