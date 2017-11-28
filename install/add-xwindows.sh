@@ -2,7 +2,7 @@ sudo add-apt-repository ppa:webupd8team/atom -y
 sudo apt update
 
 
-sudo apt-get install --no-install-recommends xubuntu-desktop -y
+sudo apt-get install --no-install-recommends kubuntu-desktop -y
 
 
 sudo chown -R vagrant:vagrant /home/vagrant
