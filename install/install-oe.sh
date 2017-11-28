@@ -325,10 +325,10 @@ if [ ! "$live" = "1" ]; then
     # Create correct user string to pass to github
     if [ ! -z $username ]; then
         if [ ! -z $pass ]; then
-    		sshuserstring="$username"
+    		sshuserstring="git"
             httpuserstring="${username}:${pass}@"
         else
-    		sshuserstring="$username"
+    		sshuserstring="git"
             httpuserstring="${username}@"
         fi
     fi
@@ -338,7 +338,7 @@ if [ ! "$live" = "1" ]; then
 
     # If using ssh, change the basestring to use ssh format
     if [ $usessh = 1 ]; then
-    	basestring="${sshuserstring}@github.com:$gitroot"
+    	basestring="git@github.com:$gitroot"
     fi
 
 

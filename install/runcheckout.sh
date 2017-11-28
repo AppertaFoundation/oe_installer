@@ -163,10 +163,10 @@ git config --global credential.helper 'cache --timeout=86400'
 # Create correct user string to pass to github
 if [ ! -z $username ]; then
     if [ ! -z $pass ]; then
-		sshuserstring="$username"
+		sshuserstring="git"
         httpuserstring="${username}:${pass}@"
     else
-		sshuserstring="$username"
+		sshuserstring="git"
         httpuserstring="${username}@"
     fi
 fi
@@ -176,7 +176,7 @@ basestring="https://${httpuserstring}github.com/$gitroot"
 
 # If using ssh, change the basestring to use ssh format
 if [ $usessh = 1 ]; then
-	basestring="${sshuserstring}@github.com:$gitroot"
+	basestring="git@github.com:$gitroot"
 fi
 
 sudo git config --global core.fileMode false 2>/dev/null

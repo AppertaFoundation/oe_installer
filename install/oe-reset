@@ -128,7 +128,7 @@ basestring="https://${httpuserstring}github.com/$gitroot"
 
 # If using ssh, change the basestring to use ssh format
 if [ $usessh = 1 ]; then
-	basestring="${sshuserstring}@github.com:$gitroot"
+	basestring="git@github.com:$gitroot"
 fi
 
 
