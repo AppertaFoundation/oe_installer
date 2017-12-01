@@ -88,7 +88,11 @@ fi
 
 if [ ! -f "protected/config/local/common.php" ]; then
     if [ -d "/etc/openeyes/backup/config/" ] && [ "$resetconfig" = "0" ]; then
-        echo "\n\n*********** WARNING: Restoring backed up local configuration ... ***********\n\n"
+        echo "
+
+		*********** WARNING: Restoring backed up local configuration ... ***********
+
+		"
 		sudo mkdir -p protected/config/local
         sudo cp -R /etc/openeyes/backup/config/local/* protected/config/local/.
     else

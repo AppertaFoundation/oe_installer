@@ -1,7 +1,8 @@
 #!/bin/bash
-
 source /etc/openeyes/modules.conf
 dir=$PWD
+
+echo $USER
 
 # Process commandline parameters
 gitroot="openeyes"
@@ -23,6 +24,8 @@ usessh=0
 sshuserstring="git"
 fixparams=""
 showhelp=0
+sample=0
+sampleonly=0
 
 # Read in stored git config (username, root, usessh, etc)
 source /etc/openeyes/git.conf
@@ -77,8 +80,14 @@ case $i in
     ;;
 	--ssh|-ssh) usessh=1
 	;;
+	--https|-https|--htps|-htps) usessh=0
+	;;
     --help) showhelp=1
     ;;
+	--sample) sample=1
+	;;
+	--sample-only) sampleonly=1
+	;;
 	*)  if [ ! -z "$i" ]; then
 			if [ "$customgitroot" = "1" ]; then
 				gitroot=$i;
@@ -132,6 +141,7 @@ if [ $showhelp = 1 ]; then
     echo "  -p<password>   : Use the specified <password> for connecting to github"
     echo "                   - default is to prompt"
     echo "	-ssh		   : Use SSH protocol  - default is https"
+	echo "	-https		   : Use HTTPS protocol  - default is https"
 	echo ""
     exit 1
 fi
@@ -141,7 +151,7 @@ echo "Checking out $branch..."
 echo ""
 
 # Collect username if not already set
-if [ -z $username ]; then
+if [[ -z $username ]] && [[ $usessh = 0 ]]; then
 	echo ""
 	echo "-----------------------------------------------------------------------------------"
 	echo "-  Please supply your github username - this is required to access private repos  -"
@@ -177,13 +187,26 @@ basestring="https://${httpuserstring}github.com/$gitroot"
 # If using ssh, change the basestring to use ssh format
 if [ $usessh = 1 ]; then
 	basestring="git@github.com:$gitroot"
+
+
+#	ssh-agent -s
+#	sudo ssh-agent -s
+	$(ssh-agent)  2>/dev/null
+#	sudo $(ssh-agent)
+
 fi
 
-sudo git config --global core.fileMode false 2>/dev/null
+git config --global core.fileMode false 2>/dev/null
+git config core.fileMode false 2>/dev/null
 
+ssh git@github.com -T
 
 cd /var/www/openeyes/protected/modules 2>/dev/null
-if [ -d "sample" ]; then modules=(${modules[@]} sample); fi # Add sample DB to checkout if it exists
+# Add sample DB to checkout if it exists or if --sample has been set
+if [[ -d "sample" ]] || [[ $sample = 1 ]]; then modules=(${modules[@]} sample); fi
+
+# if in sample only mode, we want only the sample module and nothing else
+if [ $sampleonly = 1 ]; then modules=(sample); javamodules=(); fi
 
 
 if [ ! "$force" = "1" ]; then
@@ -204,7 +227,7 @@ if [ ! "$force" = "1" ]; then
 
 				# check if this is a git repo
 				if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
-						sudo git diff --quiet
+						git diff --quiet
 						if [ ! $? = 0 ]; then
 						  changes=1
 						  modulelist="$modulelist $module"
@@ -223,7 +246,7 @@ if [ ! "$force" = "1" ]; then
 			printf "\e[31mModule $module not found\e[0m\n"
 		else
 			cd $module;
-			sudo git diff --quiet
+			git diff --quiet
 			if [ ! $? = 0 ]; then
 			  changes=1
 			  modulelist="$modulelist $module"
@@ -265,11 +288,16 @@ if [ $killmodules = 1 ]; then
 	sudo rm -rf /var/www/openeyes/protected/javamodules
 	echo "Deleting all local configuration an non-tracked files..."
 	cd /var/www/openeyes
-	sudo git clean -fx
+	git clean -fx
+
+	sudo mkdir /var/www/openeyes/protected/modules
+	sudo mkdir /var/www/openeyes/protected/javamodules
+	sudo chmod 777 /var/www/openeyes/protected/modules
+	sudo chmod 777 /var/www/openeyes/protected/javamodules
 fi
 
 # Check out or clone the code modules
-sudo mkdir -p /var/www/
+mkdir -p /var/www/openeyes
 cd /var/www
 
 for module in ${modules[@]}; do
@@ -278,7 +306,7 @@ for module in ${modules[@]}; do
 
   # Move from openeyes repo to modules - NOTE THAT openeyes must be the first module in the modules list, otherwise things go very wrong!
   if [ ! "$module" = "openeyes" ]; then
-      sudo mkdir -p /var/www/openeyes/protected/modules
+      mkdir -p /var/www/openeyes/protected/modules
       cd /var/www/openeyes/protected/modules
   fi
 
@@ -296,13 +324,13 @@ for module in ${modules[@]}; do
 	printf "\e[32m$module: Doesn't currently exist - cloning from : ${basestring}/${module}.git \e[0m"
 
 	# checkout branch. If branch doesn't exist then get master instead
-	if ! sudo git clone -b $branch ${basestring}/${module}.git ; then
+	if ! git clone -b $branch ${basestring}/${module}.git ; then
 		echo "falling back to $defaultbranch branch for $module..."
-		if ! sudo git clone -b $defaultbranch ${basestring}/${module}.git ; then
+		if ! git clone -b $defaultbranch ${basestring}/${module}.git ; then
 			# If we cannot find default branch at specifeid remote, fall back to OE git hub
 			if [ "$gitroot != "openeyes ]; then
 				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				sudo git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
+				git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
 			fi
 		fi
 	fi
@@ -322,16 +350,16 @@ for module in ${modules[@]}; do
 
     if [ $processgit = 1 ]; then
 		printf "\e[32m$module: \e[0m"
-		sudo git reset --hard
-		sudo git fetch --all
-		sudo git checkout tags/$branch 2>/dev/null
-		if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
-		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
+		git reset --hard
+		git fetch --all
+		git checkout tags/$branch 2>/dev/null
+		if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
+		if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
 
 		## fast forward to latest head
 		if [ ! "$nopull" = "1" ]; then
 			echo "Pulling latest changes: "
-			sudo git pull
+			git pull
 		fi
 	fi
 
@@ -343,31 +371,31 @@ sudo mkdir -p /var/www/openeyes/protected/javamodules
 cd /var/www/openeyes/protected/javamodules
 for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then
-    printf "\e[32m$module: Doesn't currently exist - cloning: \e[0m"
+    printf "\e[32m$module: Doesn't currently exist - cloning from ${basestring}/${module}.git: \e[0m"
 	# checkout branch. If branch doesn't exist then get master instead
-			if ! sudo git clone -b $branch ${basestring}/${module}.git ; then
+			if ! git clone -b $branch ${basestring}/${module}.git ; then
 				echo "falling back to $defaultbranch branch for $module..."
-				if ! sudo git clone -b $defaultbranch ${basestring}/${module}.git ; then
+				if ! git clone -b $defaultbranch ${basestring}/${module}.git ; then
 					# If we cannot find default branch at specifeid remote, fall back to OE git hub
 					if [ "$gitroot != "openeyes ]; then
 						echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-						sudo git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
+						git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
 					fi
 				fi
 			fi
   else
     cd $module
 	printf "\e[32m$module: \e[0m"
-    sudo git reset --hard
-    sudo git fetch --all
-    sudo git checkout tags/$branch 2>/dev/null
-    if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
-	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
+    git reset --hard
+    git fetch --all
+    git checkout tags/$branch 2>/dev/null
+    if [ ! $? = 0 ]; then git checkout $branch 2>/dev/null; fi
+	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; git checkout $defaultbranch 2>/dev/null; fi
 
 	## fast forward to latest head
 	if [ ! "$nopull" = "1" ]; then
 		echo "Pulling latest changes: "
-		sudo git pull
+		git pull
 	fi
 
     cd ..

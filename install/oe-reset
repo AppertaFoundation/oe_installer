@@ -12,17 +12,15 @@ custombranch=0
 migrate=1
 bannertext="Database reset at $(date)"
 branch=0
-defaultbranch="master"
 demo=0
 nofiles=0
 showhelp=0
 setpw=0
-username=""
-pass=""
-gitroot="openeyes"
+usessh=0
+checkoutparams="--sample-only --no-fix"
 
 # Read in stored git config (username, root, usessh, etc)
-source /etc/openeyes/git.conf
+#source /etc/openeyes/git.conf
 
 for i in "$@"
 do
@@ -39,9 +37,6 @@ case $i in
 	--branch|-b) custombranch=1
 		## Await branch name in next parameter
 		;;
-	--develop|-d) defaultbranch="develop"
-		## when combined with --branch, will fallback to develop branch if named branch is not found
-		;;
 	--demo) demo=1
 		## Install demo scripts (worklists, etc)
 		;;
@@ -57,7 +52,10 @@ case $i in
 	;;
 	-p) setpw=1
 		## Use a different root password
-		;;
+	;;
+	--no-fix) nofix=1
+		## do not run oe-fix (useful when calling from other scripts)
+	;;
 	*)  if [ "$custombanner" = "1" ]; then
 			bannertext=$i; custombanner=0;
 			## Set banner text to custom input after reset
@@ -68,10 +66,8 @@ case $i in
 			dbpassword=$i;
 			## Override DB password
 		else
-			echo "UNRECOGNISED PARAMETER $i"
-			echo ""
-			echo "try --help to see available parameters"
-			exit 1;
+			# assume anything else will be passed through to the checkout commands
+			checkoutparams="$checkoutparams $i"
 		fi
 		;;
 esac
@@ -112,24 +108,24 @@ fi
 
 dir=$PWD
 
-# Create correct user string to pass to github
-if [ ! -z $username ]; then
-    if [ ! -z $pass ]; then
-		sshuserstring="$username"
-        httpuserstring="${username}:${pass}@"
-    else
-		sshuserstring="$username"
-        httpuserstring="${username}@"
-    fi
-fi
-
-# Set base url string for cloning all repos
-basestring="https://${httpuserstring}github.com/$gitroot"
-
-# If using ssh, change the basestring to use ssh format
-if [ $usessh = 1 ]; then
-	basestring="git@github.com:$gitroot"
-fi
+# # Create correct user string to pass to github
+# if [ ! -z $username ]; then
+#     if [ ! -z $pass ]; then
+# 		sshuserstring="$username"
+#         httpuserstring="${username}:${pass}@"
+#     else
+# 		sshuserstring="$username"
+#         httpuserstring="${username}@"
+#     fi
+# fi
+#
+# # Set base url string for cloning all repos
+# basestring="https://${httpuserstring}github.com/$gitroot"
+#
+# # If using ssh, change the basestring to use ssh format
+# if [ $usessh = 1 ]; then
+# 	basestring="git@github.com:$gitroot"
+# fi
 
 
 echo "Stopping dicom-file-watcher..."
@@ -140,22 +136,7 @@ if [ ! "$branch" = "0" ]; then
 	## Checkout new sample database branch
 	echo "Downloading database for $branch"
 
-	sudo mkdir -p /var/www/openeyes/protected/modules/sample
-	cd /var/www/openeyes/protected/modules/sample
-
-	if [ ! -d ".git" ]; then
-			sudo git clone ${basestring}/sample.git .
-	fi
-
-
-    sudo git reset --hard
-	sudo git fetch --all
-
-	sudo git checkout tags/$branch 2>/dev/null
-	if [ ! $? = 0 ]; then sudo git checkout $branch 2>/dev/null; fi
-	if [ ! $? = 0 ]; then echo "no branch $branch exists, switching to $defaultbranch"; sudo git checkout $defaultbranch 2>/dev/null; fi
-    # fast-forward to head
-	sudo git pull
+    oe-checkout $branch $checkoutparams
 fi
 
 cd /var/www/openeyes/protected/modules/sample/sql
@@ -295,7 +276,7 @@ if [ $demo = "1" ]; then
     done
 fi
 
-oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer
+if [ ! $nofix = 1 ]; then oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer; fi
 
 echo "Starting dicom-file-watcher..."
 sudo service dicom-file-watcher start
