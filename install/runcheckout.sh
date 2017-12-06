@@ -30,6 +30,9 @@ sampleonly=0
 # Read in stored git config (username, root, usessh, etc)
 source /etc/openeyes/git.conf
 
+# store original ssh value, needed for updating remotes during pull
+previousssh=$usessh
+
 if [ -z "$1" ]; then showhelp=1; fi
 
 for i in "$@"
@@ -197,6 +200,7 @@ fi
 git config --global core.fileMode false 2>/dev/null
 git config core.fileMode false 2>/dev/null
 
+mkdir -p /var/www/openeyes/protected/modules
 cd /var/www/openeyes/protected/modules 2>/dev/null
 # Add sample DB to checkout if it exists or if --sample has been set
 if [[ -d "sample" ]] || [[ $sample = 1 ]]; then modules=(${modules[@]} sample); fi
@@ -204,6 +208,51 @@ if [[ -d "sample" ]] || [[ $sample = 1 ]]; then modules=(${modules[@]} sample); 
 # if in sample only mode, we want only the sample module and nothing else
 if [ $sampleonly = 1 ]; then modules=(sample); javamodules=(); fi
 
+######################################################
+# update remote if changing from https to ssh method #
+######################################################
+if [ ! $usessh = $previousssh ]; then
+
+	for module in ${modules[@]}; do
+		# only run if module exists
+	  if [ ! -d "$module" ]; then
+		  if [ ! "$module" = "openeyes" ]; then
+			  break
+		  fi
+	  fi
+	  echo "updating remote for $module"
+
+			  if [ ! "$module" = "openeyes" ]; then cd $module; fi
+
+			  # check if this is a git repo (and exists)
+			  if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
+
+			  	# change the remote to new basestring
+				git remote set-url origin $basestring/$module.git
+
+			  fi
+
+	  if [ ! "$module" = "openeyes" ]; then cd ..; fi
+	done
+
+	# ensure modules directory exists
+	sudo mkdir -p /var/www/openeyes/protected/javamodules
+	cd  /var/www/openeyes/protected/javamodules/
+	for module in ${javamodules[@]}; do
+	  if [ ! -d "$module" ]; then
+		  break
+	  else
+		   	echo "updating remote for $module"
+			cd $module;
+			# change the remote to new basestring
+	  		git remote set-url origin $basestring/$module.git
+			cd ..
+	  fi
+	done
+fi
+##### END update remote #####
+
+cd /var/www/openeyes/protected/modules 2>/dev/null
 
 if [ ! "$force" = "1" ]; then
     echo ""
@@ -234,12 +283,13 @@ if [ ! "$force" = "1" ]; then
 		if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	  done
 
-	  # ensure modules directory exists - prevents code being checked out to wrong place
+	  # ensure javamodules directory exists
 	  sudo mkdir -p /var/www/openeyes/protected/javamodules
 	  cd  /var/www/openeyes/protected/javamodules/
 	  for module in ${javamodules[@]}; do
 		if [ ! -d "$module" ]; then
 			printf "\e[31mModule $module not found\e[0m\n"
+			break
 		else
 			cd $module;
 			git diff --quiet
