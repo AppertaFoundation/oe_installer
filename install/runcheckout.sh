@@ -188,18 +188,14 @@ basestring="https://${httpuserstring}github.com/$gitroot"
 if [ $usessh = 1 ]; then
 	basestring="git@github.com:$gitroot"
 
-
-#	ssh-agent -s
-#	sudo ssh-agent -s
 	$(ssh-agent)  2>/dev/null
-#	sudo $(ssh-agent)
+	# attempt ssh authentication
+	ssh git@github.com -T
 
 fi
 
 git config --global core.fileMode false 2>/dev/null
 git config core.fileMode false 2>/dev/null
-
-ssh git@github.com -T
 
 cd /var/www/openeyes/protected/modules 2>/dev/null
 # Add sample DB to checkout if it exists or if --sample has been set
