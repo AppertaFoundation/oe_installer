@@ -186,11 +186,29 @@ if [ $clearcahes = 1 ]; then
 	echo ""
 fi
 
+# Fix permissions
+	echo "Resetting file permissions..."
+	sudo gpasswd -a "$USER" www-data
+	sudo chown -R "$USER":www-data /var/www/openeyes
+
+	sudo chmod -R 774 /var/www/openeyes/protected/config/local
+	sudo chmod -R 774 /var/www/openeyes/assets/
+	sudo chmod -R 774 /var/www/openeyes/protected/runtime
+	sudo chmod -R 774 /var/www/openeyes/protected/files
+
+	sudo chmod -R g+s /var/www/openeyes
+
 if [ $buildassests = 1 ]; then
 	echo "(re)building assets..."
 	# use curl to ping the login page - forces php/apache to rebuild the assets directory
 	curl -s http://localhost/site/login > /dev/null
 fi
+
+# Set some git properties
+
+git config core.fileMode false 2>/dev/null
+# Set to cache password in memory (should only ask once per day or each reboot)
+git config --global credential.helper 'cache --timeout=86400'
 
 echo ""
 echo "...Done"
