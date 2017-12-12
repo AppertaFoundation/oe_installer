@@ -3,6 +3,7 @@
 ## Process command parameters
 quiet=0
 showhelp=0
+ignorewarnings=0
 for i in "$@"
 do
 case $i in
@@ -10,6 +11,8 @@ case $i in
 	;;
     --help) showhelp=1
     ;;
+	--ignore-warnings) ignorewarnings=1
+	;;
 	*)  echo "Unknown command line: $i"
     ;;
 esac
@@ -27,50 +30,67 @@ if [ $showhelp = 1 ]; then
 	echo ""
 	echo "  --help         : Show this help"
     echo "  --quiet | -q   : Do not show console output"
+	echo "	--ignore-warnings: Don't break on warnings"
 	echo ""
     exit 1
 fi
 
 dir=$PWD
 cd /var/www/openeyes/protected
+
+sudo mkdir -p /etc/openeyes
+sudo touch /etc/openeyes/migrate.log
+sudo chmod 776 /etc/openeyes/migrate.log
+
 if [ $quiet = 0 ]; then
-    sudo php ./yiic migrate --interactive=0
-    sudo php ./yiic migratemodules --interactive=0
+	# Show output on screen AND write to log
+	sudo php ./yiic migrate --interactive=0 2>&1 | tee /etc/openeyes/migrate.log
+    sudo php ./yiic migratemodules --interactive=0 2>&1 | tee -a /etc/openeyes/migrate.log
 else
-	sudo mkdir -p /etc/openeyes
-	sudo touch /etc/openeyes/migrate.log
-	sudo chmod 776 /etc/openeyes/migrate.log
+	# Write output to log only (do not show on screen)
 	sudo php ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
-    sudo php ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
+	sudo php ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
+fi
+
+founderrors=0
+if [ $ignorewarnings = "0" ]; then
 	if grep -i 'error\|exception.[^al]\|warning\*' /etc/openeyes/migrate.log ; then
+		founderrors=1
+	fi
+else
+	if grep -i 'error\|exception.[^al]' /etc/openeyes/migrate.log ; then
+		founderrors=1
+	fi
+fi
 
-		printf "\n\e[5;41;1m\n\nMIGRATE ENCOUNTERED ERRORS - PLEASE SEE LOG - /etc/openeyes/migrate.log\n\n\n \e[0m\n"
-		echo "The following migration errors were encountered:"
-		grep -B 2 -A 7 -in 'error\|exception.[^al]\|warning\*' /etc/openeyes/migrate.log
-		printf "\n\nTo continue with the reset of the script, select option 1"
-		echo "To exit, select option 2"
+if [ $founderrors = 1 ]; then
+	printf "\n\e[5;41;1m\n\nMIGRATE ENCOUNTERED ERRORS - PLEASE SEE LOG - /etc/openeyes/migrate.log\n\n\n \e[0m\n"
+	echo "The following migration errors were encountered:"
+	grep -B 2 -A 7 -in 'error\|exception.[^al]\|warning\*' /etc/openeyes/migrate.log
+	printf "\n\nTo continue with the reset of the script, select option 1"
+	echo "To exit, select option 2"
 
-		printf "\e[41m\e[97m  MIGRATE ERRORS ENCOUNTERED  \e[0m \n";
-		echo ""
+	printf "\e[41m\e[97m  MIGRATE ERRORS ENCOUNTERED  \e[0m \n";
+	echo ""
 
-		select yn in "Continue" "Exit"; do
-			case $yn in
-				Continue ) echo "
+	select yn in "Continue" "Exit"; do
+		case $yn in
+			Continue ) echo "
 
 Continuing. System is in unknown state and further errors may be encountered...
 
-				"; break;;
-				Exit ) echo "
+			"; break;;
+			Exit ) echo "
 Exiting. Please fix errors and try again...
-				"; exit 1;;
-			esac
-		done
+			"; exit 1;;
+		esac
+	done
 
 
-	elif grep -q "applied" /etc/openeyes/migrate.log >/dev/null ; then
-		echo "Migrations applied - see /etc/openeyes/migrate.log for more details"
-	else
-		echo "No new migrations to apply - see /etc/openeyes/migrate.log for more details"
-	fi
+elif grep -q "applied" /etc/openeyes/migrate.log >/dev/null ; then
+	echo "Migrations applied - see /etc/openeyes/migrate.log for more details"
+else
+	echo "No new migrations to apply - see /etc/openeyes/migrate.log for more details"
 fi
+
 cd "$dir"

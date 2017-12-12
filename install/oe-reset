@@ -19,6 +19,7 @@ setpw=0
 usessh=0
 checkoutparams="--sample-only --no-fix"
 cleanbase=0
+migrateparams="-q"
 
 # Read in stored git config (username, root, usessh, etc)
 #source /etc/openeyes/git.conf
@@ -59,6 +60,9 @@ case $i in
 	;;
 	--clean-base) cleanbase=1
 		## Do not import base data (migrate from clean db instead)
+	;;
+	--ignore-warnings) migrateparams="$migrateparams $i"
+		# Ignore warnings during migrate
 	;;
 	*)  if [ "$custombanner" = "1" ]; then
 			bannertext=$i; custombanner=0;
@@ -106,6 +110,7 @@ if [ $showhelp = 1 ]; then
 	echo "  --genetics-disable"
 	echo "                  : disable genetics modules (if currently enabled)"
 	echo "	--clean-base	: Do not import sample data - migrate from clean db instead"
+	echo "	--ignore-warnings	: Ignore warnings during migration"
 	echo ""
     exit 1
 fi
@@ -208,7 +213,7 @@ fi
 # Run migrations
 if [ $migrate = "1" ]; then
 	echo Performing database migrations
-	sudo oe-migrate -q
+	sudo oe-migrate $migrateparams
 	echo "The following migrations were applied..."
 	grep applied /etc/openeyes/migrate.log
 fi
