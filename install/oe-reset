@@ -164,7 +164,7 @@ if [ $nofiles = "0" ]; then
 	sudo rm -rf /tmp/docman
 fi
 
-if [ cleanbase = "0"]; then
+if [ $cleanbase = "0" ]; then
 	echo "Re-importing database"
 	sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
 fi
