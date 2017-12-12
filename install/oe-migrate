@@ -42,11 +42,11 @@ else
 	sudo chmod 776 /etc/openeyes/migrate.log
 	sudo php ./yiic migrate --interactive=0 > /etc/openeyes/migrate.log
     sudo php ./yiic migratemodules --interactive=0 >> /etc/openeyes/migrate.log
-	if grep -i 'error\|exception' /etc/openeyes/migrate.log ; then
+	if grep -i 'error\|exception.[^al]\|warning\*' /etc/openeyes/migrate.log ; then
 
 		printf "\n\e[5;41;1m\n\nMIGRATE ENCOUNTERED ERRORS - PLEASE SEE LOG - /etc/openeyes/migrate.log\n\n\n \e[0m\n"
 		echo "The following migration errors were encountered:"
-		grep -B 2 -A 7 -i 'error\|exception' /etc/openeyes/migrate.log
+		grep -B 2 -A 7 -in 'error\|exception.[^al]\|warning\*' /etc/openeyes/migrate.log
 		printf "\n\nTo continue with the reset of the script, select option 1"
 		echo "To exit, select option 2"
 
