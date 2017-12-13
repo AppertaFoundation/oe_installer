@@ -251,20 +251,21 @@ oe-checkout $branch -f --no-migrate --no-summary --no-fix $checkoutparams
 
 
 cd /var/www/openeyes/protected
-echo "unzipping yii. Please wait..."
-if sudo unzip -oq yii.zip; then echo "."; fi
-if sudo unzip -oq vendors.zip; then echo "."; fi
+
+# echo "unzipping yii. Please wait..."
+# if sudo unzip -oq yii.zip; then echo "."; fi
+# if sudo unzip -oq vendors.zip; then echo "."; fi
 
 git submodule init
 git submodule update -f
 
-# keep a copy of these zips around in case we checkout an older branch that does not include them
-sudo mkdir -p /usr/lib/openeyes
-sudo cp yii.zip /usr/lib/openeyes 2>/dev/null || :
-sudo cp vendors.zip /usr/lib/openeyes 2>/dev/null || :
-cd /usr/lib/openeyes
-if [ ! -d "yii" ]; then echo "."; if sudo unzip -oq yii.zip ; then echo "."; fi; fi
-if [ ! -d "vendors" ]; then echo "."; if sudo unzip -oq vendors.zip ; then echo "."; fi; fi
+# # keep a copy of these zips around in case we checkout an older branch that does not include them
+# sudo mkdir -p /usr/lib/openeyes
+# sudo cp yii.zip /usr/lib/openeyes 2>/dev/null || :
+# sudo cp vendors.zip /usr/lib/openeyes 2>/dev/null || :
+# cd /usr/lib/openeyes
+# if [ ! -d "yii" ]; then echo "."; if sudo unzip -oq yii.zip ; then echo "."; fi; fi
+# if [ ! -d "vendors" ]; then echo "."; if sudo unzip -oq vendors.zip ; then echo "."; fi; fi
 
 mkdir -p /var/www/openeyes/cache
 mkdir -p /var/www/openeyes/assets
@@ -322,7 +323,7 @@ fi
 
 
 # call oe-fix - this includes migrations
-oe-fix 
+oe-fix
 
 # If we are on a live install, set the environment in common.php accordingly
 # NOTE: This has to run AFTER first call to oe-fix

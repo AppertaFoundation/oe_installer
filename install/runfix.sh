@@ -112,7 +112,7 @@ fi;
 # Make sure vendor directory found/linked
 if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
 	echo Linking vendor framework
-	sudo ln -s /usr/lib/openeyes/vendors /var/www/openeyes/protected/vendors
+	sudo ln -s /var/openeyes/vendors /var/www/openeyes/protected/vendors
 	sudo chown -R "$USER":www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
 	if [ ! $? = 0 ]; then echo "unable to link vendors - this is expected for versions prior to v1.12"; fi
 fi
