@@ -94,7 +94,7 @@ if [ "$force" = 0 ]; then
 
 			# check if this is a git repo
 			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
-					sudo git diff --quiet
+					git diff --quiet
 					if [ ! $? = 0 ]; then
 					  changes=1
 					  modulelist="$modulelist $module"
