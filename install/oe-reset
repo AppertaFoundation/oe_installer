@@ -20,6 +20,7 @@ usessh=0
 checkoutparams="--sample-only --no-fix"
 cleanbase=0
 migrateparams="-q"
+nofix=0
 
 # Read in stored git config (username, root, usessh, etc)
 #source /etc/openeyes/git.conf
@@ -111,6 +112,7 @@ if [ $showhelp = 1 ]; then
 	echo "                  : disable genetics modules (if currently enabled)"
 	echo "	--clean-base	: Do not import sample data - migrate from clean db instead"
 	echo "	--ignore-warnings	: Ignore warnings during migration"
+	echo "	--no-fix		: do not run oe-fix routines after reset"
 	echo ""
     exit 1
 fi
@@ -153,15 +155,15 @@ cd /var/www/openeyes/protected/modules/sample/sql
 
 echo "Clearing current database"
 
-sudo echo "
+echo "
 drop database if exists openeyes;
 create database openeyes;
 grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
 flush privileges;
 " > /tmp/openeyes-mysql-create.sql
 
-sudo mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-create.sql
-sudo rm /tmp/openeyes-mysql-create.sql
+mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-create.sql
+rm /tmp/openeyes-mysql-create.sql
 
 if [ $nofiles = "0" ]; then
 	echo Deleting protected files
@@ -171,7 +173,7 @@ fi
 
 if [ $cleanbase = "0" ]; then
 	echo "Re-importing database"
-	sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
+	mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
 fi
 
 # Force default institution code to match common.php
@@ -288,7 +290,9 @@ if [ $demo = "1" ]; then
     done
 fi
 
-if [ ! $nofix = 1 ]; then oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer; fi
+if [ ! $nofix = 1 ]; then
+	oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer --no-permissions
+fi
 
 echo "Starting dicom-file-watcher..."
 sudo service dicom-file-watcher start
