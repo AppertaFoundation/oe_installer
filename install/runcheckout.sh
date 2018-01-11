@@ -198,8 +198,9 @@ fi
 git config --global core.fileMode false 2>/dev/null
 git config core.fileMode false 2>/dev/null
 
-mkdir -p /var/www/openeyes/protected/modules
+
 cd /var/www/openeyes/protected/modules 2>/dev/null
+
 # Add sample DB to checkout if it exists or if --sample has been set
 if [[ -d "sample" ]] || [[ $sample = 1 ]]; then modules=(${modules[@]} sample); fi
 
@@ -233,8 +234,6 @@ if [ ! $usessh = $previousssh ]; then
 	  if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	done
 
-	# ensure modules directory exists
-	sudo mkdir -p /var/www/openeyes/protected/javamodules
 	cd  /var/www/openeyes/protected/javamodules/
 	for module in ${javamodules[@]}; do
 	  if [ ! -d "$module" ]; then
@@ -281,8 +280,6 @@ if [ ! "$force" = "1" ]; then
 		if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	  done
 
-	  # ensure javamodules directory exists
-	  sudo mkdir -p /var/www/openeyes/protected/javamodules
 	  cd  /var/www/openeyes/protected/javamodules/
 	  for module in ${javamodules[@]}; do
 		if [ ! -d "$module" ]; then
@@ -312,7 +309,7 @@ if [ ! "$force" = "1" ]; then
 	#fi
 else
 	# delete dependencies during force (they will get re-added by oe-fix)
-	sudo rm -rf /var/www/openeyes/node_modules
+	sudo rm -rf /var/www/openeyes/node_modules 2>/dev/null
 fi
 
 if [ $killconfigbackup = 1 ]; then
@@ -341,7 +338,6 @@ if [ $killmodules = 1 ]; then
 fi
 
 # Check out or clone the code modules
-mkdir -p /var/www/openeyes
 cd /var/www
 
 for module in ${modules[@]}; do
@@ -350,17 +346,14 @@ for module in ${modules[@]}; do
 
   # Move from openeyes repo to modules - NOTE THAT openeyes must be the first module in the modules list, otherwise things go very wrong!
   if [ ! "$module" = "openeyes" ]; then
-      mkdir -p /var/www/openeyes/protected/modules
+	  #ensure modules directory exists
+	  mkdir -p /var/www/openeyes/protected/modules
       cd /var/www/openeyes/protected/modules
   fi
 
   # Determine if module already exists. If not, clone it
-  if [ ! -d "$module" ] && [ ! "$module" = "openeyes" ]; then
+  if [ ! -d "$module" ]; then
       clone=1
-  elif [ "$module" = "openeyes" ] && [ ! -d "/var/www/openeyes/.git" ]; then
-      clone=1
-      # If we're dealing with the openeyes parent repo, then clone to the www root
-      #cloneto="/var/www/openeyes"
   fi
 
   if [ $clone = 1 ]; then
@@ -391,10 +384,11 @@ for module in ${modules[@]}; do
     if [ ! "$module" = "openeyes" ]; then
         # If we're not processing the parent openeyes repo, then traverse into the module's subdir
         cd $module
-        if [ ! -d ".git" ]; then processgit=0; fi
     else
         cd /var/www/openeyes
     fi
+
+	if [ ! -d ".git" ]; then processgit=0; fi
 
     if [ $processgit = 1 ]; then
 		printf "\e[32m$module: \e[0m"
@@ -415,7 +409,7 @@ for module in ${modules[@]}; do
 done
 
 # Check out the Java modules
-sudo mkdir -p /var/www/openeyes/protected/javamodules
+mkdir -p /var/www/openeyes/protected/javamodules
 cd /var/www/openeyes/protected/javamodules
 for module in ${javamodules[@]}; do
   if [ ! -d "$module" ]; then

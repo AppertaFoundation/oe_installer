@@ -233,15 +233,16 @@ if [ $force = 1 ]; then
 
 fi
 
-sudo mkdir -p openeyes
+# sudo mkdir -p openeyes
+cd /var/www
 
 # Fix permissions
 echo "Setting file permissions..."
 sudo gpasswd -a "$USER" www-data
-sudo chown -R "$USER":www-data openeyes
+sudo chown -R "$USER":www-data .
 
-sudo chmod -R 774 openeyes
-sudo chmod -R g+s openeyes
+sudo chmod -R 774 .
+sudo chmod -R g+s .
 
 # if this isn't a live install, then add the sample DB
 if [ ! $live = 1 ]; then checkoutparams="$checkoutparams --sample"; echo "Sample database wil be installed."; fi
@@ -351,7 +352,7 @@ if [ ! "$live" = "1" ]; then
 	LogLevel warn
 	CustomLog /var/log/apache2/access.log combined
 	</VirtualHost>
-	" > /etc/apache2/sites-available/000-default.conf
+	" | sudo tee /etc/apache2/sites-available/000-default.conf >/dev/null
 
 	sudo service apache2 restart
 fi
