@@ -155,16 +155,16 @@ cd /var/www
 
 # Show disclaimer
 echo "
-DISCLAIMER: OpenEyes is provided under a GPL v3.0 license and all terms of that
-license apply (https://www.gnu.org/licenses/gpl-3.0.html). Use of the OpenEyes
-software or code is entirely at your own risk. Neither the OpenEyes Foundation,
-ACROSS Health Ltd nor Moorfields Eye Hospital NHS Foundation Trust accept any
-responsibility for loss or damage to any person, property or reputation as a
-result of using the software or code. No warranty is provided by any party,
-implied or otherwise. This software and code is not guaranteed safe to use in a
-clinical environment and you should make your own assessment on the suitability
-for such use. Installation of any openeyes software indicates acceptance of this
-disclaimer.
+DISCLAIMER: OpenEyes is provided under a GNU Affero General Public License v3.0 
+license and all terms of that license apply 
+(https://www.gnu.org/licenses/agpl-3.0.html). 
+Use of the OpenEyes software or code is entirely at your own risk. Neither the 
+OpenEyes Foundation, ABEHR Digital Ltd or any other party accept any responsibility 
+for loss or damage to any person, property or reputation as a result of using the 
+software or code. No warranty is provided by any party, implied or otherwise. This
+software and code is not guaranteed safe to use in a clinical environment and
+you should make your own assessment on the suitability for such use. Installation
+of any openeyes software indicates acceptance of this disclaimer.
 
 "
 
@@ -264,7 +264,7 @@ chmod 777 /var/www/openeyes/protected/runtime
 chmod 777 /var/www/openeyes/protected/runtime/cache
 
 if [ ! `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-	chown -R www-data:www-data /var/www/*
+	sudo chown -R www-data:www-data /var/www/*
 fi
 
 # The default environment type is assumed to be DEV/AWS.
@@ -274,7 +274,12 @@ if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   hostname OpenEyesVM
   sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
   cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
+  # give vagrant extra permissions to make development easier
   sudo usermod -a -G www-data vagrant
+  sudo usermod -a -G root vagrant
+  # fix file access errors for vagrant user - for cache, etc (new files created by apache)
+  sudo chmod g+w /etc/apache2/envvars
+  sudo grep -q -e 'umask 001' /etc/apache2/envvars || sudo echo 'umask 001' >> /etc/apache2/envvars
 fi
 
 # If we are on a live install, set the environment config accordingly
@@ -364,14 +369,32 @@ if [ ! "$live" = "1" ]; then
 	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
 	rm /tmp/openeyes-mysql-setbanner.sql
 
+    # Set default institution code
+    icode=$(grep -oP '(?<=institution_code. => .).*?(?=.,)' /var/www/openeyes/protected/config/local/common.php)
+
+    if [ ! -z $icode ]; then
+
+        echo "
+
+        setting institution to $icode
+
+        "
+
+        echo "UPDATE institution SET remote_id = '$icode' WHERE id = 1;" > /tmp/openeyes-mysql-institute.sql
+
+        mysql -uroot "-ppassword" -D openeyes < /tmp/openeyes-mysql-institute.sql
+
+        rm /tmp/openeyes-mysql-institute.sql
+
+
+    fi
+
 fi
 
 
 echo Performing database migrations
 
-cd /var/www/openeyes/protected
-./yiic migrate --interactive=0
-./yiic migratemodules --interactive=0
+oe-migrate -q
 
 
 if [ ! "$live" = "1" ]; then
@@ -393,7 +416,7 @@ if [ ! "$live" = "1" ]; then
 	</VirtualHost>
 	" > /etc/apache2/sites-available/000-default.conf
 
-	apache2ctl restart
+	service apache2 restart
 fi
 
 

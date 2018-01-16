@@ -3,12 +3,13 @@
 source /etc/openeyes/modules.conf
 dir=$PWD
 
-
 # Process commandline parameters
 gitroot="appertafoundation"
 defaultbranch=master
 force=0
 killmodules=0
+resetconfig=0
+killconfigbackup=0
 migrate=1
 fix=1
 compile=1
@@ -34,6 +35,18 @@ case $i in
 	-ff|--killmodules|--kill-modules) force=1; killmodules=1
 		## killmodules should only be used when moving backwards from versions 1.12.1 or later to version 1.12 or earlier - removes the /protected/modules folder and re-clones all modules
 		;;
+	-fc|--reset-config) resetconfig=1; fixparams="$fixparams --reset-config"
+	## remove local config files and either restore from backup (if available) or reset to sample configuration
+	;;
+	-fff) force=1; killmodules=1; killconfigbackup=1
+		## killmodules should only be used when moving backwards from versions 1.12.1 or later to version 1.12 or earlier - removes the /protected/modules folder and re-clones all modules
+		;;
+	-ffc) resetconfig=1; killconfigbackup=1; fixparams="$fixparams --reset-config"
+	## Delete backups and reset config
+	;;
+	--delete-backup) killconfigbackup=1
+	## Delete configuration backups from /etc/openeyes
+	;;
 	--develop|--d|-d) defaultbranch=develop
 		## develop will use develop baranches when the named branch does not exist for a module (by default it would use master)
 		;;
@@ -95,9 +108,15 @@ if [ $showhelp = 1 ]; then
 	echo "	--no-pull		: Prevent automatic fast-forward to latest remote head"
     echo "  --force | -f   : forces the checkout, even if local changes are uncommitted"
     echo "  --kill-modules "
-    echo "          | -ff  : Will delete all items from protected/modules before checking"
-    echo "                   out. This is required when switching between versions <= 1.12 "
-    echo "                   and versions >= 1.12.1"
+    echo "          | -ff  : Will delete all items from protected/modules and "
+	echo "				     delete local configuration before checking out."
+    echo "                   This may be required when moving between major releases"
+	echo "					 !!USE WITH CAUTION!!"
+	echo "	--reset-config "
+	echo "		| -fc	   : Reset config/local/common.php to default settings"
+	echo "				   : WARNING: Will destroy existing config"
+	echo "  --delete-backup : Deletes backups from /etc/openeyes. Use in "
+	echo "					  conjunction with --reset-config to fully reset config"
     echo "  --no-compile   : Do not complile java modules after Checkout"
     echo "  -r <remote>    : Use the specifed remote github fork - defaults to openeyes"
     echo "  --develop "
@@ -153,19 +172,22 @@ if [ ! "$force" = "1" ]; then
 
 	  for module in ${modules[@]}; do
 		if [ ! -d "$module" ]; then
-			if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"; fi
-		else
-			if [ ! "$module" = "openeyes" ]; then cd $module; fi
-
-			# check if this is a git repo
-			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
-					sudo git diff --quiet
-					if [ ! $? = 0 ]; then
-					  changes=1
-					  modulelist="$modulelist $module"
-					fi
+			if [ ! "$module" = "openeyes" ]; then printf "\e[31mModule $module not found\e[0m\n"
+				break
 			fi
 		fi
+
+				if [ ! "$module" = "openeyes" ]; then cd $module; fi
+				
+				# check if this is a git repo
+				if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
+						sudo git diff --quiet
+						if [ ! $? = 0 ]; then
+						  changes=1
+						  modulelist="$modulelist $module"
+						fi
+				fi
+
 
 		if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	  done
@@ -198,14 +220,29 @@ if [ ! "$force" = "1" ]; then
 		exit 1
 	  fi
 	#fi
+else
+	# delete dependencies during force (they will get re-added by oe-fix)
+	sudo rm -rf /var/www/openeyes/node_modules
+fi
+
+if [ $killconfigbackup = 1 ]; then
+	# delete backups from /etc/openeyes
+	echo "
+	************** DELETING BACKUPS FROM /etc/openeyes *******************
+	"
+	sudo rm -rf /etc/openeyes/backup
 fi
 
 # If -ff was speified, kill all existing modules and re-clone
 if [ $killmodules = 1 ]; then
 	echo ""
-	echo "Removing all modules from protected/modules..."
+	echo "Removing all modules from protected/modules and protected/javamodules..."
 	echo ""
 	sudo rm -rf /var/www/openeyes/protected/modules
+	sudo rm -rf /var/www/openeyes/protected/javamodules
+	echo "Deleting all local configuration an non-tracked files..."
+	cd /var/www/openeyes
+	sudo git clean -fx
 fi
 
 # Check out or clone the code modules
@@ -321,6 +358,13 @@ for module in ${javamodules[@]}; do
     cd ..
   fi
 done
+
+if [ "$resetconfig" = "1" ]; then
+	echo "
+WARNING: Resetting local config to defaults
+"
+	sudo rm -rf /var/www/protected/config/local/*.php
+fi
 
 # Now reset/relink various config files etc
 if [ "$fix" = "1" ]; then  oe-fix $fixparams; fi

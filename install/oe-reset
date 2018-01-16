@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# DB connection variables
+dbuser="root"
+dbpassword="password"
+
 # Process commandline parameters
 
 nobanner=0
@@ -10,7 +14,9 @@ bannertext="Database reset at $(date)"
 branch=0
 defaultbranch="master"
 demo=0
+nofiles=0
 showhelp=0
+setpw=0
 
 for i in "$@"
 do
@@ -35,11 +41,32 @@ case $i in
 		;;
 	--help) showhelp=1
 		;;
-	*)  if [ "$custombanner" = "1" ]; then bannertext=$i; custombanner=0; fi
+	--no-files) nofiles=1
+		;;
+	--genetics-enable)
+		sudo bash /vagrant/install/add-genetics.sh
+	;;
+	--genetics-disable)
+		sudo bash /vagrant/install/add-genetics.sh -r
+	;;
+	-p) setpw=1
+		## Use a different root password
+		;;
+	*)  if [ "$custombanner" = "1" ]; then
+			bannertext=$i; custombanner=0;
 			## Set banner text to custom input after reset
-
-		if [ "$custombranch" = "1" ]; then branch=$i; custombranch=0; fi
+		elif [ "$custombranch" = "1" ]; then
+			branch=$i; custombranch=0;
 			## reset to a new branch
+		elif [ "$setpw" = "1" ]; then
+			dbpassword=$i;
+			## Override DB password
+		else
+			echo "UNRECOGNISED PARAMETER $i"
+			echo ""
+			echo "try --help to see available parameters"
+			exit 1;
+		fi
 		;;
 esac
 done
@@ -49,7 +76,7 @@ if [ $showhelp = 1 ]; then
     echo "DESCRIPTION:"
     echo "Resets database to latest 'sample' database"
     echo ""
-    echo "usage: $0 [--branch | b ] [--help] [--no-migrate | -nm ] [--banner ] [--develop | -d] [ --no-banner | -nb ]"
+    echo "usage: $0 [--branch | b branchname] [--help] [--no-migrate | -nm ] [--banner \"banner text\"] [--develop | -d] [ --no-banner | -nb ] [-p password] [--genetics-enable] [--genetics-disable]"
     echo ""
     echo "COMMAND OPTIONS:"
     echo "  --help         : Display this help text"
@@ -63,9 +90,15 @@ if [ $showhelp = 1 ]; then
     echo "                   - default would fallback to master"
     echo "  --no-banner  "
 	echo "          |-nb   : Remove the user banner text after resetting"
+	echo "  --no-files     : Do not clear protected/files during reset"
     echo "  --banner>      : Set the user banner to the specified text after reset"
     echo "                   - default is 'Database reset at <time>'"
+	echo "	-p			   : specify root password for mysql (default is \"password\")"
 	echo "  --demo         : Install additional scripts to set up openeyes for demo"
+	echo "  --genetics-enable"
+	echo "                  : enable genetics modules (if currently diabled)"
+	echo "  --genetics-disable"
+	echo "                  : disable genetics modules (if currently enabled)"
 	echo ""
     exit 1
 fi
@@ -81,7 +114,18 @@ if [ ! "$branch" = "0" ]; then
 	## Checkout new sample database branch
 	echo "Downloading database for $branch"
 
+	sudo mkdir -p /var/www/openeyes/protected/modules/sample
 	cd /var/www/openeyes/protected/modules/sample
+
+	if [ ! -d ".git" ]; then
+
+		if ! sudo git clone -b $branch https://github.com/openeyes/sample.git . ; then
+			echo "falling back to master branch for sample..."
+			sudo git clone https://github.com/openeyes/sample.git .
+		fi
+
+	fi
+
 
     sudo git reset --hard
 	sudo git fetch --all
@@ -95,63 +139,141 @@ fi
 
 cd /var/www/openeyes/protected/modules/sample/sql
 
-echo Clearing current database
+echo "Clearing current database"
 
-echo "
+sudo echo "
 drop database if exists openeyes;
 create database openeyes;
 grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
 flush privileges;
 " > /tmp/openeyes-mysql-create.sql
 
-mysql -u root "-ppassword" < /tmp/openeyes-mysql-create.sql
-rm /tmp/openeyes-mysql-create.sql
+sudo mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-create.sql
+sudo rm /tmp/openeyes-mysql-create.sql
+
+if [ $nofiles = "0" ]; then
+	echo Deleting protected files
+	sudo rm -rf /var/www/openeyes/protected/files/*
+fi
 
 echo "Re-importing database"
-mysql -uroot "-ppassword" -D openeyes < openeyes_sample_data.sql
+sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
+
+# Force default institution code to match common.php
+icode=$(grep -oP '(?<=institution_code. => .).*?(?=.,)' /var/www/openeyes/protected/config/local/common.php)
+if [ ! -z $icode ]; then
+
+	echo "
+
+	setting institution to $icode
+
+	"
+
+	echo "UPDATE institution SET remote_id = '$icode' WHERE id = 1;" > /tmp/openeyes-mysql-institute.sql
+
+	mysql -uroot "-ppassword" -D openeyes < /tmp/openeyes-mysql-institute.sql
+
+	rm /tmp/openeyes-mysql-institute.sql
+fi
+
+# Run pre-migration demo scripts
+if [ $demo = "1" ]; then
+	cd /var/www/openeyes/protected/modules/sample/sql/demo/pre-migrate
+
+	echo "RUNNING PRE_MIGRATION SCRIPTS..."
+
+	shopt -s nullglob
+	for f in `ls | sort -V`
+	do
+		if [[ $f == *.sql ]]; then
+			echo "importing $f"
+			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		elif [[ $f == *.sh ]]; then
+			echo "running $f"
+			sudo bash "./$f"
+		fi
+	done
+fi
 
 # Run migrations
 if [ $migrate = "1" ]; then
 	echo Performing database migrations
-	cd /var/www/openeyes/protected
-	./yiic migrate --interactive=0
-	./yiic migratemodules --interactive=0
+	sudo oe-migrate -q
+	echo "The following migrations were applied..."
+	grep applied /etc/openeyes/migrate.log
 fi
 
 # Run demo scripts
 if [ $demo = "1" ]; then
 	cd /var/www/openeyes/protected/modules/sample/sql/demo
 
-	# import all demo sql scripts
+	echo "RUNNING DEMO SCRIPTS..."
+
 	shopt -s nullglob
-    for f in `ls *.sql | sort -V`
+	for f in `ls | sort -V`
+	do
+		if [[ $f == *.sql ]]; then
+			echo "importing $f"
+			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		elif [[ $f == *.sh ]]; then
+			echo "running $f"
+			sudo bash "./$f"
+		fi
+	done
+fi
+
+# Run genetics scripts if genetics is enabled
+if grep -q "'Genetics'," /var/www/openeyes/protected/config/local/common.php && ! grep -q "/\*'Genetics'," /var/www/openeyes/protected/config/local/common.php ; then
+	cd /var/www/openeyes/protected/modules/sample/sql/demo/genetics
+
+	echo "RUNNING Genetics files..."
+
+	shopt -s nullglob
+    for f in `ls | sort -V`
     do
-		echo "importing $f"
-		mysql -uroot "-ppassword" -D openeyes < $f
+		if [[ $f == *.sql ]]; then
+			echo "importing $f"
+			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		elif [[ $f == *.sh ]]; then
+			echo "running $f"
+			sudo bash "./$f"
+		fi
     done
 
-	# run demo setup scripts
+fi
+
+# Run local post-migaration demo scripts
+if [ $demo = "1" ]; then
+	cd /var/www/openeyes/protected/modules/sample/sql/demo/local-post
+
+	echo "RUNNING POST RESET SCRIPTS..."
+
 	shopt -s nullglob
-    for f in `ls *.sh | sort -V`
+    for f in `ls | sort -V`
     do
-		echo "running $f"
-		sudo bash "./$f"
+		if [[ $f == *.sql ]]; then
+			echo "importing $f"
+			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+		elif [[ $f == *.sh ]]; then
+			echo "running $f"
+			sudo bash "./$f"
+		fi
     done
 fi
 
 # Set banner to confirm reset
 if [ ! $nobanner = "1" ]; then
 	echo "setting banner to: $bannertext"
-	echo "
+	sudo echo "
 	use openeyes;
 	UPDATE openeyes.setting_installation s SET s.value='$bannertext' WHERE s.key='watermark';
 	" > /tmp/openeyes-mysql-setbanner.sql
 
-	mysql -u root "-ppassword" < /tmp/openeyes-mysql-setbanner.sql
-	rm /tmp/openeyes-mysql-setbanner.sql
+	sudo mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-setbanner.sql
+	sudo rm /tmp/openeyes-mysql-setbanner.sql
 fi
 
-oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer
+sudo oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer
 
 echo "Starting dicom-file-watcher..."
 sudo service dicom-file-watcher start
