@@ -45,7 +45,7 @@ live=0
 develop=0
 force=0
 customgitroot=0
-gitroot=openeyes
+gitroot=appertafoundation
 cleanconfig=0
 username=""
 pass=""
@@ -345,11 +345,15 @@ if [ ! "$live" = "1" ]; then
 	if ! git clone -b $branch ${basestring}/Sample.git sample ; then
 		echo "$branch doesn't exist for sample database. Falling back to $defaultbranch branch for openeyes..."
         if ! git clone -b $defaultbranch ${basestring}/sample.git sample ; then
-			# If we cannot find default branch at specifeid remote, fall back to OE git hub
-			if [ "$gitroot != "openeyes ]; then
-				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/sample.git sample
-			fi
+            # If we cannot find $defaultbranch, then fall back to repository's defualt branch (catches situation where default branch is not master)
+			echo "falling back to default branch for sample..."
+			if ! git clone ${basestring}/sample.git ; then
+    			# If we cannot find default branch at specifeid remote, fall back to OE git hub
+    			if [ "$gitroot != "openeyes ]; then
+    				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
+    				git clone -b $defaultbranch ${basestring/openeyes/openeyes}/sample.git sample
+    			fi
+            fi
 		fi
 	fi
 

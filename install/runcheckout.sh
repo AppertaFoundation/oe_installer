@@ -4,7 +4,7 @@ source /etc/openeyes/modules.conf
 dir=$PWD
 
 # Process commandline parameters
-gitroot="openeyes"
+gitroot="appertafoundation"
 defaultbranch=master
 force=0
 killmodules=0
@@ -140,10 +140,10 @@ echo ""
 # Create correct user string to pass to github
 if [ ! -z $username ]; then
     if [ ! -z $pass ]; then
-		sshuserstring="$username"
+		sshuserstring="git"
         httpuserstring="${username}:${pass}@"
     else
-		sshuserstring="$username"
+		sshuserstring="git"
         httpuserstring="${username}@"
     fi
 fi
@@ -276,10 +276,14 @@ for module in ${modules[@]}; do
 	if ! sudo git clone -b $branch ${basestring}/${module}.git ; then
 		echo "falling back to $defaultbranch branch for $module..."
 		if ! sudo git clone -b $defaultbranch ${basestring}/${module}.git ; then
-			# If we cannot find default branch at specifeid remote, fall back to OE git hub
-			if [ "$gitroot != "openeyes ]; then
-				echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-				sudo git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
+			# If we cannot find $defaultbranch, then fall back to repository's defualt branch (catches situation where default branch is not master)
+			echo "falling back to default branch for $module..."
+			if ! git clone ${basestring}/${module}.git ; then
+				# If we cannot find default branch at specifeid remote, fall back to OE git hub
+				if [ "$gitroot != "openeyes ]; then
+					echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
+					sudo git clone -b $defaultbranch ${basestring/openeyes/openeyes}/${module}.git
+				fi
 			fi
 		fi
 	fi
@@ -325,10 +329,14 @@ for module in ${javamodules[@]}; do
 			if ! sudo git clone -b $branch ${basestring}/${module}.git ; then
 				echo "falling back to $defaultbranch branch for $module..."
 				if ! sudo git clone -b $defaultbranch ${basestring}/${module}.git ; then
-					# If we cannot find default branch at specifeid remote, fall back to OE git hub
-					if [ "$gitroot != "openeyes ]; then
-						echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
-						sudo git clone -b $defaultbranch ${basestring/$gitroot/openeyes}/${module}.git
+					# If we cannot find $defaultbranch, then fall back to repository's defualt branch (catches situation where default branch is not master)
+					echo "falling back to default branch for $module..."
+					if ! git clone ${basestring}/${module}.git ; then
+						# If we cannot find default branch at specifeid remote, fall back to OE git hub
+						if [ "$gitroot != "openeyes ]; then
+							echo "could not find $defaultbranch at $gitroot remote. Falling back to openeyes official repo"
+							sudo git clone -b $defaultbranch ${basestring/openeyes/openeyes}/${module}.git
+						fi
 					fi
 				fi
 			fi
