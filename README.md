@@ -123,7 +123,7 @@ physical server, and it is intended for non-development, and that your home dire
 4. Change to your home directory. Run: cd ~
 5. Clone the oe_installer repository to your home directory. Run: git clone https://github.com/openeyes/oe_installer.git
 6. Run: sudo oe_installer/install/install-system.sh
-7. Run: sudo oe_installer/install/install-oe.sh --live
+7. Run: oe_installer/install/install-oe.sh --live
 ```
 
 At this point you have a working server running on localhost (or your assigned IP address). You may wish to edit `/etc/apache2/sites-available/000-default.conf`
