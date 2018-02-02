@@ -1,9 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.require_version ">= 1.5"
+Vagrant.require_version ">= 2.0"
 
-PLUGINS = %w(vagrant-auto_network vagrant-vbguest vagrant-hostsupdater)
+PLUGINS = %w(vagrant-auto_network vagrant-hostsupdater vagrant-vbguest)
 
 PLUGINS.reject! { |plugin| Vagrant.has_plugin? plugin }
 
@@ -49,8 +49,23 @@ AutoNetwork.default_pool = "172.16.0.0/24"
 
 $script = <<SCRIPT
 cd /vagrant/install
+installparams="-f -d --accept"
+# copy ssh key(s) if exists
+# NOTE: Expects key to be called id_rsa. If using a custom name ssh file, also provide .ssh/config with "IdentityFile ~/.ssh/<cusom shh name>"
+if [ "$(ls -A .ssh/id*)" ]; then
+    sudo -H -u vagrant bash -c 'cp .ssh/* ~/.ssh 2>/dev/null || :'
+    installparams="$installparams -ssh"
+    if [ ! -f "/home/vagrant/.ssh/config" ]; then
+        sudo -H -u vagrant bash -c 'echo "IdentityFile ~/.ssh/id_rsa" > ~/.ssh/config'
+    fi
+	chmod 700 /home/vagrant/.ssh/id*
+	sudo -H -u vagrant bash -c '$(ssh-agent)  2>/dev/null'
+	# attempt ssh authentication and store key signature
+	sudo -H -u vagrant bash -c 'ssh -oStrictHostKeyChecking=no git@github.com -T'
+fi
 bash install-system.sh
-bash install-oe.sh -f -d --accept
+sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c 'echo "Install will use $INSTALL_PARAMS"'
+sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c '/vagrant/install/install-oe.sh $INSTALL_PARAMS'
 SCRIPT
 
 Vagrant.configure(2) do |config|
