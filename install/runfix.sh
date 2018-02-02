@@ -63,7 +63,7 @@ if [ $showhelp = 1 ]; then
     echo "  --no-migrate   : Do not run db migrations"
 	echo "  --no-dependencies  : Do not update composer or npm dependencies"
 	echo "  --no-eyedraw   : Do not (re)import eyedraw configuration"
-	echo "	--no-permissions : Do not reset file permissions"
+	echo "  --no-permissions : Do not reset file permissions"
 	echo ""
     exit 1
 fi
@@ -87,10 +87,17 @@ if [ ! "$env" = "VAGRANT" ]; then chown -R www-data:www-data index.php; fi
 fi
 
 if [ ! -f "protected/config/local/common.php" ]; then
-    if [ -d "/etc/openeyes/backup/config/" ] && [ "$resetconfig" = "0" ]; then
+    if [ -d "/etc/openeyes/backup/config/local" ] && [ "$resetconfig" = "0" ]; then
         echo "
 
-		*********** WARNING: Restoring backed up local configuration ... ***********
+		************************************************************************
+		************************************************************************
+		********* WARNING: Restoring backed up local configuration ... *********
+		*********                                                      *********
+		********* Remove /etc/openeyes/backup/config/local to prevent  *********
+		*********                  or use -ff flag                     *********
+		************************************************************************
+		************************************************************************
 
 		"
 		sudo mkdir -p protected/config/local
@@ -100,22 +107,14 @@ if [ ! -f "protected/config/local/common.php" ]; then
 		sudo mkdir -p protected/config/local
 		sudo cp -n protected/config/local.sample/common.sample.php protected/config/local/common.php
 		sudo cp -n protected/config/local.sample/console.sample.php protected/config/local/console.php
+
+		# Reset to default db credentials
+		# TODO: Find a better way to do this
+		sudo sed -i "s/'username' => 'root',/'username' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
+		sudo sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
     fi;
 
-	# Reset to default db credentials
-	# TODO: Find a better way to do this
-	sudo sed -i "s/'username' => 'root',/'username' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
-	sudo sed -i "s/'password' => '',/'password' => 'openeyes',/" /var/www/openeyes/protected/config/local/common.php
 fi;
-
-
-# Make sure vendor directory found/linked
-# if [ ! -d "/var/www/openeyes/protected/vendors" ]; then
-# 	echo Linking vendor framework
-# 	sudo ln -s /var/openeyes/vendor /var/www/openeyes/protected/vendors
-# 	sudo chown -R "$USER":www-data /var/www/openeyes/protected/vendors 2>/dev/null || :
-# 	if [ ! $? = 0 ]; then echo "unable to link vendors - this is expected for versions prior to v1.12"; fi
-# fi
 
 # update composer and npm dependencies
 if [ $composer == 1 ]; then
@@ -209,6 +208,9 @@ if [ $noperms = 0 ]; then
 	sudo chmod -R 774 /var/www/openeyes/protected/files
 
 	sudo chmod -R g+s /var/www/openeyes
+
+	sudo chown -R "$USER" ~/.config 2>/dev/null || :
+	sudo chown -R "$USER" ~/.composer 2>/dev/null || :
 fi
 
 if [ $buildassests = 1 ]; then

@@ -110,6 +110,41 @@ VM run the following command:
 ```
 
 
+# SSH usage with github
+## Provisioning vagrant from private repos
+If using the private repos, you will need to add your SSH key to install/.ssh *BEFORE* running `vagrant up`.
+
+Your SSH key should be named id_rsa, and it should be mapped to your gitgub user account (https://github.com/settings/keys).
+
+## Using SSH on a live install, or switching from HTTPS to SSH
+
+By Default, the installer will use HTTPS to connect to github. When using private repos this means that you will be prompted for your username and password when running git pull, push, etc. To avoid this, you can switch to using SSH, by performing the following steps
+
+### Setup SSH key
+*Note, you can ignore this section if you already provisioned your vagrant box with SSH (above)*
+
+1. Add an ssh key to your vagrant box (either copy an existing key to `~/.ssh`, or generate a new key by running `ssh-keygen -t rsa -b 4096`
+
+2. Add the following line to `~/.ssh/config`:
+`IdentityFile ~/.ssh/id_rsa`
+(if your ssh key is not named id_rsa, then substitue with correct name)
+
+3. go to https://github.com/settings/keys and add your public key to your github account (you can get the contents of your public key by running `cat ~/.ssh/id_rsa.pub`)
+
+
+
+*Note*: If you don't do the above, then every time you run a git pull, push or checkout it will ask you for your password for every module
+
+### Switch existing install to ssh
+To switch an existing installation from HTTPS to SSH, run `oe-checkout` with the `-ssh` switch.
+
+E.g., `oe-checkout master -ssh`. This will switch all git commands from https mode to ssh mode, and use your ssh key to identify you. You only need to do this once. From now on, all commands will default to SSH.
+
+To switc back to using HTTPS, simply run `oe-checkout` again with the `-https` switch
+
+### New (live) install with ssh
+`intall/install-oe.sh` can be run with a `-ssh` switch. This will use the installed ssh certificate and not prompt for any usernames or passwords.
+
 # Installing for live use
 
 This section assumes you are installing OpenEyes on a virtual machine, (other than one built by Vagrant), a cloud server (such as AWS) or a

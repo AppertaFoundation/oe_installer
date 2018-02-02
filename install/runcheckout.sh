@@ -234,18 +234,20 @@ if [ ! $usessh = $previousssh ]; then
 	  if [ ! "$module" = "openeyes" ]; then cd ..; fi
 	done
 
-	cd  /var/www/openeyes/protected/javamodules/
-	for module in ${javamodules[@]}; do
-	  if [ ! -d "$module" ]; then
-		  break
-	  else
-		   	echo "updating remote for $module"
-			cd $module;
-			# change the remote to new basestring
-	  		git remote set-url origin $basestring/$module.git
-			cd ..
-	  fi
-	done
+	if [ -d "/var/www/openeyes/protected/javamodules/" ]; then
+		cd  /var/www/openeyes/protected/javamodules/
+		for module in ${javamodules[@]}; do
+		  if [ ! -d "$module" ]; then
+			  break
+		  else
+			   	echo "updating remote for $module"
+				cd $module;
+				# change the remote to new basestring
+		  		git remote set-url origin $basestring/$module.git
+				cd ..
+		  fi
+		done
+	fi
 fi
 ##### END update remote #####
 

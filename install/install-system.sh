@@ -67,11 +67,11 @@ fi
 
 # SET UP SWAP SPACE
 if [ ! "$dependonly" = "1" ]; then
-    fallocate -l 1024M /swapfile
-    chmod 600 /swapfile
-    mkswap /swapfile
-    swapon /swapfile
-    echo /swapfile   none    swap    sw    0   0 >>/etc/fstab
+    fallocate -l 1024M /swapfile 2>/dev/null || :
+    chmod 600 /swapfile 2>/dev/null || :
+    mkswap /swapfile 2>/dev/null || :
+    swapon /swapfile 2>/dev/null || :
+    echo /swapfile   none    swap    sw    0   0 >>/etc/fstab 2>/dev/null || :
 
     sysctl vm.swappiness=10
     echo 'vm.swappiness = 10' >> /etc/sysctl.conf
@@ -79,6 +79,8 @@ fi
 
 echo Performing package updates
 apt-get -y update
+apt-get -y upgrade
+apt-get -y autoremove
 
 
 echo Installing required system packages
@@ -110,7 +112,7 @@ if [ ! "$dependonly" = "1" ]; then
 
 
     # Enable display_errors and error logging for PHP, plus configure timezone
-    mkdir /var/log/php
+    mkdir /var/log/php 2>/dev/null || :
     chown www-data /var/log/php
     sed -i "s/^display_errors = Off/display_errors = On/" /etc/php5/apache2/php.ini
     sed -i "s/^display_startup_errors = Off/display_startup_errors = On/" /etc/php5/apache2/php.ini

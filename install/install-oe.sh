@@ -293,13 +293,13 @@ fi
 if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
   sudo hostname OpenEyesVM
   sudo sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
-  sudo cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
+  cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
   # give vagrant extra permissions to make development easier
   sudo usermod -a -G www-data vagrant
   sudo usermod -a -G root vagrant
   # fix file access errors for vagrant user - for cache, etc (new files created by apache)
   sudo chmod g+w /etc/apache2/envvars
-  grep -q -e 'umask 001' /etc/apache2/envvars || sudo echo 'umask 001' >> /etc/apache2/envvars
+  grep -q -e "umask 001" /etc/apache2/envvars || sudo -u root bash -c 'echo "umask 001" >> /etc/apache2/envvars'
 fi
 
 # If we are on a live install, set the environment config accordingly
@@ -312,9 +312,12 @@ envtype=LIVE
 " >/etc/openeyes/env.conf
 fi
 
+# Copy sample configuration and fix some file permissions
+oe-fix --no-compile --no-restart --no-clear --no-assets --no-migrate --no-dependencies --no-eyedraw
+
 if [ ! $live = 1 ]; then
 
-    resetswitches="--no-migrate --no-fix --banner 'New openeyes installation - $branch'"
+    resetswitches='--no-migrate --no-fix --banner New\ openeyes\ installation\ -\ $branch"'
 
     if [ $genetics = 1 ]; then resetswitches=`$resetswitches --genetics-enable`; fi
 
