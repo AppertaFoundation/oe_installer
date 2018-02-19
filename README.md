@@ -14,7 +14,7 @@ This repository should be the only one checked out when building a new OpenEyes 
 
   1. [Installing for Development or testing - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox)
     * [Installing development environment on Mac OS X 10.6 or later hosts](#installing-development-environment-on-mac-os-x-106-or-later-hosts)
-    * [Installing for development on Windows 7 or later hosts](#installing-development-environment-on-windows-7-or-later-hosts)
+    * [Installing development environmant on Windows 7 or later hosts](#installing-development-environment-on-windows-7-or-later-hosts)
     * [Additional development tools](#additional-development-tools)
   2. [SSH usage with github](#ssh-usage-with-github)
     * [Provisioning vagrant from private repos](#Provisioning-vagrant-from-private-repos)
