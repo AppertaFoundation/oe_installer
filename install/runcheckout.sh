@@ -81,7 +81,7 @@ case $i in
     ;;
 	--ssh|-ssh) usessh=1
 	;;
-	--https|-https|--htps|-htps) usessh=0
+	--http|-http|--https|-https) usessh=0
 	;;
     --help) showhelp=1
     ;;
@@ -141,8 +141,8 @@ if [ $showhelp = 1 ]; then
     echo "                   - default is anonymous"
     echo "  -p<password>   : Use the specified <password> for connecting to github"
     echo "                   - default is to prompt"
-    echo "	-ssh		   : Use SSH protocol  - default is https"
-	echo "	-https		   : Use HTTPS protocol  - default is https"
+    echo "  -ssh		   : Use SSH protocol  - default is https"
+	echo "  -https		   : Use HTTPS protocol  - default is https"
 	echo ""
     exit 1
 fi
@@ -195,11 +195,18 @@ if [ $usessh = 1 ]; then
 
 fi
 
-git config --global core.fileMode false 2>/dev/null
-git config core.fileMode false 2>/dev/null
+if [ ! $usessh = $previousssh ]; then
+	cd /vagrant/install
+	# change the remote of the installer to the new basestring
+	echo "updating remote for installer"
+	git remote set-url origin $basestring/oe_installer.git
+fi
 
+git config --global core.fileMode false 2>/dev/null
 
 cd /var/www/openeyes/protected/modules 2>/dev/null
+
+git config core.fileMode false 2>/dev/null
 
 # Add sample DB to checkout if it exists or if --sample has been set
 if [[ -d "sample" ]] || [[ $sample = 1 ]]; then modules=(${modules[@]} sample); fi
@@ -404,6 +411,7 @@ for module in ${modules[@]}; do
 		if [ ! "$nopull" = "1" ]; then
 			echo "Pulling latest changes: "
 			git pull
+			git submodule update
 		fi
 	fi
 

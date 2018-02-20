@@ -5,7 +5,7 @@ dir=$PWD
 cd /vagrant/install
 
 printf "\e[32mcheck for installer updates: \e[0m"
-sudo git pull
+git pull
 
 bash update-oe-tools.sh
 
