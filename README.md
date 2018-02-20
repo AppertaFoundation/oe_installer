@@ -13,10 +13,10 @@ This repository should be the only one checked out when building a new OpenEyes 
 **Index:**
 
   1. [Installing for Development or testing - using Vagrant and Virtual Box](#installing-for-development-using-vagrant-and-virtualbox)
-    * [Installing for Mac OS X 10.6 or later](#installing-for-mac-os-x-106-or-later)
-    * [Installing for Windows 7 or later](#installing-for-windows-7-or-later)
+    * [Installing development environment on Mac OS X 10.6 or later hosts](#installing-development-environment-on-mac-os-x-106-or-later-hosts)
+    * [Installing development environmant on Windows 7 or later hosts](#installing-development-environment-on-windows-7-or-later-hosts)
     * [Additional development tools](#additional-development-tools)
-  2. [SSH usage with github](#SSH-usage-with-github)
+  2. [SSH usage with github](#ssh-usage-with-github)
     * [Provisioning vagrant from private repos](#Provisioning-vagrant-from-private-repos)
     * [Using SSH on a live install, or switching from HTTPS to SSH](#Using-SSH-on-a-live-install-or-switching-from-HTTPS-to-SSH)
         * [Setup SSH key](#setup-ssh-key)
@@ -39,7 +39,7 @@ The default development setup uses a Mac OSX (preferred) or Windows host, and ru
 + Forwards port `3333` on the host to port `3306` on the VM (for host access to the VM's MySQL database)
 
 
-### Installing for Mac OS X 10.6 or later
+### Installing development environment on Mac OS X 10.6 or later hosts
 
 **NOTE:** These instructions assume you are installing in to a directory called ~/openeyes on the host. You may change this path as you see fit.
 
@@ -52,8 +52,9 @@ The default development setup uses a Mac OSX (preferred) or Windows host, and ru
 #### Steps
 
 1. Install Vagrant, VirtualBox and Git, following default install instructions from the above links.
-2. From a terminal window, change to your home directory. Run: `cd ~``
-3. Clone OpenEyes/oe_installer to a directory of your choice. Run: `git clone https://github.com/openeyes/oe_installer.git`
+2. From a terminal window, change to your home directory. Run: `cd ~`
+3. Clone OpenEyes/oe_installer to a directory of your choice. Run: `git clone git@github.com:openeyes/oe_installer.git` 
+    3.1 (note, you will need an SSH key configured first - see [Setup SSH Key](#setup-ssh-key). Alternativey you can use `git clone https://github.com/openeyes/oe_installer` and then switch to SSH later on
 4. Create the virtual server from your project directory. Run: `cd ~/oe_installer && vagrant up`
 5. It will take 5 - 10 minutes for the install to complete (depending on the speed of your internet connection)
 6. At this point you should have a fully working OpenEyes server, reachable at http://localhost:8888
@@ -61,7 +62,7 @@ The default development setup uses a Mac OSX (preferred) or Windows host, and ru
 
 
 
-### Installing for Windows 7 or later
+### Installing development environment on Windows 7 or later hosts
 > **IMPORTANT:** For this installer to run, the vagrant up command must be issued from a command window with <u>elevated privileges</u> (admin command prompt). This is due to a limitation with VirtualBox not being able to create symbolic links to shared folders unless it has admin rights. Failure to do this will result in unpredictable consequences!
 
 **NOTE:** These instructions assume you are installing in to a directory called `C:\oe_installer` on the host. You may change this path as you see fit. However, please note that Windows struggles with filenames longer than 275 characters on file shares, so keep this path below 30 characters. You can map a longer pathname to a drive letter using the subst command.
@@ -78,7 +79,8 @@ The default development setup uses a Mac OSX (preferred) or Windows host, and ru
 2. From an ADMINISTRATIVE command prompt window, change to your root directory.
     Run: `cd c:\`
 3. Clone OpenEyes/oe_installer.
-    Run: `git clone https://github.com/openeyes/oe_installer.git`
+    Run: `git clone git@github.com:openeyes/oe_installer.git` 
+    3.1 (note, you will need an SSH key configured first - see [Setup SSH Key](#setup-ssh-key). Alternativey you can use `git clone https://github.com/openeyes/oe_installer` and then switch to SSH later on
 4. Change to the newly created oe_installer directory.
     Run: `cd oe_installer`
 5. Create the virtual server from your project directory.
