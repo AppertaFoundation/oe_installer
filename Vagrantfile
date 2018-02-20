@@ -79,8 +79,15 @@ Vagrant.configure(2) do |config|
   config.vm.network :forwarded_port, host: 3333, guest: 3306
   config.vm.network "private_network", :auto_network => true
 
-  config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true #, type: 'nfs', type: "smb", mount_options: ["vers=2.1"]
-  config.vm.synced_folder ".", "/vagrant" #, type: 'nfs' #, type: "smb", mount_options: ["vers=2.1"]  #, type: "nfs"
+	# Setup synced folders - MacOS uses nfs and shares www to host. Windows uses VirtualBox default and www foler lives internally (use add-samba-share.sh to share www folder to Windows host)
+	if OS.unix?
+		config.vm.synced_folder ".", "/vagrant", type: 'nfs'
+		config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true, type: 'nfs'
+
+	elsif OS.windows?
+		config.vm.synced_folder ".", "/vagrant"
+
+	end
 
   # Prefer VMWare fusion before VirtualBox
   config.vm.provider "vmware_fusion"
