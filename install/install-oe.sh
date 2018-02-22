@@ -248,7 +248,7 @@ sudo chmod -R g+s .
 if [ ! $live = 1 ]; then checkoutparams="$checkoutparams --sample"; echo "Sample database wil be installed."; fi
 
 echo calling oe-checkout with $checkoutparams
-oe-checkout $branch -f --no-migrate --no-summary --no-fix $checkoutparams
+bash /vagrant/install/runcheckout.sh $branch -f --no-migrate --no-summary --no-fix $checkoutparams
 
 
 cd /var/www/openeyes/protected

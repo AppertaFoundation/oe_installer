@@ -4,11 +4,49 @@ dir=$PWD
 
 cd /vagrant/install
 
-printf "\e[32minstaller: \e[0m"
-git pull
+usessh=0
+sshidentity=""
+
+# Read in stored git config (username, root, usessh, etc)
+source /etc/openeyes/git.conf
+
+changesshid=0
+args=''
+# Process command line inputs
+for i in "$@"
+do
+case $i in
+    -ssh|--ssh) usessh=1 #; params="$params $i"
+    ;;
+    --sshidentity|-sshidentity) changesshid=1 #; params="$params $i"
+    ;;
+    *)  if [ ! -z "$i" ]; then
+            if [ "$changesshid" = "1" ]; then
+                sshidentity=$i;
+                changesshid=0
+            else
+                params="$params $i"
+            fi
+        fi
+    ;;
+esac
+done
+
+printf "\e[32mcheck for installer updates: \e[0m"
+
+if [ $usessh = 1 ]; then
+    ## If no sshidentity has been set previously, then use id_rsa
+    if [ -z $sshidentity ]; then
+        sshidentity=$HOME'/.ssh/id_rsa';
+        #params="$params --sshidentity $sshidentity"
+    fi
+    sshcommand='ssh-add '$sshidentity'; git pull'
+    sudo ssh-agent bash -c "$sshcommand"
+else
+    sudo git pull;
+fi
 
 bash update-oe-tools.sh
 
-bash runupdate.sh "$@"
-
+bash runupdate.sh $params
 cd "$dir"

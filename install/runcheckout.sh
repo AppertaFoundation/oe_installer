@@ -24,6 +24,8 @@ fixparams=""
 showhelp=0
 sample=0
 sampleonly=0
+sshidentity=""
+changesshid=0
 
 # Read in stored git config (username, root, usessh, etc)
 source /etc/openeyes/git.conf
@@ -89,11 +91,16 @@ case $i in
 	;;
 	--sample-only) sampleonly=1
 	;;
+	--sshidentity|-sshidentity) changesshid=1
+	;;
 	*)  if [ ! -z "$i" ]; then
 			if [ "$customgitroot" = "1" ]; then
-				gitroot=$i;
+				gitroot=$i
 				customgitroot=0
 				## Set root path to repo
+			elif [ "$changesshid" = "1" ]; then
+                sshidentity=$i
+                changesshid=0
 			elif [ "$branch" == "master" ]; then
 				branch=$i
 			else echo "Unknown command line: $i"
@@ -166,7 +173,8 @@ fi
 # store username and git settings out to disk
 echo "username=$username
 gitroot=$gitroot
-usessh=$usessh" | sudo tee /etc/openeyes/git.conf > /dev/null
+usessh=$usessh
+sshidentity=$sshidentity" | sudo tee /etc/openeyes/git.conf > /dev/null
 
 # Set to cache password in memory (should only ask once per day or each reboot)
 git config --global credential.helper 'cache --timeout=86400'
