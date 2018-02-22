@@ -176,6 +176,8 @@ cd /var/www/openeyes/protected/modules
 
 # Pull the core
 git pull
+git submodule init
+git submodule update
 
 # pull the php modules
 
@@ -191,6 +193,8 @@ for module in ${modules[@]}; do
                 git reset --hard
             fi
     		git pull
+			git submodule init
+			git submodule update
     	fi
         cd ..
   fi
@@ -211,6 +215,8 @@ for module in ${javamodules[@]}; do
                 git reset --hard
             fi
             git pull
+			git submodule init
+			git submodule update
         fi
       fi
 done
