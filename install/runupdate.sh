@@ -94,7 +94,7 @@ if [ "$force" = 0 ]; then
 
 			# check if this is a git repo
 			if [ -d ".git" ] || [ "$module" = "openeyes" ]; then
-					git diff --quiet
+					git diff --quiet --ignore-space-at-eol -b --ignore-blank-lines --ignore-submodules
 					if [ ! $? = 0 ]; then
 					  changes=1
 					  modulelist="$modulelist $module"

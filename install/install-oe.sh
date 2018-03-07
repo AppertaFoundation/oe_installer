@@ -317,7 +317,7 @@ oe-fix --no-compile --no-restart --no-clear --no-assets --no-migrate --no-depend
 
 if [ ! $live = 1 ]; then
 
-    resetswitches='--no-migrate --no-fix --banner New\ openeyes\ installation\ -\ $branch"'
+    resetswitches=`--no-migrate --no-fix --banner "New openeyes installation - $branch"`
 
     if [ $genetics = 1 ]; then resetswitches=`$resetswitches --genetics-enable`; fi
 
