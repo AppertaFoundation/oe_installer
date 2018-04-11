@@ -49,6 +49,7 @@ if [ ! $remove = 1 ]; then
     sudo sed -i "s#'OphInGeneticresults',\*/#'OphInGeneticresults',#" /var/www/openeyes/protected/config/local/common.php
 else
     ## Disable genetics modules
+	echo "disabling genetics modules..."
     if grep -q "/\*'Genetics'" /var/www/openeyes/protected/config/local/common.php 2>/dev/null ; then
         echo "genetics already disabled"
     else
