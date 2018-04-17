@@ -147,7 +147,7 @@ cd /var/www/openeyes/protected/javamodules/IOLMasterImport
 sudo rm -rf dist/lib 2>/dev/null || :
 sudo mkdir -p dist
 sudo ln -s ../lib ./dist/lib
-if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
+if [ ! $? = 0 ]; then echo "***** FAILED TO COMPLILE ******)"; fi
 
 # Compile IOLImporter
 ##TODO: When we have more java modules, replace with a generic compilation model
