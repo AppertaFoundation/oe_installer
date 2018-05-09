@@ -69,7 +69,7 @@ sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c '/vagrant/install/ins
 SCRIPT
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "generic/ubuntu1604"
   config.vm.box_check_update = false
 
   config.vm.hostname = "openeyes.vm"
@@ -133,7 +133,7 @@ Vagrant.configure(2) do |config|
 
   # Hyper-V
   config.vm.provider "hyperv" do |h, override|
-	override.vm.box = "karlatkinson/hyperv-ubuntu-14"
+	#override.vm.box = "generic/ubuntu1604"
 
 	# manual ip
 	override.vm.provision "shell",
@@ -149,6 +149,16 @@ Vagrant.configure(2) do |config|
 	h.memory = 768
 	h.maxmemory = mem
 	h.ip_address_timeout = 200
+    h.vm_integration_services = {
+      guest_service_interface: true,
+      heartbeat: true,
+      key_value_pair_exchange: true,
+      shutdown: true,
+      time_synchronization: true,
+      vss: true
+    }
+    h.auto_start_action = "Nothing"
+    h.auto_stop_action = "ShutDown"
   end
 
   config.vm.provision "shell", inline: $script, keep_color: true

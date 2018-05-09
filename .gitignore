@@ -4,3 +4,4 @@ npm-debug.log
 www
 .vscode/*
 install/dist/*
+install/.ssg/*

@@ -291,7 +291,7 @@ fi
 # If we are on a vagrant box, set it to DEV/VAGRANT
 
 if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-  sudo hostname OpenEyesVM
+  #sudo hostname OpenEyesVM
   sudo sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
   cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
   # give vagrant extra permissions to make development easier
@@ -317,9 +317,9 @@ oe-fix --no-compile --no-restart --no-clear --no-assets --no-migrate --no-depend
 
 if [ ! $live = 1 ]; then
 
-    resetswitches=`--no-migrate --no-fix --banner "New openeyes installation - $branch"`
+    resetswitches='--no-migrate --no-fix --banner "New openeyes installation - $branch"'
 
-    if [ $genetics = 1 ]; then resetswitches=`$resetswitches --genetics-enable`; fi
+    if [ $genetics = 1 ]; then resetswitches='$resetswitches --genetics-enable'; fi
 
     oe-reset $resetswitches
 
