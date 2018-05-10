@@ -86,7 +86,7 @@ Vagrant.configure(2) do |config|
 
 	elsif OS.windows?
 		config.vm.synced_folder ".", "/vagrant"
-
+        #config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true
 	end
 
   # Prefer VMWare fusion before VirtualBox
@@ -118,8 +118,10 @@ Vagrant.configure(2) do |config|
   config.vm.provider "virtualbox" do |v|
     v.memory = mem
     v.gui = true
-	v.cpus = 1
+	v.cpus = 2
 	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
+    v.customize ["modifyvm", :id, "--vram", "56"]
+    v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
 
   end
 

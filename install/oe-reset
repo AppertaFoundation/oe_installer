@@ -21,6 +21,7 @@ checkoutparams="--sample-only --no-fix"
 cleanbase=0
 migrateparams="-q"
 nofix=0
+dwservrunning=0
 
 # Read in stored git config (username, root, usessh, etc)
 #source /etc/openeyes/git.conf
@@ -122,12 +123,15 @@ dir=$PWD
 
 # add -p to front of password (deals with blank password)
 if [ ! -z $dbpassword ]; then
-	dbpassword=$dbpassword
+	dbpassword="-p$dbpassword"
 fi
 
-echo "Stopping dicom-file-watcher..."
-sudo service dicom-file-watcher stop
-if [ ! $? = 0 ]; then echo "dicom-file-watcher not running"; fi
+
+if ps ax | grep -v grep | grep run-dicom-service.sh > /dev/null; then
+		dwservrunning=1
+		echo "Stopping dicom-file-watcher..."
+		sudo service dicom-file-watcher stop
+fi
 
 if [ ! "$branch" = "0" ]; then
 	## Checkout new sample database branch
@@ -279,8 +283,11 @@ if [ ! $nofix = 1 ]; then
 	oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer --no-permissions
 fi
 
-echo "Starting dicom-file-watcher..."
-sudo service dicom-file-watcher start
+# restart the service if we stopped it
+if [ $dwservrunning = 1 ]; then
+	echo "Restarting dicom-file-watcher..."
+	sudo service dicom-file-watcher start
+fi
 
 cd "$dir"
 printf "\e[42m\e[97m  RESET COMPLETE  \e[0m \n"
