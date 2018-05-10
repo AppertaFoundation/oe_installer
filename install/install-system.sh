@@ -129,6 +129,8 @@ if [ ! "$dependonly" = "1" ]; then
 	sed -i "s/;error_log = php_errors.log/error_log = \/var\/log\/php_errors.log/" /etc/php/5.6/cli/php.ini
 	sed -i "s/^;date.timezone =/date.timezone = \"Europe\/London\"/" /etc/php/5.6/cli/php.ini
 
+	sudo timedatectl set-timezone Europe/London
+
 	a2enmod rewrite
     cp /vagrant/install/bashrc /etc/bash.bashrc
     source /vagrant/install/bashrc
