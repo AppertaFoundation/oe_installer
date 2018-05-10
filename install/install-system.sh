@@ -81,6 +81,7 @@ fi
 sudo add-apt-repository ppa:ondrej/php -y
 sudo add-apt-repository ppa:openjdk-r/ppa -y
 
+
 echo Performing package updates
 sudo apt-get -y update
 sudo apt-get -y upgrade
@@ -92,7 +93,7 @@ echo Installing required system packages
 # debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password password password'
 # debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again password password'
 
-sudo apt-get install -y git-core software-properties-common php5.6 imagemagick libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre libgamin0 gamin openjdk-7-jdk xfonts-base ruby ant libbatik-java libreoffice-core libreoffice-common libreoffice-writer libapache2-mod-php5.6 php5.6-cli php5.6-mysql php5.6-ldap php5.6-curl php5.6-xsl php5.6-gd php-imagick php5.6-mcrypt php5.6-imagick
+sudo apt-get install -y git-core software-properties-common php5.6 imagemagick libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre libgamin0 gamin openjdk-7-jdk openjdk-8-jdk xfonts-base ruby ant libbatik-java libreoffice-core libreoffice-common libreoffice-writer libapache2-mod-php5.6 php5.6-cli php5.6-mysql php5.6-ldap php5.6-curl php5.6-xsl php5.6-gd php-imagick php5.6-mcrypt php5.6-imagick
 
 # install node.js and npm
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
@@ -134,9 +135,14 @@ if [ ! "$dependonly" = "1" ]; then
 
     # Bind mysql to accept connections from remote servers
     ## TODO: only do this for vagrant environments
-    sed -i "s/\s*bind-address\s*=\s*127\.0\.0\.1/bind-address    = 0.0.0.0/" /etc/mysql/my.cnf
-	sed -i "s/\s*bind-address\s*=\s*127\.0\.0\.1/bind-address    = 0.0.0.0/" /etc/mysql/mariadb.conf.d/50-server.cnf
+    sudo sed -i "s/\s*bind-address\s*=\s*127\.0\.0\.1/bind-address    = 0.0.0.0/" /etc/mysql/my.cnf
+	sudo sed -i "s/\s*bind-address\s*=\s*127\.0\.0\.1/bind-address    = 0.0.0.0/" /etc/mysql/mariadb.conf.d/50-server.cnf
     sudo service mysql restart
+
+	# disable terminal bell on tab / delete errors
+	sudo sed -i "s/# set bell-style none/set bell-style none/" /etc/inputrc
+	sudo sed -i "s/# set bell-style visible/set bell-style visible/" /etc/inputrc
+
 fi
 
 # Install php composer

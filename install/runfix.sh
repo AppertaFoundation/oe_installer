@@ -156,7 +156,7 @@ if [ $compile = 1 ]; then
   Compiling IOLMAsterImport. Please wait....
   "
   sudo ./compile.sh > /dev/null 2>&1
-  if [ ! $? = 0 ]; then echo "Failure is expeced in pre v1.12 releases (where IOLMasterImport does not exist)"; fi
+  if [ ! $? = 0 ]; then echo "COMPILATION FAILURE - Check the logs"; fi
 fi
 
 # restart the service if we stopped it
