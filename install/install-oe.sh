@@ -309,7 +309,7 @@ if [ $live = 1 ]; then
 # envtype can be one of LIVE, AWS or VAGRANT
 env=LIVE
 envtype=LIVE
-" | sudo tee /etc/apache2/sites-available/000-default.conf >/dev/null
+" | sudo tee /etc/openeyes/env.conf >/dev/null
 fi
 
 # Copy sample configuration and fix some file permissions
