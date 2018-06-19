@@ -20,3 +20,7 @@ Add-NetNatStaticMapping -NatName “VMSwitchNat” -Protocol TCP -ExternalIPAddr
 Add-NetNatStaticMapping -NatName “VMSwitchNat” -Protocol TCP -ExternalIPAddress 0.0.0.0 -InternalIPAddress 172.16.0.2 -InternalPort 22 -ExternalPort 2222
 
 Add-NetNatStaticMapping -NatName “VMSwitchNat” -Protocol TCP -ExternalIPAddress 0.0.0.0 -InternalIPAddress 172.16.0.2 -InternalPort 3306 -ExternalPort 3333
+
+To enable Linux Virtual Tools:
+
+# apt-get install linux-tools-virtual linux-cloud-tools-virtual
