@@ -4,11 +4,13 @@
 if [[ `lsb_release -rs` == "14.04" ]]; then
     # Ubuntu 14.04 uses upstart / init.d
     sudo cp -f /vagrant/install/dicom-file-watcher.conf /etc/init/
-    sudo cp -f /vagrant/install/dicom /etc/cron.d/
 else
     # Ubuntu 14.10 and higher uses systemd
     sudo cp -f /vagrant/install/dicom-file-watcher.service /etc/systemd/system/
 fi
+
+sudo cp -f /vagrant/install/dicom /etc/cron.d/
+sudo chmod 0644 /etc/cron.d/dicom
 
 sudo cp -f /vagrant/install/run-dicom-service.sh /usr/local/bin
 sudo chmod +x /usr/local/bin/run-dicom-service.sh
