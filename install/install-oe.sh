@@ -360,6 +360,10 @@ if [ ! "$live" = "1" ]; then
 	sudo service apache2 restart
 fi
 
+
+# copy cron tasks
+sudo cp -f /vagrant/install/hotlist /etc/cron.d/
+
 echo ""
 oe-which
 
