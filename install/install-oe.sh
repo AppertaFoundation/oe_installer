@@ -365,6 +365,7 @@ fi
 # Copy DICOM related files in place as required
 sudo cp -f /vagrant/install/dicom-file-watcher.conf /etc/init/
 sudo cp -f /vagrant/install/dicom /etc/cron.d/
+sudo cp -f /vagrant/install/hotlist /etc/cron.d/
 sudo cp -f /vagrant/install/run-dicom-service.sh /usr/local/bin
 sudo chmod +x /usr/local/bin/run-dicom-service.sh
 
