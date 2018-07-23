@@ -364,6 +364,8 @@ fi
 # copy cron tasks
 sudo cp -f /vagrant/install/hotlist /etc/cron.d/
 sudo chmod 0644 /etc/cron.d/hotlist
+sudo cp -f /vagrant/install/eventimage /etc/cron.d/
+sudo chmod 0644 /etc/cron.d/eventimage
 
 echo ""
 oe-which
