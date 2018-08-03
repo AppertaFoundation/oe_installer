@@ -3,7 +3,7 @@ source /etc/openeyes/modules.conf
 dir=$PWD
 
 # Process commandline parameters
-gitroot="openeyes"
+gitroot="appertafoundation"
 defaultbranch=master
 force=0
 killmodules=0
