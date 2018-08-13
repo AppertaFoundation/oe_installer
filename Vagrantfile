@@ -3,7 +3,7 @@
 
 Vagrant.require_version ">= 2.0"
 
-PLUGINS = %w(vagrant-auto_network vagrant-hostsupdater vagrant-vbguest)
+PLUGINS = %w(vagrant-auto_network vagrant-hostsupdater vagrant-vbguest vagrant-faster)
 
 PLUGINS.reject! { |plugin| Vagrant.has_plugin? plugin }
 
@@ -85,15 +85,15 @@ Vagrant.configure(2) do |config|
 		config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true, type: 'nfs'
 
 	elsif OS.windows?
-		config.vm.synced_folder ".", "/vagrant"
-        #config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true
-	end
+        config.vm.synced_folder ".", "/vagrant"
+		config.vm.synced_folder "./www", "/var/www", create: true
+    end
 
   # Prefer VMWare fusion before VirtualBox
   config.vm.provider "vmware_fusion"
   config.vm.provider "virtualbox"
 
-	# Give VM 1/4 system memory or 768MB, whichever is greater
+	# Give VM 1/4 system memory or 768MB, whichever is greater (not used in VirtualBox as that used vagrant-faster plugin)
 	if OS.mac?
 		# sysctl returns Bytes and we need to convert to MB
 		mem = `sysctl -n hw.memsize`.to_i / 1024
@@ -116,13 +116,13 @@ Vagrant.configure(2) do |config|
 
   # VirtualBox
   config.vm.provider "virtualbox" do |v|
-    v.memory = mem
     v.gui = true
-	v.cpus = 2
 	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
     v.customize ["modifyvm", :id, "--vram", "56"]
     v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
-
+    v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant-root", "1"]
+    v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/var/www/", "1"]
+    v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant/", "1"]
   end
 
   # VMWare Fusion

@@ -83,6 +83,8 @@ sudo add-apt-repository ppa:openjdk-r/ppa -y
 
 
 echo Performing package updates
+# ffmpeg isn't supported on trusty, so a third party ppa is required
+add-apt-repository ppa:mc3man/gstffmpeg-keep
 sudo apt-get -y update
 sudo apt-get -y upgrade
 sudo apt-get -y autoremove
@@ -93,7 +95,7 @@ echo Installing required system packages
 # debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password password password'
 # debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again password password'
 
-sudo apt-get install -y git-core software-properties-common php5.6 php5.6-mbstring imagemagick libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre libgamin0 gamin openjdk-7-jdk openjdk-8-jdk xfonts-base ruby ant libbatik-java libreoffice-core libreoffice-common libreoffice-writer libapache2-mod-php5.6 php5.6-cli php5.6-mysql php5.6-ldap php5.6-curl php5.6-xsl php5.6-gd php-imagick php5.6-mcrypt php5.6-imagick
+sudo apt-get install -y git-core software-properties-common php5.6 php5.6-mbstring imagemagick libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre libgamin0 gamin openjdk-7-jdk openjdk-8-jdk xfonts-base ruby ant libbatik-java libreoffice-core libreoffice-common libreoffice-writer libapache2-mod-php5.6 php5.6-cli php5.6-mysql php5.6-ldap php5.6-curl php5.6-xsl php5.6-gd php-imagick php5.6-mcrypt php5.6-imagick ffmpeg
 
 # install node.js and npm
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
