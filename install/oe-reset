@@ -2,7 +2,7 @@
 
 # DB connection variables
 dbuser="root"
-dbpassword="password"
+dbpassword=""
 
 # Process commandline parameters
 
@@ -21,6 +21,7 @@ checkoutparams="--sample-only --no-fix"
 cleanbase=0
 migrateparams="-q"
 nofix=0
+dwservrunning=0
 
 # Read in stored git config (username, root, usessh, etc)
 #source /etc/openeyes/git.conf
@@ -120,29 +121,17 @@ fi
 
 dir=$PWD
 
-# # Create correct user string to pass to github
-# if [ ! -z $username ]; then
-#     if [ ! -z $pass ]; then
-# 		sshuserstring="$username"
-#         httpuserstring="${username}:${pass}@"
-#     else
-# 		sshuserstring="$username"
-#         httpuserstring="${username}@"
-#     fi
-# fi
-#
-# # Set base url string for cloning all repos
-# basestring="https://${httpuserstring}github.com/$gitroot"
-#
-# # If using ssh, change the basestring to use ssh format
-# if [ $usessh = 1 ]; then
-# 	basestring="git@github.com:$gitroot"
-# fi
+# add -p to front of password (deals with blank password)
+if [ ! -z $dbpassword ]; then
+	dbpassword="-p$dbpassword"
+fi
 
 
-echo "Stopping dicom-file-watcher..."
-sudo service dicom-file-watcher stop
-if [ ! $? = 0 ]; then echo "dicom-file-watcher not running"; fi
+if ps ax | grep -v grep | grep run-dicom-service.sh > /dev/null; then
+		dwservrunning=1
+		echo "Stopping dicom-file-watcher..."
+		sudo service dicom-file-watcher stop
+fi
 
 if [ ! "$branch" = "0" ]; then
 	## Checkout new sample database branch
@@ -162,7 +151,7 @@ grant all privileges on openeyes.* to 'openeyes'@'%' identified by 'openeyes';
 flush privileges;
 " > /tmp/openeyes-mysql-create.sql
 
-mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-create.sql
+sudo mysql -u $dbuser $dbpassword < /tmp/openeyes-mysql-create.sql
 rm /tmp/openeyes-mysql-create.sql
 
 if [ $nofiles = "0" ]; then
@@ -173,7 +162,7 @@ fi
 
 if [ $cleanbase = "0" ]; then
 	echo "Re-importing database"
-	mysql -u $dbuser "-p$dbpassword" -D openeyes < openeyes_sample_data.sql
+	sudo mysql -u $dbuser $dbpassword -D openeyes < openeyes_sample_data.sql
 fi
 
 # Force default institution code to match common.php
@@ -188,7 +177,7 @@ if [ ! -z $icode ]; then
 
 	echo "UPDATE institution SET remote_id = '$icode' WHERE id = 1;" > /tmp/openeyes-mysql-institute.sql
 
-	mysql -uroot "-ppassword" -D openeyes < /tmp/openeyes-mysql-institute.sql
+	sudo mysql -u $dbuser $dbpassword -D openeyes < /tmp/openeyes-mysql-institute.sql
 
 	rm /tmp/openeyes-mysql-institute.sql
 fi
@@ -204,7 +193,7 @@ if [ $demo = "1" ]; then
 	do
 		if [[ $f == *.sql ]]; then
 			echo "importing $f"
-			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+			sudo mysql -u $dbuser $dbpassword -D openeyes < $f
 		elif [[ $f == *.sh ]]; then
 			echo "running $f"
 			sudo bash "./$f"
@@ -231,7 +220,7 @@ if [ $demo = "1" ]; then
 	do
 		if [[ $f == *.sql ]]; then
 			echo "importing $f"
-			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+			sudo mysql -u $dbuser $dbpassword -D openeyes < $f
 		elif [[ $f == *.sh ]]; then
 			echo "running $f"
 			sudo bash "./$f"
@@ -250,7 +239,7 @@ if grep -q "'Genetics'," /var/www/openeyes/protected/config/local/common.php && 
     do
 		if [[ $f == *.sql ]]; then
 			echo "importing $f"
-			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+			sudo mysql -u $dbuser $dbpassword -D openeyes < $f
 		elif [[ $f == *.sh ]]; then
 			echo "running $f"
 			sudo bash "./$f"
@@ -267,7 +256,7 @@ if [ ! $nobanner = "1" ]; then
 	UPDATE openeyes.setting_installation s SET s.value='$bannertext' WHERE s.key='watermark';
 	" > /tmp/openeyes-mysql-setbanner.sql
 
-	sudo mysql -u $dbuser "-p$dbpassword" < /tmp/openeyes-mysql-setbanner.sql
+	sudo mysql -u $dbuser $dbpassword < /tmp/openeyes-mysql-setbanner.sql
 	sudo rm /tmp/openeyes-mysql-setbanner.sql
 fi
 
@@ -282,7 +271,7 @@ if [ $demo = "1" ]; then
     do
 		if [[ $f == *.sql ]]; then
 			echo "importing $f"
-			sudo mysql -u $dbuser "-p$dbpassword" -D openeyes < $f
+			sudo mysql -u $dbuser $dbpassword -D openeyes < $f
 		elif [[ $f == *.sh ]]; then
 			echo "running $f"
 			sudo bash "./$f"
@@ -294,8 +283,11 @@ if [ ! $nofix = 1 ]; then
 	oe-fix --no-compile --no-migrate --no-warn-migrate --no-restart --no-composer --no-permissions
 fi
 
-echo "Starting dicom-file-watcher..."
-sudo service dicom-file-watcher start
+# restart the service if we stopped it
+if [ $dwservrunning = 1 ]; then
+	echo "Restarting dicom-file-watcher..."
+	sudo service dicom-file-watcher start
+fi
 
 cd "$dir"
 printf "\e[42m\e[97m  RESET COMPLETE  \e[0m \n"

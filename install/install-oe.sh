@@ -291,7 +291,7 @@ fi
 # If we are on a vagrant box, set it to DEV/VAGRANT
 
 if [ `grep -c '^vagrant:' /etc/passwd` = '1' ]; then
-  sudo hostname OpenEyesVM
+  #sudo hostname OpenEyesVM
   sudo sed -i "s/envtype=AWS/envtype=VAGRANT/" /etc/openeyes/env.conf
   cp -f /vagrant/install/bashrc /home/vagrant/.bashrc
   # give vagrant extra permissions to make development easier
@@ -317,9 +317,9 @@ oe-fix --no-compile --no-restart --no-clear --no-assets --no-migrate --no-depend
 
 if [ ! $live = 1 ]; then
 
-    resetswitches=`--no-migrate --no-fix --banner "New openeyes installation - $branch"`
+    resetswitches='--no-migrate --no-fix --banner "New openeyes installation - $branch"'
 
-    if [ $genetics = 1 ]; then resetswitches=`$resetswitches --genetics-enable`; fi
+    if [ $genetics = 1 ]; then resetswitches='$resetswitches --genetics-enable'; fi
 
     oe-reset $resetswitches
 
@@ -361,18 +361,11 @@ if [ ! "$live" = "1" ]; then
 fi
 
 
-
-# Copy DICOM related files in place as required
-sudo cp -f /vagrant/install/dicom-file-watcher.conf /etc/init/
-sudo cp -f /vagrant/install/dicom /etc/cron.d/
-sudo cp -f /vagrant/install/run-dicom-service.sh /usr/local/bin
-sudo chmod +x /usr/local/bin/run-dicom-service.sh
-
-sudo id -u iolmaster &>/dev/null || sudo useradd iolmaster -s /bin/false -m
-sudo mkdir -p /home/iolmaster/test
-sudo mkdir -p /home/iolmaster/incoming
-sudo chown iolmaster:www-data /home/iolmaster/*
-sudo chmod 775 /home/iolmaster/*
+# copy cron tasks
+sudo cp -f /vagrant/install/hotlist /etc/cron.d/
+sudo chmod 0644 /etc/cron.d/hotlist
+sudo cp -f /vagrant/install/eventimage /etc/cron.d/
+sudo chmod 0644 /etc/cron.d/eventimage
 
 echo ""
 oe-which

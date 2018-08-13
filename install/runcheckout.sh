@@ -419,6 +419,7 @@ for module in ${modules[@]}; do
 		if [ ! "$nopull" = "1" ]; then
 			echo "Pulling latest changes: "
 			git pull
+			git submodule init
 			git submodule update
 		fi
 	fi
