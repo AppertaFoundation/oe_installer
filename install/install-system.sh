@@ -84,10 +84,11 @@ sudo add-apt-repository ppa:openjdk-r/ppa -y
 
 echo Performing package updates
 # ffmpeg isn't supported on trusty, so a third party ppa is required
-add-apt-repository ppa:mc3man/gstffmpeg-keep
-sudo apt-get -y update
-sudo apt-get -y upgrade
-sudo apt-get -y autoremove
+sudo add-apt-repository ppa:mc3man/gstffmpeg-keep -y
+sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
+sudo apt update -y
+sudo apt upgrade -y
+sudo apt-get autoremove -y
 
 
 echo Installing required system packages
