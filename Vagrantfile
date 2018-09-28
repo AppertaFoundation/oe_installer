@@ -86,7 +86,7 @@ Vagrant.configure(2) do |config|
 
 	elsif OS.windows?
         config.vm.synced_folder ".", "/vagrant"
-		config.vm.synced_folder "./www", "/var/www", create: true
+		# config.vm.synced_folder "./www", "/var/www", create: true
     end
 
   # Prefer VMWare fusion before VirtualBox
