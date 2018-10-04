@@ -9,7 +9,7 @@ else
     sudo cp -f /vagrant/install/dicom-file-watcher.service /etc/systemd/system/
 fi
 
-sudo cp -f /vagrant/install/dicom /etc/cron.d/
+sudo cp -f /vagrant/install/cron.d/dicom /etc/cron.d/
 sudo chmod 0644 /etc/cron.d/dicom
 
 sudo cp -f /vagrant/install/run-dicom-service.sh /usr/local/bin

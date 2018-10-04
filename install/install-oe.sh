@@ -362,9 +362,9 @@ fi
 
 
 # copy cron tasks
-sudo cp -f /vagrant/install/hotlist /etc/cron.d/
+sudo cp -f /vagrant/install/cron.d/hotlist /etc/cron.d/
 sudo chmod 0644 /etc/cron.d/hotlist
-sudo cp -f /vagrant/install/eventimage /etc/cron.d/
+sudo cp -f /vagrant/install/cron.d/eventimage /etc/cron.d/
 sudo chmod 0644 /etc/cron.d/eventimage
 
 echo ""

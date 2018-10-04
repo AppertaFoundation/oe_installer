@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# call new script if it exists, or fall back to old installer script (which is no longer maintained)
+if [ -f /var/www/openeyes/protected/scripts/oe-reset.sh ]; then
+	bash /var/www/openeyes/protected/scripts/oe-reset.sh "$@"
+	exit 0
+fi
+
 # DB connection variables
 dbuser="root"
 dbpassword=""
