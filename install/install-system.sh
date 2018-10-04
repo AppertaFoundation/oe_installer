@@ -98,6 +98,11 @@ echo Installing required system packages
 
 sudo apt-get install -y git-core software-properties-common php5.6 php5.6-mbstring php5.6-zip imagemagick libjpeg62 mariadb-server mariadb-client debconf-utils unzip xfonts-75dpi default-jre libgamin0 gamin openjdk-7-jdk openjdk-8-jdk xfonts-base ruby ant libbatik-java libreoffice-core libreoffice-common libreoffice-writer libapache2-mod-php5.6 php5.6-cli php5.6-mysql php5.6-ldap php5.6-curl php5.6-xsl php5.6-gd php-imagick php5.6-mcrypt php5.6-imagick ffmpeg
 
+# add bash autocomplete
+sudo wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -O /etc/bash_completion.d/git-completion.bash \
+sudo wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh -O /etc/bash_completion.d/git-prompt.sh
+
+
 # install node.js and npm
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install -y nodejs
