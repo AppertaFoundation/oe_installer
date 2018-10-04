@@ -4,7 +4,7 @@ bash /vagrant/install/update-oe-tools.sh
 
 # call new script if it exists, or fall back to old installer script (which is no longer maintained)
 if [ -f /var/www/openeyes/protected/scripts/oe-fix.sh ]; then
-    bash /var/www/openeyes/protected/scripts/oe-fix.sh $params
+    bash /var/www/openeyes/protected/scripts/oe-fix.sh "$@"
 else
     bash /vagrant/install/runfix.sh "$@"
 fi
