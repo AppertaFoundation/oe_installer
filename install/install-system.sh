@@ -110,7 +110,8 @@ npm install -g grunt-cli
 # wkhtmltox is now bundled in the repository. Original download location is:
 # wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 cd /vagrant/install
-dpkg -i --force-depends wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+## TODO: switch to correct version based on OS (trusty/xenial/bionic/etc)
+dpkg -i --force-depends wkhtmltox_0.12.5-1.xenial_amd64.deb
 
 if [ ! "$dependonly" = "1" ]; then
     #  Install pre-compiled FAM module and configure PHP to use it
