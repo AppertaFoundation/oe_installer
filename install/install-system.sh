@@ -110,8 +110,9 @@ npm install -g grunt-cli
 # Download and install wkhtmltopdf/toimage (needed for printing and lightning viewer)
 ## TODO: switch to correct version based on OS (trusty/xenial/bionic/etc)
 ## TODO: replace with package manager. e.g, https://packagist.org/packages/h4cc/wkhtmltopdf-amd64 and https://packagist.org/packages/h4cc/wkhtmltoimage-amd64
-wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-dpkg -i --force-depends wkhtml.deb
+sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
+sudo dpkg -i --force-depends wkhtml.deb
+sudo rm wkhtml.deb
 
 if [ ! "$dependonly" = "1" ]; then
     #  Install pre-compiled FAM module and configure PHP to use it
