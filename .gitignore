@@ -5,3 +5,5 @@ www
 .vscode/*
 install/dist/*
 install/.ssg/*
+*.deb
+
