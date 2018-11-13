@@ -114,10 +114,10 @@ osver=`lsb_release -rs`
 if [[ "$osver" == "14.04" ]]; then
     # Ubuntu 14.04
 	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.trusty_amd64.deb
-else if [[ "$osver" == "16.04" ]]; then
+elif [[ "$osver" == "16.04" ]]; then
 	# Ubuntu 16.04
 	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-else if [[ "$osver" == "18.04" ]]; then
+elif [[ "$osver" == "18.04" ]]; then
 	# Ubuntu 18.04
 	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
 fi
