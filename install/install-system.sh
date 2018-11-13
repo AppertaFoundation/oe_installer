@@ -109,6 +109,7 @@ npm install -g grunt-cli
 
 # Download and install wkhtmltopdf/toimage (needed for printing and lightning viewer)
 # switch to correct wkhtml version based on OS (trusty/xenial/bionic/etc)
+echo -e "\n\nInstalling wkhtmltopdf...\n\n"
 osver=`lsb_release -rs`
 if [[ "$osver" == "14.04" ]]; then
     # Ubuntu 14.04
@@ -116,7 +117,7 @@ if [[ "$osver" == "14.04" ]]; then
 else if [[ "$osver" == "16.04" ]]; then
 	# Ubuntu 16.04
 	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-else if [[ "$osver" == "18.04" ]]
+else if [[ "$osver" == "18.04" ]]; then
 	# Ubuntu 18.04
 	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
 fi
