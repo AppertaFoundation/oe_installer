@@ -78,14 +78,14 @@ if [ ! "$dependonly" = "1" ]; then
 fi
 
 #add repos for PHP5.6 and Java7
-sudo add-apt-repository ppa:ondrej/php -y
-sudo add-apt-repository ppa:openjdk-r/ppa -y
+sudo -E add-apt-repository ppa:ondrej/php -y
+sudo -E add-apt-repository ppa:openjdk-r/ppa -y
 
 
 echo Performing package updates
 # ffmpeg isn't supported on trusty, so a third party ppa is required
-sudo add-apt-repository ppa:mc3man/gstffmpeg-keep -y
-sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
+sudo -E add-apt-repository ppa:mc3man/gstffmpeg-keep -y
+sudo -E add-apt-repository ppa:jonathonf/ffmpeg-3 -y
 sudo apt update -y
 sudo apt upgrade -y
 sudo apt-get autoremove -y
@@ -113,13 +113,13 @@ echo -e "\n\nInstalling wkhtmltopdf...\n\n"
 osver=`lsb_release -rs`
 if [[ "$osver" == "14.04" ]]; then
     # Ubuntu 14.04
-	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.trusty_amd64.deb
+	sudo -E wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.trusty_amd64.deb
 elif [[ "$osver" == "16.04" ]]; then
 	# Ubuntu 16.04
-	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
+	sudo -E wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
 elif [[ "$osver" == "18.04" ]]; then
 	# Ubuntu 18.04
-	sudo wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
+	sudo -E wget -O wkhtml.deb https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
 fi
 ## TODO: replace with package manager. e.g, https://packagist.org/packages/h4cc/wkhtmltopdf-amd64 and https://packagist.org/packages/h4cc/wkhtmltoimage-amd64
 sudo dpkg -i --force-depends wkhtml.deb || echo -e "\n\nWARNING WARNING WARNING:\n\nUnable to install wkhtmltopdf automatically\nPlease install manually"
