@@ -1,5 +1,5 @@
 #!/bin/bash
-source /etc/openeyes/modules.conf
+source /etc/openeyes/modules.conf &>/dev/null
 dir=$PWD
 
 # Process commandline parameters
@@ -26,9 +26,10 @@ sample=0
 sampleonly=0
 sshidentity=""
 changesshid=0
+mainonly=0
 
 # Read in stored git config (username, root, usessh, etc)
-source /etc/openeyes/git.conf
+source /etc/openeyes/git.conf &>/dev/null
 
 # store original ssh value, needed for updating remotes during pull
 previousssh=$usessh
@@ -77,6 +78,9 @@ case $i in
 	--no-compile) compile=0
 		## don't compile java
 	;;
+	--main-only) mainonly=1
+		## checkout openeyes main repo only (ignore modules)
+		;;
     -u*) username="${i:2}"
     ;;
     -p*) pass="${i:2}"
@@ -221,6 +225,9 @@ if [[ -d "sample" ]] || [[ $sample = 1 ]]; then modules=(${modules[@]} sample); 
 
 # if in sample only mode, we want only the sample module and nothing else
 if [ $sampleonly = 1 ]; then modules=(sample); javamodules=(); fi
+
+# if in main only mode, we want only the openeyes repo and nothing else
+if [ $mainonly = 1 ]; then modules=(openeyes); javamodules=(); fi
 
 ######################################################
 # update remote if changing from https to ssh method #

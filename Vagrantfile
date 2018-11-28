@@ -44,32 +44,50 @@ unless PLUGINS.empty?
    exit 1
 end
 
-
-AutoNetwork.default_pool = "172.16.0.0/24"
-
 $script = <<SCRIPT
 cd /vagrant/install
 installparams="-f -d --accept"
-# copy ssh key(s) if exists
-# NOTE: Expects key to be called id_rsa. If using a custom name ssh file, also provide .ssh/config with "IdentityFile ~/.ssh/<cusom shh name>"
-if [ "$(ls -A .ssh/id*)" ]; then
-    sudo -H -u vagrant bash -c 'cp .ssh/* ~/.ssh 2>/dev/null || :'
-    installparams="$installparams -ssh"
+installparams_old="$installparams"
+# NOTE: Expects key to be called id_rsa or id_github. If using a custom name ssh file, also provide .ssh/config with "IdentityFile ~/.ssh/<cusom shh name>"
+if [ -d "/home/vagrant/.host-ssh" ] && [ "$(ls -A /home/vagrant/.host-ssh/id*)" ]; then
+	echo "Adding SSH keys..."
+    installparams_old="$installparams -ssh"
     if [ ! -f "/home/vagrant/.ssh/config" ]; then
-        sudo -H -u vagrant bash -c 'echo "IdentityFile ~/.ssh/id_rsa" > ~/.ssh/config'
+        sudo -H -u vagrant bash -c 'echo -e "IdentityFile ~/.host-ssh/id_github\nIdentityFile ~/.host-ssh/id_rsa\nIdentityFile ~/.ssh/id_github\nIdentityFile ~/.ssh/id_rsa" > /home/vagrant/.ssh/config'
     fi
-	chmod 700 /home/vagrant/.ssh/id*
+	# chmod 600 /home/vagrant/.ssh/id*
 	sudo -H -u vagrant bash -c '$(ssh-agent)  2>/dev/null'
 	# attempt ssh authentication and store key signature
 	sudo -H -u vagrant bash -c 'ssh -oStrictHostKeyChecking=no git@github.com -T'
+
+	if [ ! -d "/var/www/openeyes/protected" ] ; then
+		sudo -H -u vagrant bash -c 'sudo mkdir -p /var/www/openeyes && sudo chmod 777 -R /var/www/openeyes && cd /var/www/openeyes && git clone -b develop git@github.com:openeyes/openeyes.git .'
+	fi
+else
+	if [ ! -d "/var/www/openeyes/protected" ]; then
+		sudo -H -u vagrant bash -c 'sudo mkdir -p /var/www/openeyes && sudo chmod 777 -R /var/www/openeyes && cd /var/www/openeyes && git clone -b develop https://github.com/openeyes/openeyes.git .'
+	fi
 fi
-bash install-system.sh
-sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c 'echo "Install will use $INSTALL_PARAMS"'
-sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c '/vagrant/install/install-oe.sh $INSTALL_PARAMS'
+sudo -H -u vagrant bash -c 'git config --global core.fileMode false && cd /var/www/openeyes && git config core.fileMode false'
+echo "setting permissions to non restrictive for openeyes folder during install..."
+sudo chmod 777 -R /var/www/openeyes
+echo "running install-system...."
+if [ -f "/var/www/openeyes/protected/scripts/install-system.sh" ]; then
+  OE_MODE="dev" bash /var/www/openeyes/protected/scripts/install-system.sh
+else
+  bash /vagrant/install/install-system.sh
+fi
+sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c 'echo "install-oe will use $INSTALL_PARAMS"'
+
+if [ -f "/var/www/openeyes/protected/scripts/install-oe.sh" ];
+  then sudo -H -u vagrant INSTALL_PARAMS="$installparams" OE_MODE="dev" DEBIAN_FRONTEND=noninteractive bash -c '/var/www/openeyes/protected/scripts/install-oe.sh $INSTALL_PARAMS'
+else
+  sudo -H -u vagrant INSTALL_PARAMS="$installparams_old" bash -c '/vagrant/install/install-oe.sh $INSTALL_PARAMS'
+fi
 SCRIPT
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "generic/ubuntu1604"
+  config.vm.box = "generic/ubuntu1804"
   config.vm.box_check_update = false
 
   config.vm.hostname = "openeyes.vm"
@@ -77,7 +95,9 @@ Vagrant.configure(2) do |config|
 
   config.vm.network :forwarded_port, host: 8888, guest: 80
   config.vm.network :forwarded_port, host: 3333, guest: 3306
+  AutoNetwork.default_pool = "172.16.0.0/24"
   config.vm.network "private_network", :auto_network => true
+  # config.vm.network "private_network", type: "dhcp"
 
 	# Setup synced folders - MacOS uses nfs and shares www to host. Windows uses VirtualBox default and www foler lives internally (use add-samba-share.sh to share www folder to Windows host)
 	if OS.unix?
@@ -86,7 +106,9 @@ Vagrant.configure(2) do |config|
 
 	elsif OS.windows?
         config.vm.synced_folder ".", "/vagrant"
-		# config.vm.synced_folder "./www", "/var/www", create: true
+		# Mount ssh certs from host
+		config.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["fmode=600"]
+		# config.vm.synced_folder "./www", "/var/www", create: true ,	owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
     end
 
   # Prefer VMWare fusion before VirtualBox
@@ -163,6 +185,7 @@ Vagrant.configure(2) do |config|
     h.auto_stop_action = "ShutDown"
   end
 
+# Copy in ssh keys, then provision
   config.vm.provision "shell", inline: $script, keep_color: true
 
   config.hostsupdater.remove_on_suspend = true
