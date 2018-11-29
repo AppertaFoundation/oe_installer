@@ -3,7 +3,7 @@
 
 Vagrant.require_version ">= 2.0"
 
-PLUGINS = %w(vagrant-auto_network vagrant-hostsupdater vagrant-vbguest vagrant-faster)
+PLUGINS = %w(vagrant-hostsupdater vagrant-vbguest vagrant-faster vagrant-auto_network)
 
 PLUGINS.reject! { |plugin| Vagrant.has_plugin? plugin }
 
@@ -46,6 +46,7 @@ end
 
 $script = <<SCRIPT
 cd /vagrant/install
+
 installparams="-f -d --accept"
 installparams_old="$installparams"
 # NOTE: Expects key to be called id_rsa or id_github. If using a custom name ssh file, also provide .ssh/config with "IdentityFile ~/.ssh/<cusom shh name>"
@@ -73,16 +74,16 @@ echo "setting permissions to non restrictive for openeyes folder during install.
 sudo chmod 777 -R /var/www/openeyes
 echo "running install-system...."
 if [ -f "/var/www/openeyes/protected/scripts/install-system.sh" ]; then
-  OE_MODE="dev" bash /var/www/openeyes/protected/scripts/install-system.sh
+  OE_MODE="dev" bash /var/www/openeyes/protected/scripts/install-system.sh || exit 1
 else
-  bash /vagrant/install/install-system.sh
+  bash /vagrant/install/install-system.sh || exit 1
 fi
 sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c 'echo "install-oe will use $INSTALL_PARAMS"'
 
 if [ -f "/var/www/openeyes/protected/scripts/install-oe.sh" ];
-  then sudo -H -u vagrant INSTALL_PARAMS="$installparams" OE_MODE="dev" DEBIAN_FRONTEND=noninteractive bash -c '/var/www/openeyes/protected/scripts/install-oe.sh $INSTALL_PARAMS'
+  then sudo -H -u vagrant INSTALL_PARAMS="$installparams" OE_MODE="dev" OE_INSTALL_LOCAL_DB="TRUE" DEBIAN_FRONTEND=noninteractive bash -c '/var/www/openeyes/protected/scripts/install-oe.sh $INSTALL_PARAMS' || exit 1
 else
-  sudo -H -u vagrant INSTALL_PARAMS="$installparams_old" bash -c '/vagrant/install/install-oe.sh $INSTALL_PARAMS'
+  sudo -H -u vagrant INSTALL_PARAMS="$installparams_old" bash -c '/vagrant/install/install-oe.sh $INSTALL_PARAMS' || exit 1
 fi
 SCRIPT
 
@@ -108,7 +109,8 @@ Vagrant.configure(2) do |config|
         config.vm.synced_folder ".", "/vagrant"
 		# Mount ssh certs from host
 		config.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["fmode=600"]
-		# config.vm.synced_folder "./www", "/var/www", create: true ,	owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
+		config.winnfsd.uid = 1000
+		config.vm.synced_folder "./www", "/var/www", create: true, type: 'nfs' # owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
     end
 
   # Prefer VMWare fusion before VirtualBox
