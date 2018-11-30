@@ -109,8 +109,8 @@ Vagrant.configure(2) do |config|
         config.vm.synced_folder ".", "/vagrant"
 		# Mount ssh certs from host
 		config.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["fmode=600"]
-		config.winnfsd.uid = 1000
-		config.vm.synced_folder "./www", "/var/www", create: true, type: 'nfs' # owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
+		# config.vm.synced_folder "./www", "/var/www", create: true, type: 'nfs'
+		# config.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
     end
 
   # Prefer VMWare fusion before VirtualBox
@@ -144,6 +144,8 @@ Vagrant.configure(2) do |config|
 	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
     v.customize ["modifyvm", :id, "--vram", "56"]
     v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+	v.customize ["modifyvm", :id, "--nicspeed1", "1000000"]
+	v.customize ["modifyvm", :id, "--nicspeed2", "1000000"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant-root", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/var/www/", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant/", "1"]
