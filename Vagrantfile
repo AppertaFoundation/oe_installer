@@ -3,7 +3,7 @@
 
 Vagrant.require_version ">= 2.0"
 
-PLUGINS = %w(vagrant-hostsupdater vagrant-vbguest vagrant-faster vagrant-auto_network)
+PLUGINS = %w(vagrant-hostsupdater vagrant-vbguest vagrant-faster vagrant-auto_network vagrant-winnfsd)
 
 PLUGINS.reject! { |plugin| Vagrant.has_plugin? plugin }
 
@@ -109,11 +109,13 @@ Vagrant.configure(2) do |config|
         config.vm.synced_folder ".", "/vagrant"
 		# Mount ssh certs from host
 		config.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["fmode=600"]
+		config.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
 		# config.vm.synced_folder "./www", "/var/www", create: true, type: 'nfs'
 		# config.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
     end
 
   # Prefer VMWare fusion before VirtualBox
+  config.vm.provider "hyperv"
   config.vm.provider "vmware_fusion"
   config.vm.provider "virtualbox"
 
@@ -149,6 +151,7 @@ Vagrant.configure(2) do |config|
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant-root", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/var/www/", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant/", "1"]
+	v.default_nic_type = "virtio"
   end
 
   # VMWare Fusion
@@ -188,6 +191,15 @@ Vagrant.configure(2) do |config|
     h.auto_start_action = "Nothing"
     h.auto_stop_action = "ShutDown"
   end
+
+  ## set time zone to host
+  require 'time'
+  offset = ((Time.zone_offset(Time.now.zone) / 60) / 60)
+  timezone_suffix = offset >= 0 ? "-#{offset.to_s}" : "+#{offset.to_s}"
+  timezone = 'Etc/GMT' + timezone_suffix
+  config.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/" + timezone + " /etc/localtime", run: "always"
+
+
 
 # Copy in ssh keys, then provision
   config.vm.provision "shell", inline: $script, keep_color: true
