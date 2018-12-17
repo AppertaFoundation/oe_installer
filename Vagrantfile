@@ -3,7 +3,7 @@
 
 Vagrant.require_version ">= 2.0"
 
-PLUGINS = %w(vagrant-hostsupdater vagrant-vbguest vagrant-faster vagrant-auto_network vagrant-winnfsd)
+PLUGINS = %w(vagrant-hostsupdater vagrant-vbguest vagrant-faster vagrant-auto_network)
 
 PLUGINS.reject! { |plugin| Vagrant.has_plugin? plugin }
 
@@ -96,23 +96,10 @@ Vagrant.configure(2) do |config|
 
   config.vm.network :forwarded_port, host: 8888, guest: 80
   config.vm.network :forwarded_port, host: 3333, guest: 3306
-  AutoNetwork.default_pool = "172.16.0.0/24"
-  config.vm.network "private_network", :auto_network => true
+  
   # config.vm.network "private_network", type: "dhcp"
 
-	# Setup synced folders - MacOS uses nfs and shares www to host. Windows uses VirtualBox default and www foler lives internally (use add-samba-share.sh to share www folder to Windows host)
-	if OS.unix?
-		config.vm.synced_folder ".", "/vagrant", type: 'nfs'
-		config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true, type: 'nfs'
-
-	elsif OS.windows?
-        config.vm.synced_folder ".", "/vagrant"
-		# Mount ssh certs from host
-		config.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["fmode=600"]
-		config.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
-		# config.vm.synced_folder "./www", "/var/www", create: true, type: 'nfs'
-		# config.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
-    end
+	
 
   # Prefer VMWare fusion before VirtualBox
   config.vm.provider "hyperv"
@@ -141,7 +128,7 @@ Vagrant.configure(2) do |config|
 
 
   # VirtualBox
-  config.vm.provider "virtualbox" do |v|
+  config.vm.provider "virtualbox" do |v, override|
     v.gui = true
 	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
     v.customize ["modifyvm", :id, "--vram", "56"]
@@ -152,6 +139,31 @@ Vagrant.configure(2) do |config|
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/var/www/", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant/", "1"]
 	v.default_nic_type = "virtio"
+	
+    AutoNetwork.default_pool = "172.16.0.0/24"
+    override.vm.network "private_network", :auto_network => true
+	
+	## set time zone to host
+    require 'time'
+    offset = ((Time.zone_offset(Time.now.zone) / 60) / 60)
+    timezone_suffix = offset >= 0 ? "-#{offset.to_s}" : "+#{offset.to_s}"
+    timezone = 'Etc/GMT' + timezone_suffix
+    v.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/" + timezone + " /etc/localtime", run: "always"
+  
+  # Setup synced folders - MacOS uses nfs and shares www to host. Windows uses VirtualBox default and www foler lives internally (use add-samba-share.sh to share www folder to Windows host)
+	if OS.unix?
+		override.vm.synced_folder ".", "/vagrant", type: 'nfs'
+		override.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true, type: 'nfs'
+
+	elsif OS.windows?
+        override.vm.synced_folder ".", "/vagrant"
+		# Mount ssh certs from host
+		override.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["fmode=600"]
+		override.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
+		override.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
+		# config.vm.synced_folder "./www", "/var/www", create: true, type: 'nfs'
+    end
+
   end
 
   # VMWare Fusion
@@ -164,22 +176,21 @@ Vagrant.configure(2) do |config|
 
   # Hyper-V
   config.vm.provider "hyperv" do |h, override|
-	#override.vm.box = "generic/ubuntu1604"
-
-	# manual ip
-	override.vm.provision "shell",
-      run: "always",
-      inline: "sudo ifconfig eth0 172.16.0.2 netmask 255.255.255.0 up"
-
-	#override.vm.provision "shell",
+    
+    # manual ip
+    # override.vm.provision "shell",
+    # run: "always",
+    # inline: "sudo ifconfig eth0 172.16.0.2 netmask 255.255.255.0 up"
+    
+    # override.vm.provision "shell",
     #  run: "always",
     #  inline: "sudo route add default gw 172.16.0.1"
-
-	h.vmname = "OpenEyes"
-	h.cpus = 2
-	h.memory = 768
-	h.maxmemory = mem
-	h.ip_address_timeout = 200
+    
+    h.vmname = "OpenEyes"
+    # h.cpus = 2
+    # h.memory = 768
+    # h.maxmemory = mem
+    # h.ip_address_timeout = 200
     h.vm_integration_services = {
       guest_service_interface: true,
       heartbeat: true,
@@ -188,17 +199,19 @@ Vagrant.configure(2) do |config|
       time_synchronization: true,
       vss: true
     }
-    h.auto_start_action = "Nothing"
-    h.auto_stop_action = "ShutDown"
+    # h.enable_virtualization_extensions="true"
+    # h.auto_start_action = "Nothing"
+    # h.auto_stop_action = "ShutDown"
+    
+    
+    override.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0775,file_mode=0774"]
+    override.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["vers=3.0,file_mode=0600"]
+    override.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["vers=3.0,noperm,dir_mode=0666,file_mode=0777"]
+    override.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["vers=3.0,mfsymlinks,noperm,dir_mode=0774,file_mode=0774"]
+  
+    override.vm.network "private_network", type: "dhcp"
   end
-
-  ## set time zone to host
-  require 'time'
-  offset = ((Time.zone_offset(Time.now.zone) / 60) / 60)
-  timezone_suffix = offset >= 0 ? "-#{offset.to_s}" : "+#{offset.to_s}"
-  timezone = 'Etc/GMT' + timezone_suffix
-  config.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/" + timezone + " /etc/localtime", run: "always"
-
+ 
 
 
 # Copy in ssh keys, then provision
