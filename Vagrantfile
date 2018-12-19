@@ -71,7 +71,7 @@ else
 fi
 sudo -H -u vagrant bash -c 'git config --global core.fileMode false && cd /var/www/openeyes && git config core.fileMode false'
 echo "setting permissions to non restrictive for openeyes folder during install..."
-sudo chmod 777 -R /var/www/openeyes
+sudo chmod 774 -R /var/www/openeyes
 echo "running install-system...."
 if [ -f "/var/www/openeyes/protected/scripts/install-system.sh" ]; then
   OE_MODE="dev" bash /var/www/openeyes/protected/scripts/install-system.sh || exit 1
@@ -96,10 +96,10 @@ Vagrant.configure(2) do |config|
 
   config.vm.network :forwarded_port, host: 8888, guest: 80
   config.vm.network :forwarded_port, host: 3333, guest: 3306
-  
+
   # config.vm.network "private_network", type: "dhcp"
 
-	
+
 
   # Prefer VMWare fusion before VirtualBox
   config.vm.provider "hyperv"
@@ -120,10 +120,13 @@ Vagrant.configure(2) do |config|
 
 	mem = mem / 1024 / 4
 
+    # Align to nearset 16 mb
+    mem = 16*((mem+16-1)/16)
+
 	if mem < 768
 		mem = 768
-	elsif mem > 2028
-		mem = 2048
+	elsif mem > 3072
+		mem = 3072
 	end
 
 
@@ -139,17 +142,17 @@ Vagrant.configure(2) do |config|
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/var/www/", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant/", "1"]
 	v.default_nic_type = "virtio"
-	
+
     AutoNetwork.default_pool = "172.16.0.0/24"
     override.vm.network "private_network", :auto_network => true
-	
+
 	## set time zone to host
     require 'time'
     offset = ((Time.zone_offset(Time.now.zone) / 60) / 60)
     timezone_suffix = offset >= 0 ? "-#{offset.to_s}" : "+#{offset.to_s}"
     timezone = 'Etc/GMT' + timezone_suffix
     v.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/" + timezone + " /etc/localtime", run: "always"
-  
+
   # Setup synced folders - MacOS uses nfs and shares www to host. Windows uses VirtualBox default and www foler lives internally (use add-samba-share.sh to share www folder to Windows host)
 	if OS.unix?
 		override.vm.synced_folder ".", "/vagrant", type: 'nfs'
@@ -176,20 +179,20 @@ Vagrant.configure(2) do |config|
 
   # Hyper-V
   config.vm.provider "hyperv" do |h, override|
-    
+
     # manual ip
     # override.vm.provision "shell",
     # run: "always",
     # inline: "sudo ifconfig eth0 172.16.0.2 netmask 255.255.255.0 up"
-    
+
     # override.vm.provision "shell",
     #  run: "always",
     #  inline: "sudo route add default gw 172.16.0.1"
-    
+
     h.vmname = "OpenEyes"
     # h.cpus = 2
-    # h.memory = 768
-    # h.maxmemory = mem
+    h.memory = 768
+    h.maxmemory = mem
     # h.ip_address_timeout = 200
     h.vm_integration_services = {
       guest_service_interface: true,
@@ -199,19 +202,18 @@ Vagrant.configure(2) do |config|
       time_synchronization: true,
       vss: true
     }
-    # h.enable_virtualization_extensions="true"
-    # h.auto_start_action = "Nothing"
-    # h.auto_stop_action = "ShutDown"
-    
-    
-    override.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0775,file_mode=0774"]
-    override.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["vers=3.0,file_mode=0600"]
-    override.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["vers=3.0,noperm,dir_mode=0666,file_mode=0777"]
-    override.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["vers=3.0,mfsymlinks,noperm,dir_mode=0774,file_mode=0774"]
-  
+    h.enable_virtualization_extensions="true"
+    h.auto_start_action = "Nothing"
+    h.auto_stop_action = "ShutDown"
+
+    override.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0775,file_mode=0774"], disabled: true
+    override.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["file_mode=0600"]
+    override.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0666,file_mode=0777"]
+    override.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0774,file_mode=0774,mfsymlinks"]
+
     override.vm.network "private_network", type: "dhcp"
   end
- 
+
 
 
 # Copy in ssh keys, then provision
