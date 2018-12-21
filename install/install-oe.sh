@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# Verify we are running as root
-# if [[ $EUID -ne 0 ]]; then
-#    echo "This script must be run as root" 1>&2
-#    exit 1
-# fi
+# **************************************************************
+# ************* Use new install script if it exists ************
+# **************************************************************
+if [ -f "/var/www/openeyes/protected/scripts/install-oe.sh" ]; then bash /var/www/openeyes/protected/scripts/install-oe.sh "$@"; exit; fi
+
+# THE FOLLOWING ONLY RUNS IF NEW INSTALL SCRIPT DIDN'T EXIST
+
+echo "******** WARNING - using pre V3 install script ***********"
 
 # Find real folder name where this script is located, then try symlinking it to /vagrant
 # This is needed for non-vagrant environments - will silenly fail if /vagrant already exists

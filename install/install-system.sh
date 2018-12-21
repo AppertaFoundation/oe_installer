@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 # Process commandline parameters
 gitroot="openeyes"
 dependonly=0
@@ -55,15 +57,26 @@ if [ ! $? = 1 ]; then
 	"
 fi
 
-# Terminate if any command fails
-set -e
-
 # Verify we are running as root
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
 fi
 
+# **************************************************************
+# ************* Use new install script if it exists ************
+# **************************************************************
+if [ -f "/var/www/openeyes/protected/scripts/install-system.sh" ]; then 
+	echo "**************** SWITCHING TO /var/www/openeyes/protected/scripts/install-system.sh ***************" 
+	bash /var/www/openeyes/protected/scripts/install-system.sh "$@" 
+	exit 
+fi
+
+# THE FOLLOWING ONLY RUNS IF NEW INSTALL SCRIPT DIDN'T EXIST
+echo "**************** WARNING - Using pre-v3 install-system-sh ***************"
+
+# Terminate if any command fails
+set -e
 
 # SET UP SWAP SPACE
 if [ ! "$dependonly" = "1" ]; then
@@ -83,9 +96,11 @@ sudo -E add-apt-repository ppa:openjdk-r/ppa -y
 
 
 echo Performing package updates
-# ffmpeg isn't supported on trusty, so a third party ppa is required
-sudo -E add-apt-repository ppa:mc3man/gstffmpeg-keep -y
-sudo -E add-apt-repository ppa:jonathonf/ffmpeg-3 -y
+# ffmpeg 3 isn't supported on xenial or older, so a third party ppa is required
+  if [[ `lsb_release -rs` == "16.04" ]] || [[ `lsb_release -rs` == "14.04" ]]; then
+      sudo add-apt-repository ppa:mc3man/gstffmpeg-keep -y
+      sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
+  fi
 sudo apt update -y
 sudo apt upgrade -y
 sudo apt-get autoremove -y

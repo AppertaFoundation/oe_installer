@@ -3,7 +3,7 @@
 
 Vagrant.require_version ">= 2.0"
 
-PLUGINS = %w(vagrant-auto_network vagrant-hostsupdater vagrant-vbguest vagrant-faster)
+PLUGINS = %w(vagrant-hostsupdater vagrant-vbguest vagrant-faster vagrant-auto_network)
 
 PLUGINS.reject! { |plugin| Vagrant.has_plugin? plugin }
 
@@ -44,32 +44,51 @@ unless PLUGINS.empty?
    exit 1
 end
 
-
-AutoNetwork.default_pool = "172.16.0.0/24"
-
 $script = <<SCRIPT
 cd /vagrant/install
+
 installparams="-f -d --accept"
-# copy ssh key(s) if exists
-# NOTE: Expects key to be called id_rsa. If using a custom name ssh file, also provide .ssh/config with "IdentityFile ~/.ssh/<cusom shh name>"
-if [ "$(ls -A .ssh/id*)" ]; then
-    sudo -H -u vagrant bash -c 'cp .ssh/* ~/.ssh 2>/dev/null || :'
-    installparams="$installparams -ssh"
+installparams_old="$installparams"
+# NOTE: Expects key to be called id_rsa or id_github. If using a custom name ssh file, also provide .ssh/config with "IdentityFile ~/.ssh/<cusom shh name>"
+if [ -d "/home/vagrant/.host-ssh" ] && [ "$(ls -A /home/vagrant/.host-ssh/id*)" ]; then
+	echo "Adding SSH keys..."
+    installparams_old="$installparams -ssh"
     if [ ! -f "/home/vagrant/.ssh/config" ]; then
-        sudo -H -u vagrant bash -c 'echo "IdentityFile ~/.ssh/id_rsa" > ~/.ssh/config'
+        sudo -H -u vagrant bash -c 'echo -e "IdentityFile ~/.host-ssh/id_github\nIdentityFile ~/.host-ssh/id_rsa\nIdentityFile ~/.ssh/id_github\nIdentityFile ~/.ssh/id_rsa" > /home/vagrant/.ssh/config'
     fi
-	chmod 700 /home/vagrant/.ssh/id*
+	# chmod 600 /home/vagrant/.ssh/id*
 	sudo -H -u vagrant bash -c '$(ssh-agent)  2>/dev/null'
 	# attempt ssh authentication and store key signature
 	sudo -H -u vagrant bash -c 'ssh -oStrictHostKeyChecking=no git@github.com -T'
+
+	if [ ! -d "/var/www/openeyes/protected" ] ; then
+		sudo -H -u vagrant bash -c 'sudo mkdir -p /var/www/openeyes && sudo chmod 777 -R /var/www/openeyes && cd /var/www/openeyes && git clone -b develop git@github.com:openeyes/openeyes.git .'
+	fi
+else
+	if [ ! -d "/var/www/openeyes/protected" ]; then
+		sudo -H -u vagrant bash -c 'sudo mkdir -p /var/www/openeyes && sudo chmod 777 -R /var/www/openeyes && cd /var/www/openeyes && git clone -b develop https://github.com/openeyes/openeyes.git .'
+	fi
 fi
-bash install-system.sh
-sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c 'echo "Install will use $INSTALL_PARAMS"'
-sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c '/vagrant/install/install-oe.sh $INSTALL_PARAMS'
+sudo -H -u vagrant bash -c 'git config --global core.fileMode false && cd /var/www/openeyes && git config core.fileMode false'
+echo "setting permissions to non restrictive for openeyes folder during install..."
+sudo chmod 774 -R /var/www/openeyes
+echo "running install-system...."
+if [ -f "/var/www/openeyes/protected/scripts/install-system.sh" ]; then
+  OE_MODE="dev" bash /var/www/openeyes/protected/scripts/install-system.sh || exit 1
+else
+  bash /vagrant/install/install-system.sh || exit 1
+fi
+sudo -H -u vagrant INSTALL_PARAMS="$installparams" bash -c 'echo "install-oe will use $INSTALL_PARAMS"'
+
+if [ -f "/var/www/openeyes/protected/scripts/install-oe.sh" ];
+  then sudo -H -u vagrant INSTALL_PARAMS="$installparams" OE_MODE="dev" OE_INSTALL_LOCAL_DB="TRUE" DEBIAN_FRONTEND=noninteractive bash -c '/var/www/openeyes/protected/scripts/install-oe.sh $INSTALL_PARAMS' || exit 1
+else
+  sudo -H -u vagrant INSTALL_PARAMS="$installparams_old" bash -c '/vagrant/install/install-oe.sh $INSTALL_PARAMS' || exit 1
+fi
 SCRIPT
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "generic/ubuntu1604"
+  config.vm.box = "generic/ubuntu1804"
   config.vm.box_check_update = false
 
   config.vm.hostname = "openeyes.vm"
@@ -77,19 +96,13 @@ Vagrant.configure(2) do |config|
 
   config.vm.network :forwarded_port, host: 8888, guest: 80
   config.vm.network :forwarded_port, host: 3333, guest: 3306
-  config.vm.network "private_network", :auto_network => true
 
-	# Setup synced folders - MacOS uses nfs and shares www to host. Windows uses VirtualBox default and www foler lives internally (use add-samba-share.sh to share www folder to Windows host)
-	if OS.unix?
-		config.vm.synced_folder ".", "/vagrant", type: 'nfs'
-		config.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true, type: 'nfs'
+  # config.vm.network "private_network", type: "dhcp"
 
-	elsif OS.windows?
-        config.vm.synced_folder ".", "/vagrant"
-		# config.vm.synced_folder "./www", "/var/www", create: true
-    end
 
-  # Prefer VMWare fusion before VirtualBox
+
+  # Prefer Hyper-V before VMWare fusion before VirtualBox
+  config.vm.provider "hyperv"
   config.vm.provider "vmware_fusion"
   config.vm.provider "virtualbox"
 
@@ -107,22 +120,53 @@ Vagrant.configure(2) do |config|
 
 	mem = mem / 1024 / 4
 
+    # Align to nearset 16 mb
+    mem = 16*((mem+16-1)/16)
+
 	if mem < 768
 		mem = 768
-	elsif mem > 2028
-		mem = 2048
+	elsif mem > 3072
+		mem = 3072
 	end
 
 
   # VirtualBox
-  config.vm.provider "virtualbox" do |v|
+  config.vm.provider "virtualbox" do |v, override|
     v.gui = true
 	v.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
     v.customize ["modifyvm", :id, "--vram", "56"]
     v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+	v.customize ["modifyvm", :id, "--nicspeed1", "1000000"]
+	v.customize ["modifyvm", :id, "--nicspeed2", "1000000"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant-root", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/var/www/", "1"]
     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant/", "1"]
+	v.default_nic_type = "virtio"
+
+    AutoNetwork.default_pool = "172.16.0.0/24"
+    override.vm.network "private_network", :auto_network => true
+
+	## set time zone to host
+    require 'time'
+    offset = ((Time.zone_offset(Time.now.zone) / 60) / 60)
+    timezone_suffix = offset >= 0 ? "-#{offset.to_s}" : "+#{offset.to_s}"
+    timezone = 'Etc/GMT' + timezone_suffix
+    v.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/" + timezone + " /etc/localtime", run: "always"
+
+  # Setup synced folders - MacOS uses nfs and shares www to host. Windows uses VirtualBox default and www foler lives internally (use add-samba-share.sh to share www folder to Windows host)
+	if OS.unix?
+		override.vm.synced_folder ".", "/vagrant", type: 'nfs'
+		override.vm.synced_folder "./www/", "/var/www/", id: "vagrant-root", create: true, type: 'nfs'
+
+	elsif OS.windows?
+        override.vm.synced_folder ".", "/vagrant"
+		# Mount ssh certs from host
+		override.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["fmode=600"]
+		override.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
+		override.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["fmode=777"]
+		# config.vm.synced_folder "./www", "/var/www", create: true, type: 'nfs'
+    end
+
   end
 
   # VMWare Fusion
@@ -135,22 +179,21 @@ Vagrant.configure(2) do |config|
 
   # Hyper-V
   config.vm.provider "hyperv" do |h, override|
-	#override.vm.box = "generic/ubuntu1604"
 
-	# manual ip
-	override.vm.provision "shell",
-      run: "always",
-      inline: "sudo ifconfig eth0 172.16.0.2 netmask 255.255.255.0 up"
+    # manual ip
+    # override.vm.provision "shell",
+    # run: "always",
+    # inline: "sudo ifconfig eth0 172.16.0.2 netmask 255.255.255.0 up"
 
-	#override.vm.provision "shell",
+    # override.vm.provision "shell",
     #  run: "always",
     #  inline: "sudo route add default gw 172.16.0.1"
 
-	h.vmname = "OpenEyes"
-	h.cpus = 2
-	h.memory = 768
-	h.maxmemory = mem
-	h.ip_address_timeout = 200
+    h.vmname = "OpenEyes"
+    # h.cpus = 2
+    h.memory = 768
+    h.maxmemory = mem
+    # h.ip_address_timeout = 200
     h.vm_integration_services = {
       guest_service_interface: true,
       heartbeat: true,
@@ -159,10 +202,21 @@ Vagrant.configure(2) do |config|
       time_synchronization: true,
       vss: true
     }
+    h.enable_virtualization_extensions="true"
     h.auto_start_action = "Nothing"
     h.auto_stop_action = "ShutDown"
+
+    override.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0775,file_mode=0774"], disabled: true
+    override.vm.synced_folder "~/.ssh", "/home/vagrant/.host-ssh" , owner: "vagrant",	group: "vagrant", mount_options: ["file_mode=0600"]
+    override.vm.synced_folder "./dicom", "/home/iolmaster/incoming", create: true, owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0666,file_mode=0777"]
+    override.vm.synced_folder "./www", "/var/www", create: true, owner: "vagrant", group: "www-data", mount_options: ["noperm,dir_mode=0774,file_mode=0774,mfsymlinks"]
+
+    override.vm.network "private_network", type: "dhcp"
   end
 
+
+
+# Copy in ssh keys, then provision
   config.vm.provision "shell", inline: $script, keep_color: true
 
   config.hostsupdater.remove_on_suspend = true

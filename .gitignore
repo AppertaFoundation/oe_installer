@@ -6,4 +6,4 @@ www
 install/dist/*
 install/.ssg/*
 *.deb
-
+dicom/*
