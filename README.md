@@ -28,15 +28,16 @@ This repository should be the only one checked out when building a new OpenEyes 
     * [Vagrant Virtual Machine Console](#vagrant-virtual-machine-console)
     * [MySQL](#mysql)
 
-# Installing for Development or testing (using Vagrant and VirtualBox)
+# Installing for Development or testing (using Vagrant and VirtualBox or Hyper-V)
 
 The default development setup uses a Mac OSX (preferred) or Windows host, and runs a virtual server provided by VirtualBox with managed setup by Vagrant. Vagrant is not essential (see live use setup below) but offers a few advantages for developers, such as:
 
-+ Installs and configures a basic server for you
-+ Creates shared folders so code edited on the host is available directly on the virtual machine
-+ Maps the install directory on the host to /vagrant on the VM.
-+ Forwards port `8888` on the host to port `80` on the VM (so the host can access the VM website at `localhost:8888`)
-+ Forwards port `3333` on the host to port `3306` on the VM (for host access to the VM's MySQL database)
+* Installs and configures a basic server for you
+* Creates shared folders so code edited on the host is available directly on the virtual machine
+* Maps the install directory on the host to /vagrant on the VM.
+* [VirtualBox] creates a host entry named openeyes.vm. So the website will be available at http://openeyes.vm and MySQL at openeyes.vm:3306
+  * Note that the site will also NATted to http://localhost:8888 as an alternative, and localhost:3333 for MySQL
+* [Hyper-V] creates a host entry named openeyes.mshome.net. So the website is avialable at http://openeyes.mshome.net and MySQL is available at openeyes.mshome.net:3306
 
 
 ### Installing development environment on Mac OS X 10.6 or later hosts
@@ -47,7 +48,6 @@ The default development setup uses a Mac OSX (preferred) or Windows host, and ru
 
 1. Vagrant: [https://www.vagrantup.com/downloads.html](https://www.vagrantup.com/downloads.html)
 2. VirtualBox: [https://www.virtualbox.org/wiki/Downloads](https://www.virtualbox.org/wiki/Downloads)
-3. Git: [https://git-scm.com/downloads](https://git-scm.com/downloads)
 
 #### Steps
 
@@ -71,7 +71,7 @@ The default development setup uses a Mac OSX (preferred) or Windows host, and ru
 
 1. Vagrant: [https://www.vagrantup.com/downloads.html](https://www.vagrantup.com/downloads.html)
 2. VirtualBox: [https://www.virtualbox.org/wiki/Downloads](https://www.virtualbox.org/wiki/Downloads)
-3. Git: [https://git-scm.com/downloads](https://git-scm.com/downloads)
+  * Or Microsoft Hyper-V
 
 #### Steps
 1. Install Vagrant, VirtualBox and Git, following default install instructions from the above links.
@@ -87,68 +87,22 @@ The default development setup uses a Mac OSX (preferred) or Windows host, and ru
     Run: `vagrant up`
     5.1. If this is your first time running Vagrant, it may install some plugins first, then ask you to run again. In which case, run `vagrant up` again to continue
 6. It will take 5 - 10 minutes for the install to complete (depending on the speed of your internet connection)
-7. At this point you should have a fully working OpenEyes server, reachable at http://localhost:8888
-8. You can follow the sections below [Additional development tools](#additional-development-tools) should you need them.
+7. At this point you should have a fully working OpenEyes server, reachable at http://localhost:8888 (http://openeyes.mshome.net for HyperV)
 
 
-### Additional development tools
-
-If you require behat (running the selenium UI tests), then from the VM run the following command:
-
-```
-  sudo /vagrant/install/install-behat.sh
-```
-
-If you require PHP unit tests, or modify any SASS or CSS or Javascript, then you will need the additional dev tools. From the
-VM run the following command:
-
-```
-  sudo /vagrant/install/install-devtools.sh
-```
-
-
-If you wish to run these extra tools via Jenkins, you can also install the pre-configured Jenkins suite. From the
-VM run the following command:
-
-```
-  sudo /vagrant/install/install-jenkins.sh
-```
 
 
 # SSH usage with github
 ## Provisioning vagrant from private repos
-If using the private repos, you will need to add your SSH key to `install/.ssh` *BEFORE* running `vagrant up`.
+If using the private repos, you will need to add your SSH key to your user account's .ssh folder *BEFORE* running `vagrant up`. On windows this is %HOMEPATH%\.ssh. On Mac and Linux this is ~/.ssh
 
-Your SSH key should be named id_rsa, and it should be mapped to your gitgub user account (https://github.com/settings/keys).
+Your SSH key should be named id_rsa or id_github, and it should be mapped to your gitgub user account (https://github.com/settings/keys).
+
+*IMPORTANT* - Your SSH key must not have a password, otherwise it cannot be used in automated scripts
 
 ## Using SSH on a live install, or switching from HTTPS to SSH
 
-By Default, the installer will use HTTPS to connect to github. When using private repos this means that you will be prompted for your username and password when running git pull, push, etc. To avoid this, you can switch to using SSH, by performing the following steps
-
-### Setup SSH key
-*Note, you can ignore this section if you already provisioned your vagrant box with SSH (above)*
-
-1. Add an ssh key to your vagrant box (either copy an existing key to `~/.ssh`, or generate a new key by running `ssh-keygen -t rsa -b 4096`
-
-2. Add the following line to `~/.ssh/config`:
-`IdentityFile ~/.ssh/id_rsa`
-(if your ssh key is not named id_rsa, then substitue with correct name)
-
-3. go to https://github.com/settings/keys and add your public key to your github account (you can get the contents of your public key by running `cat ~/.ssh/id_rsa.pub`)
-
-
-
-*Note*: If you don't do the above, then every time you run a git pull, push or checkout it will ask you for your password for every module
-
-### Switch existing install to ssh
-To switch an existing installation from HTTPS to SSH, run `oe-checkout` with the `-ssh` switch.
-
-E.g., `oe-checkout master -ssh`. This will switch all git commands from https mode to ssh mode, and use your ssh key to identify you. You only need to do this once. From now on, all commands will default to SSH.
-
-To switc back to using HTTPS, simply run `oe-checkout` again with the `-https` switch
-
-### New (live) install with ssh
-`intall/install-oe.sh` can be run with a `-ssh` switch. This will use the installed ssh certificate and not prompt for any usernames or passwords.
+By Default, the installer will first try to use SSH, then fall back to HTTPS to connect to github. When using private repos without SSH, this means that you will be prompted for your username and password when running git pull, push, etc. Also note that if you use 2-Factor Authentication then HTTPS requires a special password. Therefore it is strongly recommended to use SSH
 
 # Installing for live use
 
@@ -156,15 +110,14 @@ This section assumes you are installing OpenEyes on a virtual machine, (other th
 physical server, and it is intended for non-development, and that your home directory is /home/me (you can modify accordingly).
 
 
-1. Install Ubuntu 14.04 LTS. Minimal installation, no software packages (except ssh server)
+1. Install Ubuntu 18.04 LTS. Minimal installation, no software packages (except ssh server)
     (You are expected to know the root password and the username/password for your server).
 2. Log on as your normal user (presumed to be 'ubuntu' for this guide - amend as required)
 3. Run: `sudo apt install git`
-4. Change to your home directory. Run: `cd ~``
-5. Clone the oe_installer repository to your home directory. Run: `git clone https://github.com/openeyes/oe_installer.git`
-6. Run: `sudo oe_installer/install/install-system.sh`
-7. Run: `oe_installer/install/install-oe.sh --live`
-
+5. Clone the openeyes repository to /var/www/openeyes. Run: `cd /var/www && git clone https://github.com/openeyes/oe_installer.git`
+6. Run `export OE_MODE="LIVE"`
+7. Run: `/var/www/openeyes/protected/scripts/install-system.sh`
+8. Run: `/var/www/openeyes/protected/scripts/install-oe.sh`
 
 At this point you have a working server running on localhost (or your assigned IP address). You may wish to edit `/etc/apache2/sites-available/000-default.conf`
 and set the ServerName directive to your chosen domain name (apache configuration knowledge required).
@@ -176,7 +129,7 @@ There is nothing to stop you from using this server configuration for developmen
 Several additional terminal commands have been created for you in ``/usr/bin`, to aid development. These can be run from any directory within the Virtual Machine (e.g, run `vagrant ssh` first). You should <u>not</u> run these commands as sudo.
 
 + **oe-which**: tells you the current branch name for each of your code modules
-+ **oe-checkout** <branch>: will go through each code module and try to checkout the requested branch or version (e.g., `oe-checkout v2.1.1`) - also runs oe-migrate to bring the newly installed database up to date
++ **oe-checkout** <branch>: will go through each code module and try to checkout the requested branch or version (e.g., `oe-checkout v3.0`) - also runs oe-migrate to bring the newly installed database up to date
 + **oe-update**: will go through each code module and update (i.e. pull the latest) code
 + **oe-reset**: will drop the current database and re-install it (also runs oe-migrate to bring the newly installed database up to date)
 + **oe-migrate**: performs database migrations (normally used after a change to a newer code branch)
@@ -197,7 +150,7 @@ This is the preferred method.
 + Run: `vagrant ssh`
 
 
-#### Direct access to console in VirtualBox
+#### Direct access to console in VirtualBox / HyperV
 To login to the virtual Box machine directly use the following details:
 
 + Username: vagrant
@@ -209,7 +162,7 @@ To login to the virtual Box machine directly use the following details:
 Default access details for the MySQL Database are:
 
 ```
-Port: 3306 (3333 for vagrant)
+Port: 3306
 Username: openeyes
 Password: openeyes
 ```
