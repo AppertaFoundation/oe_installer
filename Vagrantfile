@@ -101,7 +101,7 @@ Vagrant.configure(2) do |config|
 
 
 
-  # Prefer VMWare fusion before VirtualBox
+  # Prefer Hyper-V before VMWare fusion before VirtualBox
   config.vm.provider "hyperv"
   config.vm.provider "vmware_fusion"
   config.vm.provider "virtualbox"
