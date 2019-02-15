@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Process commandline parameters
-gitroot="openeyes"
+gitroot="appertafoundation"
 dependonly=0
 showhelp=0
 
