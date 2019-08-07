@@ -1,3 +1,9 @@
+# RETIRED
+This installer was retired after the OpenEyes v3.0 release. It is now recommended to use the [openeyes/docker project](https://github.com/openeyes/docker) or the Docker images available at the [appertaopeneyes docker hub repository](https://hub.docker.com/u/appertaopeneyes)
+
+---
+---
+
 # OpenEyes Installation Guide
 
 This repository should be the only one checked out when building a new OpenEyes machine instance.
